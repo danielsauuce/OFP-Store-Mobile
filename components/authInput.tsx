@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
-import { Colors, ColorScheme } from '@/constants/color';
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/color';
 
 export type AuthInputLabel = 'email' | 'password' | 'name' | 'confirmPassword';
 
@@ -47,6 +48,9 @@ export default function AuthInput({
   return (
     <View className="mv-4">
       <Text className="text-[14px] font-semibold mb-1">{getLabelText()}</Text>
+      <View className="flex-row items-center border rounded-[14px] px-4 h-[52px] bg-light-background dark:bg-dark-background border-light-border dark:border-dark-border">
+        <TextInput className="flex-1 text-[15px] font-medium text-light-text dark:text-dark-text" />
+      </View>
     </View>
   );
 }
