@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 
 export default function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
-  console.log(width, height);
+  // console.log(width, height);
   const router = useRouter();
 
   const handleGetStarted = () => {

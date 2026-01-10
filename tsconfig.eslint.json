@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "babel.config.js",
+      "metro.config.js",
+      "tailwind.config.js",
+      ".eslintrc.js"
+    ],
+    "compilerOptions": {
+      "allowJs": true,
+      "checkJs": false
+    }
+  }
