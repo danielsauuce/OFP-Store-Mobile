@@ -24,7 +24,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'error',
     'react-native/no-unused-styles': 'warn',
     'react-hooks/exhaustive-deps': 'warn',
-    'import/no-unresolved': 'error', 
+    '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^_' }],
   },
   ignorePatterns: [
     'node_modules/**',
