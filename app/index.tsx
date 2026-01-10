@@ -1,9 +1,18 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import '../global.css';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
-export default function Welcome() {
+export default function WelcomeScreen() {
+  const { width, height } = useWindowDimensions();
+  // console.log(width, height);
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/auth');
+  };
+
   return (
     <View className="flex-1">
       <LinearGradient
@@ -15,7 +24,13 @@ export default function Welcome() {
 
       <SafeAreaView className="flex-1">
         <View className="flex-1 px-6 pt-5 pb-8 justify-between">
-          <View className="rounded-[32px] overflow-hidden mt-5 h-96">
+          <View
+            className="rounded-[32px] overflow-hidden mt-5 "
+            style={{
+              width: width - 48,
+              height: height * 0.4,
+            }}
+          >
             <Image
               source={{
                 uri: 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGZ1cm5pdHVyZXxlbnwwfHwwfHx8MA%3D%3D',
@@ -53,7 +68,10 @@ export default function Welcome() {
           </View>
 
           <View className="gap-3">
-            <TouchableOpacity className="h-14 rounded-[16px] bg-white justify-center items-center shadow-md">
+            <TouchableOpacity
+              className="h-14 rounded-[16px] bg-white justify-center items-center shadow-md"
+              onPress={handleGetStarted}
+            >
               <Text className="text-lg font-bold text-[#6366F1]">Get Started</Text>
             </TouchableOpacity>
           </View>
@@ -61,15 +79,15 @@ export default function Welcome() {
           <View className="flex-row flex-wrap justify-center gap-5">
             <View className="flex-row items-center gap-1.5">
               <View className="w-1.5 h-1.5 rounded-full bg-white/80" />
-              <Text className="text-xs font-semibold text-white/90">Handcrafted Excellence</Text>
+              <Text className="text-[14px] font-semibold text-white/90">Handcrafted Excellence</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
               <View className="w-1.5 h-1.5 rounded-full bg-white/80" />
-              <Text className="text-xs font-semibold text-white/90">Fast Delivery</Text>
+              <Text className="text-[14px] font-semibold text-white/90">Fast Delivery</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
               <View className="w-1.5 h-1.5 rounded-full bg-white/80" />
-              <Text className="text-xs font-semibold text-white/90">Lifetime Support</Text>
+              <Text className="text-[14px] font-semibold text-white/90">Lifetime Support</Text>
             </View>
           </View>
         </View>
