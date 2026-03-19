@@ -1,75 +1,117 @@
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import LoginFormScreen from '@/components/loginForm';
-import AuthButton from '@/components/authButton';
 import { useRouter } from 'expo-router';
+
+import { Card } from '@/components/ui/Card';
+import { AuthForm } from '@/components/forms/AuthForm';
+import { useAuth } from '@/contexts/AuthContext'; // ✅ FIXED IMPORT
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
-export default function AuthScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const [mode, setMode] = useState<AuthMode>('login');
+interface AuthState {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
-  const handleLogin = () => {
-    setLoading(true);
-    router.push('/');
-    setLoading(false);
-  };
+export default function AuthScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { login, signup } = useAuth();
+
+  const [mode, setMode] = useState<AuthMode>('login');
+  const [state, setState] = useState<AuthState>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [loading, setLoading] = useState(false);
 
-  const headerTitle =
-    mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password';
+  const handleAuth = async () => {
+    const { name, email, password, confirmPassword } = state;
 
-  const headerSubtitle =
-    mode === 'login'
-      ? 'Sign in to continue shopping'
-      : mode === 'signup'
-        ? 'Join us to start shopping'
-        : 'Enter your email and new password';
+    if (!email || !password || (mode === 'signup' && !name)) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (mode === 'reset') {
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
+
+      Alert.alert('Info', 'Password reset requires a token (from email). Implement forgot-password flow.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (mode === 'login') {
+        await login(email, password);
+      } else {
+        await signup(name, email, password);
+      }
+
+      router.replace('/');
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-light-background dark:bg-dark-background"
+      className="flex-1 bg-background"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        className="px-5"
+        contentContainerStyle={{
+          paddingTop: insets.top + 40,
+          paddingBottom: 40,
+        }}
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="flex-grow px-5 pb-10"
-        contentContainerStyle={{ paddingTop: insets.top + 40 }}
       >
+        {/* HEADER */}
         <View className="items-center mb-10">
-          <Text className="text-[40px] font-bold tracking-[0.5px] text-light-primary">Olayinka</Text>
-          <Text className="text-[13px] tracking-[2px] uppercase mt-1 text-light-secondary">
-            Furniture Palace
+          <Text className="text-4xl font-bold text-primary">Olayinka</Text>
+          <Text className="text-xs uppercase tracking-widest text-gray-400 mt-1">Furniture Palace</Text>
+        </View>
+
+        {/* FORM */}
+        <Card>
+          <Text className="text-2xl font-bold mb-2">
+            {mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
           </Text>
-        </View>
 
-        <View className="rounded-[20px] p-7 shadow-lg bg-light-surface dark:bg-dark-surface">
-          <View className="mb-8">
-            <Text className="text-[28px] font-bold mb-2 text-light-text dark:text-dark-text">
-              {headerTitle}
-            </Text>
-            <Text className="text-[15px] text-light-secondary dark:text-dark-secondary">
-              {headerSubtitle}
-            </Text>
-          </View>
+          <Text className="text-gray-400 mb-6">
+            {mode === 'login'
+              ? 'Sign in to continue'
+              : mode === 'signup'
+                ? 'Get started today'
+                : 'Enter your new password'}
+          </Text>
 
-          <AuthButton label="Sign In" isloading={loading} onPress={handleLogin} disable={false} />
-        </View>
+          <AuthForm
+            mode={mode}
+            setMode={setMode}
+            state={state}
+            setState={setState}
+            onSubmit={handleAuth}
+            loading={loading}
+          />
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
