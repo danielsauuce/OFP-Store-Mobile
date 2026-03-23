@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 interface Product {
   _id: string;
