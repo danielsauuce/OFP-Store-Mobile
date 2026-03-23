@@ -1,23 +1,30 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 
 type AuthButtonProps = {
-  label: string;
+  title?: string;
+  label?: string;
   onPress: () => void;
-  isloading: boolean;
+  loading?: boolean;
+  isloading?: boolean;
   disable?: boolean;
 };
 
-export default function AuthButton({ label, onPress, isloading = false, disable = false }: AuthButtonProps) {
-  const isDisable = isloading || disable;
+export function AuthButton({
+  title,
+  label,
+  onPress,
+  loading = false,
+  isloading = false,
+  disable = false,
+}: AuthButtonProps) {
+  const buttonLabel = title || label || '';
+  const isLoadingState = loading || isloading;
+  const isDisable = isLoadingState || disable;
 
-  const buttonStyles = isDisable
-    ? 'bg-light-surface-variant dark:bg-dark-surface-variant'
-    : 'bg-light-primary dark:bg-dark-primary';
+  const buttonStyles = isDisable ? 'bg-gray-200' : 'bg-indigo-500';
 
-  const textStyles = isDisable
-    ? 'text-light-text-tertiary dark:text-dark-text-tertiary'
-    : 'text-light-surface dark:text-dark-surface';
+  const textStyles = isDisable ? 'text-gray-400' : 'text-white';
 
   return (
     <TouchableOpacity
@@ -25,11 +32,13 @@ export default function AuthButton({ label, onPress, isloading = false, disable 
       disabled={isDisable}
       className={`h-[52px] rounded-[14px] items-center justify-center mt-4 ${buttonStyles}`}
     >
-      {isloading ? (
-        <ActivityIndicator color="#8B4513" />
+      {isLoadingState ? (
+        <ActivityIndicator color="#6366F1" />
       ) : (
-        <Text className={`font-bold text-base ${textStyles}`}>{label}</Text>
+        <Text className={`font-bold text-base ${textStyles}`}>{buttonLabel}</Text>
       )}
     </TouchableOpacity>
   );
 }
+
+export default AuthButton;

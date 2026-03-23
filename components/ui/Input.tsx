@@ -1,8 +1,15 @@
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TextInputProps, TouchableOpacity } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useState } from 'react';
 
-export const Input = ({ label, icon, secure = false, error, ...props }) => {
+interface InputProps extends TextInputProps {
+  label?: string;
+  icon?: React.ReactNode;
+  secure?: boolean;
+  error?: string;
+}
+
+export const Input = ({ label, icon, secure = false, error, ...props }: InputProps) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -16,7 +23,7 @@ export const Input = ({ label, icon, secure = false, error, ...props }) => {
 
         {secure && (
           <TouchableOpacity onPress={() => setShow(!show)}>
-            {show ? <EyeOff size={20} /> : <Eye size={20} />}
+            {show ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
           </TouchableOpacity>
         )}
       </View>

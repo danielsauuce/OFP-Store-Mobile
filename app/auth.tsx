@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 
 import { Card } from '@/components/ui/Card';
 import { AuthForm } from '@/components/forms/AuthForm';
-import { useAuth } from '@/contexts/AuthContext'; // ✅ FIXED IMPORT
+import { useAuth } from '@/contexts/AuthContext';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
@@ -72,7 +72,7 @@ export default function AuthScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
@@ -85,7 +85,7 @@ export default function AuthScreen() {
       >
         {/* HEADER */}
         <View className="items-center mb-10">
-          <Text className="text-4xl font-bold text-primary">Olayinka</Text>
+          <Text className="text-4xl font-bold text-indigo-500">Olayinka</Text>
           <Text className="text-xs uppercase tracking-widest text-gray-400 mt-1">Furniture Palace</Text>
         </View>
 
