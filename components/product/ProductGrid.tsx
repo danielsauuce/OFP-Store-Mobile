@@ -1,13 +1,29 @@
 import React from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import ProductCard from './ProductCard';
 
-export default function ProductGrid({ products, onPress }) {
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  inStock: boolean;
+}
+
+interface Props {
+  products: Product[];
+  onPress: (id: string) => void;
+}
+
+export default function ProductGrid({ products, onPress }: Props) {
   return (
-    <View className="flex-row flex-wrap justify-between px-5 gap-y-3">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} onPress={() => onPress(product.id)} />
-      ))}
-    </View>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View className="flex-row flex-wrap justify-between px-5 gap-y-3">
+        {products.map((product) => (
+          <ProductCard key={product._id} product={product} onPress={() => onPress(product._id)} />
+        ))}
+      </View>
+    </ScrollView>
   );
 }

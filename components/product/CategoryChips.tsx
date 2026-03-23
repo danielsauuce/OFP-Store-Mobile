@@ -1,12 +1,23 @@
 import React from 'react';
-import { ScrollView, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, TouchableOpacity, Text, View } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function CategoryChips({ categories, selected, onSelect }) {
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Props {
+  categories: Category[];
+  selected: string;
+  onSelect: (id: string) => void;
+}
+
+export default function CategoryChips({ categories, selected, onSelect }: Props) {
   const { colors } = useTheme();
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5">
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3">
       <View className="flex-row gap-2">
         {categories.map((c) => {
           const active = selected === c.id;

@@ -5,7 +5,26 @@ import { Minus, Plus, Trash2 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
-export default function CartItem({ item, onUpdate, onRemove }) {
+interface CartProduct {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+}
+
+interface CartItemData {
+  _id: string;
+  product: CartProduct;
+  quantity: number;
+}
+
+interface Props {
+  item: CartItemData;
+  onUpdate: (quantity: number) => void;
+  onRemove: () => void;
+}
+
+export default function CartItem({ item, onUpdate, onRemove }: Props) {
   const { colors } = useTheme();
 
   return (
@@ -17,7 +36,7 @@ export default function CartItem({ item, onUpdate, onRemove }) {
 
       <View className="flex-1 ml-3 justify-between">
         <View className="flex-row justify-between">
-          <Text className="font-semibold flex-1 mr-2" numberOfLines={2}>
+          <Text className="font-semibold flex-1 mr-2" numberOfLines={2} style={{ color: colors.text }}>
             {item.product.name}
           </Text>
 
@@ -39,7 +58,9 @@ export default function CartItem({ item, onUpdate, onRemove }) {
             <Minus size={14} color={colors.text} />
           </TouchableOpacity>
 
-          <Text className="font-semibold">{item.quantity}</Text>
+          <Text className="font-semibold" style={{ color: colors.text }}>
+            {item.quantity}
+          </Text>
 
           <TouchableOpacity
             onPress={() => onUpdate(item.quantity + 1)}

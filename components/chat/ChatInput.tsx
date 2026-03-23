@@ -3,7 +3,13 @@ import { View, TextInput, TouchableOpacity } from 'react-native';
 import { Send } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function ChatInput({ value, onChange, onSend }) {
+interface Props {
+  value: string;
+  onChange: (text: string) => void;
+  onSend: () => void;
+}
+
+export default function ChatInput({ value, onChange, onSend }: Props) {
   const { colors } = useTheme();
 
   return (
@@ -15,12 +21,14 @@ export default function ChatInput({ value, onChange, onSend }) {
         value={value}
         onChangeText={onChange}
         placeholder="Type message..."
+        placeholderTextColor={colors.textTertiary}
         className="flex-1 rounded-full px-4 py-2 border"
         style={{
           backgroundColor: colors.background,
           borderColor: colors.border,
           color: colors.text,
         }}
+        multiline
       />
 
       <TouchableOpacity

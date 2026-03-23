@@ -4,7 +4,21 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
-export default function ProductCard({ product, onPress }) {
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  inStock: boolean;
+}
+
+interface Props {
+  product: Product;
+  onPress: () => void;
+}
+
+export default function ProductCard({ product, onPress }: Props) {
   const { colors } = useTheme();
 
   return (
@@ -16,9 +30,11 @@ export default function ProductCard({ product, onPress }) {
       <Image source={{ uri: product.images[0] }} className="w-full h-40" contentFit="cover" />
 
       <View className="p-3">
-        <Text className="text-xs font-bold opacity-50 mb-1">{product.category.toUpperCase()}</Text>
+        <Text className="text-xs font-bold opacity-50 mb-1" style={{ color: colors.text }}>
+          {product.category.toUpperCase()}
+        </Text>
 
-        <Text className="text-sm font-semibold mb-2" numberOfLines={2}>
+        <Text className="text-sm font-semibold mb-2" numberOfLines={2} style={{ color: colors.text }}>
           {product.name}
         </Text>
 
@@ -35,9 +51,7 @@ export default function ProductCard({ product, onPress }) {
           >
             <Text
               className="text-[10px] font-semibold"
-              style={{
-                color: product.inStock ? colors.success : colors.error,
-              }}
+              style={{ color: product.inStock ? colors.success : colors.error }}
             >
               {product.inStock ? 'In Stock' : 'Out'}
             </Text>

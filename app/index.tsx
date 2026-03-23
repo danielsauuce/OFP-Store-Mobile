@@ -3,11 +3,25 @@ import '../global.css';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
-  // console.log(width, height);
   const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/(tabs)');
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return <View className="flex-1 bg-indigo-500" />;
+  }
+
+  if (user) return null;
 
   const handleGetStarted = () => {
     router.push('/auth');
@@ -25,11 +39,8 @@ export default function WelcomeScreen() {
       <SafeAreaView className="flex-1">
         <View className="flex-1 px-6 pt-5 pb-8 justify-between">
           <View
-            className="rounded-[32px] overflow-hidden mt-5 "
-            style={{
-              width: width - 48,
-              height: height * 0.4,
-            }}
+            className="rounded-[32px] overflow-hidden mt-5"
+            style={{ width: width - 48, height: height * 0.4 }}
           >
             <Image
               source={{
