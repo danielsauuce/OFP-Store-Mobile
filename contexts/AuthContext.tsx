@@ -10,8 +10,6 @@ import {
   AuthResponse,
 } from '@/services/authService';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface User {
   id: string;
   fullName: string;
@@ -28,30 +26,26 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-// ─── Query Keys ───────────────────────────────────────────────────────────────
-
 export const authKeys = {
   me: ['auth', 'me'] as const,
 };
-
-// ─── Context ──────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
-  // ── Current user ────────────────────────────────────────────────────────────
+  // current user
   const { data, isLoading } = useQuery<AuthResponse>({
     queryKey: authKeys.me,
     queryFn: checkAuthService,
     retry: false,
-    staleTime: 10 * 60 * 1000, // 10 min — don't re-check on every focus
+    staleTime: 10 * 60 * 1000, // 10 min
   });
 
   const user: User | null = data?.user ?? null;
 
-  // ── Login ────────────────────────────────────────────────────────────────────
+  //login
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       loginService({ email, password }),
@@ -65,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await loginMutation.mutateAsync({ email, password });
   };
 
-  // ── Signup ───────────────────────────────────────────────────────────────────
+  // signup
   const signupMutation = useMutation({
     mutationFn: ({ name, email, password }: { name: string; email: string; password: string }) =>
       registerService({ fullName: name, email, password }),
@@ -79,11 +73,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signupMutation.mutateAsync({ name, email, password });
   };
 
-  // ── Logout ───────────────────────────────────────────────────────────────────
+  // logout
   const logoutMutation = useMutation({
     mutationFn: logoutService,
     onSettled: async () => {
-      // Always clear token + cached data, even if the server call fails
       await SecureStore.deleteItemAsync('accessToken');
       queryClient.setQueryData(authKeys.me, null);
       queryClient.clear();
