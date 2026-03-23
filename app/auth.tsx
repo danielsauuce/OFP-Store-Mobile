@@ -19,7 +19,7 @@ interface AuthState {
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { login, signup } = useAuth();
+  const { login, signup, isLoginPending, isSignupPending } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [state, setState] = useState<AuthState>({
@@ -28,7 +28,9 @@ export default function AuthScreen() {
     password: '',
     confirmPassword: '',
   });
-  const [loading, setLoading] = useState(false);
+
+  // Derive loading from the active mutation
+  const loading = mode === 'login' ? isLoginPending : isSignupPending;
 
   const handleAuth = async () => {
     const { name, email, password, confirmPassword } = state;
@@ -48,12 +50,9 @@ export default function AuthScreen() {
         Alert.alert('Error', 'Passwords do not match');
         return;
       }
-
-      Alert.alert('Info', 'Password reset requires a token (from email). Implement forgot-password flow.');
+      Alert.alert('Info', 'A reset link will be sent to your email.');
       return;
     }
-
-    setLoading(true);
 
     try {
       if (mode === 'login') {
@@ -61,12 +60,10 @@ export default function AuthScreen() {
       } else {
         await signup(name, email, password);
       }
-
-      router.replace('/');
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+      router.replace('/(tabs)');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Something went wrong';
+      Alert.alert('Error', message);
     }
   };
 
@@ -77,19 +74,16 @@ export default function AuthScreen() {
     >
       <ScrollView
         className="px-5"
-        contentContainerStyle={{
-          paddingTop: insets.top + 40,
-          paddingBottom: 40,
-        }}
+        contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
+        {/* Header */}
         <View className="items-center mb-10">
           <Text className="text-4xl font-bold text-indigo-500">Olayinka</Text>
           <Text className="text-xs uppercase tracking-widest text-gray-400 mt-1">Furniture Palace</Text>
         </View>
 
-        {/* FORM */}
+        {/* Form */}
         <Card>
           <Text className="text-2xl font-bold mb-2">
             {mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}

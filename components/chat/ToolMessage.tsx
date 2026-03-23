@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
+import { CheckCircle } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ToolPart {
@@ -27,9 +28,12 @@ export default function ToolMessage({ part }: Props) {
 
   if (part.state === 'output-available') {
     return (
-      <Text className="text-xs mt-1 opacity-60" style={{ color: colors.text }}>
-        ✓ Done
-      </Text>
+      <View className="flex-row items-center gap-1 mt-1">
+        <CheckCircle size={12} color={colors.success} />
+        <Text className="text-xs opacity-60" style={{ color: colors.text }}>
+          Done
+        </Text>
+      </View>
     );
   }
 

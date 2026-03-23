@@ -9,15 +9,15 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!isLoading && user) {
       router.replace('/(tabs)');
     }
-  }, [user, loading]);
+  }, [user, isLoading]);
 
-  if (loading) {
+  if (isLoading) {
     return <View className="flex-1 bg-indigo-500" />;
   }
 

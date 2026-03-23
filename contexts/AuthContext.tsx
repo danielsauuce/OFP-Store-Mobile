@@ -1,9 +1,18 @@
+import React, { createContext, useContext } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
-import { createContext, useContext, useEffect, useState } from 'react';
 
-import { checkAuthService, loginService, logoutService, registerService } from '../services/authService';
+import {
+  checkAuthService,
+  loginService,
+  logoutService,
+  registerService,
+  AuthResponse,
+} from '@/services/authService';
 
-interface User {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface User {
   id: string;
   fullName: string;
   email: string;
@@ -11,77 +20,90 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  isLoading: boolean;
+  isLoginPending: boolean;
+  isSignupPending: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
 }
 
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
+// ─── Query Keys ───────────────────────────────────────────────────────────────
+
+export const authKeys = {
+  me: ['auth', 'me'] as const,
+};
+
+// ─── Context ──────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  // ── Current user ────────────────────────────────────────────────────────────
+  const { data, isLoading } = useQuery<AuthResponse>({
+    queryKey: authKeys.me,
+    queryFn: checkAuthService,
+    retry: false,
+    staleTime: 10 * 60 * 1000, // 10 min — don't re-check on every focus
+  });
 
-  const checkAuth = async () => {
-    try {
-      const data = await checkAuthService();
-      setUser(data.user);
-    } catch (err) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  const user: User | null = data?.user ?? null;
+
+  // ── Login ────────────────────────────────────────────────────────────────────
+  const loginMutation = useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      loginService({ email, password }),
+    onSuccess: async (res) => {
+      await SecureStore.setItemAsync('accessToken', res.accessToken);
+      queryClient.setQueryData<AuthResponse>(authKeys.me, res);
+    },
+  });
+
+  const login = async (email: string, password: string) => {
+    await loginMutation.mutateAsync({ email, password });
   };
 
-  // login
-  const login = async (email: string, password: string): Promise<void> => {
-    const data = await loginService({ email, password });
+  // ── Signup ───────────────────────────────────────────────────────────────────
+  const signupMutation = useMutation({
+    mutationFn: ({ name, email, password }: { name: string; email: string; password: string }) =>
+      registerService({ fullName: name, email, password }),
+    onSuccess: async (res) => {
+      await SecureStore.setItemAsync('accessToken', res.accessToken);
+      queryClient.setQueryData<AuthResponse>(authKeys.me, res);
+    },
+  });
 
-    // store token
-    await SecureStore.setItemAsync('accessToken', data.accessToken);
-
-    setUser(data.user);
+  const signup = async (name: string, email: string, password: string) => {
+    await signupMutation.mutateAsync({ name, email, password });
   };
 
-  // signup
-  const signup = async (name: string, email: string, password: string): Promise<void> => {
-    const data = await registerService({
-      fullName: name,
-      email,
-      password,
-    });
+  // ── Logout ───────────────────────────────────────────────────────────────────
+  const logoutMutation = useMutation({
+    mutationFn: logoutService,
+    onSettled: async () => {
+      // Always clear token + cached data, even if the server call fails
+      await SecureStore.deleteItemAsync('accessToken');
+      queryClient.setQueryData(authKeys.me, null);
+      queryClient.clear();
+    },
+  });
 
-    await SecureStore.setItemAsync('accessToken', data.accessToken);
-
-    setUser(data.user);
-  };
-
-  // logout
   const logout = async () => {
-    await logoutService();
-    await SecureStore.deleteItemAsync('accessToken');
-    setUser(null);
+    await logoutMutation.mutateAsync();
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        loading,
+        isLoading,
+        isLoginPending: loginMutation.isPending,
+        isSignupPending: signupMutation.isPending,
         login,
         signup,
         logout,
-        checkAuth,
       }}
     >
       {children}
@@ -90,9 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 };
 
 export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 };

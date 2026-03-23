@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ShoppingBag } from 'lucide-react-native';
+import { ShoppingBag, Hammer, Truck, Headphones } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ProductGrid from '@/components/product/ProductGrid';
@@ -29,7 +29,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getAllProductsService({ limit: 6 })
-      .then((res) => setFeatured(res.products ?? res ?? []))
+      .then((res) => {
+        const list = res?.products ?? res?.data ?? res;
+        setFeatured(Array.isArray(list) ? list : []);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -41,7 +44,7 @@ export default function HomeScreen() {
         <View className="px-5 pt-4 pb-2 flex-row justify-between items-center">
           <View>
             <Text className="text-2xl font-bold" style={{ color: colors.text }}>
-              {user ? `Hi, ${user.fullName.split(' ')[0]} 👋` : 'Olayinka'}
+              {user ? `Hi, ${user.fullName.split(' ')[0]}` : 'Olayinka'}
             </Text>
             <Text className="text-sm" style={{ color: colors.textSecondary }}>
               Furniture Palace
@@ -75,19 +78,21 @@ export default function HomeScreen() {
 
         {/* Quality highlights */}
         <View className="flex-row mx-5 mt-4 gap-3">
-          {[
-            { label: 'Handcrafted', icon: '✦' },
-            { label: 'Fast Delivery', icon: '⚡' },
-            { label: '24/7 Support', icon: '💬' },
-          ].map((item) => (
+          {(
+            [
+              { label: 'Handcrafted', Icon: Hammer },
+              { label: 'Fast Delivery', Icon: Truck },
+              { label: '24/7 Support', Icon: Headphones },
+            ] as const
+          ).map(({ label, Icon }) => (
             <View
-              key={item.label}
-              className="flex-1 items-center py-3 rounded-2xl"
+              key={label}
+              className="flex-1 items-center py-3 rounded-2xl gap-1"
               style={{ backgroundColor: colors.surfaceVariant }}
             >
-              <Text className="text-lg">{item.icon}</Text>
+              <Icon size={20} color={colors.primary} />
               <Text className="text-xs font-semibold mt-1" style={{ color: colors.textSecondary }}>
-                {item.label}
+                {label}
               </Text>
             </View>
           ))}

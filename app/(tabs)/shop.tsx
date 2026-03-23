@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Search } from 'lucide-react-native';
+import { Search, Armchair } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
@@ -41,8 +41,10 @@ export default function ShopScreen() {
   useEffect(() => {
     Promise.all([getAllProductsService(), getAllCategoriesService()])
       .then(([prodRes, catRes]) => {
-        setAllProducts(prodRes.products ?? prodRes ?? []);
-        const cats: Category[] = (catRes.categories ?? catRes ?? []).map(
+        const prodList = prodRes?.products ?? prodRes?.data ?? prodRes;
+        setAllProducts(Array.isArray(prodList) ? prodList : []);
+        const catList = catRes?.categories ?? catRes?.data ?? catRes;
+        const cats: Category[] = (Array.isArray(catList) ? catList : []).map(
           (c: { _id: string; name: string; slug: string }) => ({
             id: c._id,
             name: c.name,
@@ -90,7 +92,7 @@ export default function ShopScreen() {
         <ActivityIndicator color={colors.primary} className="mt-10" />
       ) : filtered.length === 0 ? (
         <View className="flex-1 items-center justify-center gap-2">
-          <Text className="text-5xl">🛋️</Text>
+          <Armchair size={56} color={colors.textTertiary} />
           <Text className="font-semibold text-lg" style={{ color: colors.text }}>
             No products found
           </Text>

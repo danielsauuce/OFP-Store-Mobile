@@ -16,7 +16,7 @@ interface Props {
   onPress: (id: string) => void;
 }
 
-export default function ProductGrid({ products, onPress }: Props) {
+export default function ProductGrid({ products = [], onPress }: Props) {
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row flex-wrap justify-between px-5 gap-y-3">
