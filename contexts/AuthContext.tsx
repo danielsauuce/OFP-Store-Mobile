@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { checkAuthService, loginService, logoutService, registerService } from '../service/authService';
+import { checkAuthService, loginService, logoutService, registerService } from '../services/authService';
 
 interface User {
   id: string;
