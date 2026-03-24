@@ -1,11 +1,6 @@
 import { AxiosError } from 'axios';
 import axiosInstance from './axiosInstance';
 
-interface OrderStatusBody {
-  orderStatus: string;
-  note?: string;
-}
-
 interface OrderParams {
   page?: number;
   limit?: number;
@@ -56,35 +51,6 @@ export async function cancelOrderService(orderId: string) {
   } catch (error) {
     const err = error as AxiosError;
     console.error('cancelOrder error:', (err.response?.data as Record<string, unknown>) ?? err.message);
-    throw error;
-  }
-}
-
-// Admin Endpoints
-export async function getAllOrdersAdminService(params: Record<string, unknown> = {}) {
-  try {
-    const { data } = await axiosInstance.get('/api/orders/admin', { params });
-    return data;
-  } catch (error) {
-    const err = error as AxiosError;
-    console.error('getAllOrdersAdmin error:', (err.response?.data as Record<string, unknown>) ?? err.message);
-    throw error;
-  }
-}
-
-export async function updateOrderStatusAdminService(orderId: string, orderStatus: string, note?: string) {
-  try {
-    const body: OrderStatusBody = { orderStatus };
-    if (note) body.note = note;
-
-    const { data } = await axiosInstance.patch(`/api/orders/admin/${orderId}/status`, body);
-    return data;
-  } catch (error) {
-    const err = error as AxiosError;
-    console.error(
-      'updateOrderStatusAdmin error:',
-      (err.response?.data as Record<string, unknown>) ?? err.message,
-    );
     throw error;
   }
 }
