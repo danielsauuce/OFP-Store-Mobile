@@ -124,7 +124,7 @@ export default function CartScreen() {
               />
             ))}
           </ScrollView>
-          <CartSummary subtotal={subtotal} />
+          <CartSummary subtotal={subtotal} onCheckout={() => router.push('/checkout')} />
         </>
       )}
     </SafeAreaView>

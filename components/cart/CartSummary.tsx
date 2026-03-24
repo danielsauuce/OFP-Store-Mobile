@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -6,9 +6,10 @@ const SHIPPING_FEE = 15;
 
 interface CartSummaryProps {
   subtotal: number;
+  onCheckout: () => void;
 }
 
-export default function CartSummary({ subtotal }: CartSummaryProps) {
+export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) {
   const { colors } = useTheme();
   const total = subtotal + SHIPPING_FEE;
 
@@ -41,7 +42,7 @@ export default function CartSummary({ subtotal }: CartSummaryProps) {
       <TouchableOpacity
         className="h-14 rounded-2xl items-center justify-center mt-1"
         style={{ backgroundColor: colors.primary }}
-        onPress={() => Alert.alert('Checkout', 'Checkout coming soon!')}
+        onPress={onCheckout}
       >
         <Text className="text-white font-bold text-base">Proceed to Checkout</Text>
       </TouchableOpacity>

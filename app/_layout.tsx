@@ -28,6 +28,11 @@ export default function RootLayout() {
                   <Stack.Screen name="auth" options={{ headerShown: false, presentation: 'modal' }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
+                  <Stack.Screen name="checkout" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="order-confirmation"
+                    options={{ headerShown: false, gestureEnabled: false }}
+                  />
                 </Stack>
               </OrderProvider>
             </WishlistProvider>
