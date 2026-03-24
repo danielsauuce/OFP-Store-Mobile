@@ -5,21 +5,13 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllProductsService } from '@/services/productService';
+import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
 import HomeHeader from '@/components/home/HomeHeader';
 import HeroBanner from '@/components/home/HeroBanner';
 import QualityHighlights from '@/components/home/QualityHighlights';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  stockQuantity: number;
-  description?: string;
-}
+type Product = NormalizedProduct;
 
 export default function HomeScreen() {
   const { colors } = useTheme();
@@ -35,8 +27,8 @@ export default function HomeScreen() {
     setError(false);
     getAllProductsService({ limit: 6 })
       .then((res) => {
-        const list = res?.products ?? res?.data ?? res;
-        setFeatured(Array.isArray(list) ? list : []);
+        const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
+        setFeatured(Array.isArray(list) ? list.map(normalizeProduct) : []);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));

@@ -10,16 +10,9 @@ import { getAllProductsService } from '@/services/productService';
 import { getAllCategoriesService } from '@/services/categoryService';
 import ShopHeader from '@/components/shop/ShopHeader';
 import EmptyProducts from '@/components/shop/EmptyProducts';
+import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  stockQuantity: number;
-}
+type Product = NormalizedProduct;
 
 interface Category {
   id: string;
@@ -42,8 +35,8 @@ export default function ShopScreen() {
   useEffect(() => {
     Promise.all([getAllProductsService(), getAllCategoriesService()])
       .then(([prodRes, catRes]) => {
-        const prodList = prodRes?.products ?? prodRes?.data ?? prodRes;
-        setAllProducts(Array.isArray(prodList) ? prodList : []);
+        const prodList = prodRes?.data?.products ?? prodRes?.products ?? prodRes?.data ?? prodRes;
+        setAllProducts(Array.isArray(prodList) ? prodList.map(normalizeProduct) : []);
         const catList = catRes?.categories ?? catRes?.data ?? catRes;
         const cats: Category[] = (Array.isArray(catList) ? catList : []).map(
           (c: { _id: string; name: string; slug: string }) => ({

@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductByIdService, getAllProductsService } from '@/services/productService';
 import { useCart } from '@/contexts/CartContext';
+import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
 import ProductImageGallery from '@/components/productDetail/ProductImageGallery';
 import ProductInfo from '@/components/productDetail/ProductInfo';
 import ProductQuantitySelector from '@/components/productDetail/ProductQuantitySelector';
@@ -12,18 +13,7 @@ import RelatedProducts from '@/components/productDetail/RelatedProducts';
 import ProductReviews from '@/components/productDetail/ProductReviews';
 import AddToCartBar from '@/components/productDetail/AddToCartBar';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  stockQuantity: number;
-  description?: string;
-  material?: string;
-  dimensions?: string;
-}
+type Product = NormalizedProduct;
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,12 +33,13 @@ export default function ProductDetailScreen() {
     setLoading(true);
     getProductByIdService(id)
       .then((res) => {
-        const p: Product = res.product ?? res;
+        const p: Product = normalizeProduct(res.product ?? res);
         setProduct(p);
         return getAllProductsService({ category: p.category, limit: 4 });
       })
       .then((res) => {
-        const products: Product[] = res.products ?? res ?? [];
+        const raw = res?.data?.products ?? res?.products ?? res?.data ?? res ?? [];
+        const products: Product[] = (Array.isArray(raw) ? raw : []).map(normalizeProduct);
         setRelated(products.filter((p) => p._id !== id).slice(0, 4));
       })
       .catch(() => {})
