@@ -1,11 +1,10 @@
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-
-import { Card } from '@/components/ui/Card';
-import { AuthForm } from '@/components/forms/AuthForm';
 import { useAuth } from '@/contexts/AuthContext';
+import AuthHeader from '@/components/auth/AuthHeader';
+import AuthCard from '@/components/auth/AuthCard';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
@@ -29,7 +28,6 @@ export default function AuthScreen() {
     confirmPassword: '',
   });
 
-  // Derive loading from the active mutation
   const loading = mode === 'login' ? isLoginPending : isSignupPending;
 
   const handleAuth = async () => {
@@ -77,35 +75,15 @@ export default function AuthScreen() {
         contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View className="items-center mb-10">
-          <Text className="text-4xl font-bold text-indigo-500">Olayinka</Text>
-          <Text className="text-xs uppercase tracking-widest text-gray-400 mt-1">Furniture Palace</Text>
-        </View>
-
-        {/* Form */}
-        <Card>
-          <Text className="text-2xl font-bold mb-2">
-            {mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
-          </Text>
-
-          <Text className="text-gray-400 mb-6">
-            {mode === 'login'
-              ? 'Sign in to continue'
-              : mode === 'signup'
-                ? 'Get started today'
-                : 'Enter your new password'}
-          </Text>
-
-          <AuthForm
-            mode={mode}
-            setMode={setMode}
-            state={state}
-            setState={setState}
-            onSubmit={handleAuth}
-            loading={loading}
-          />
-        </Card>
+        <AuthHeader />
+        <AuthCard
+          mode={mode}
+          setMode={setMode}
+          state={state}
+          setState={setState}
+          onSubmit={handleAuth}
+          loading={loading}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
