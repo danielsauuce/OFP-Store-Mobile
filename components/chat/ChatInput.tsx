@@ -11,6 +11,7 @@ interface Props {
 
 export default function ChatInput({ value, onChange, onSend }: Props) {
   const { colors } = useTheme();
+  const isEmpty = !value || value.trim().length === 0;
 
   return (
     <View
@@ -32,9 +33,10 @@ export default function ChatInput({ value, onChange, onSend }: Props) {
       />
 
       <TouchableOpacity
-        onPress={onSend}
+        onPress={isEmpty ? undefined : onSend}
+        disabled={isEmpty}
         className="w-11 h-11 rounded-full items-center justify-center"
-        style={{ backgroundColor: colors.primary }}
+        style={{ backgroundColor: colors.primary, opacity: isEmpty ? 0.4 : 1 }}
       >
         <Send size={18} color="#fff" />
       </TouchableOpacity>

@@ -18,7 +18,7 @@ export default function WelcomeScreen() {
     if (!isLoading && user) {
       router.replace('/(tabs)');
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, router]);
 
   if (isLoading) {
     return <View className="flex-1 bg-indigo-500" />;

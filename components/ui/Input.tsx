@@ -22,7 +22,11 @@ export const Input = ({ label, icon, secure = false, error, ...props }: InputPro
         <TextInput className="flex-1 text-base text-black" secureTextEntry={secure && !show} {...props} />
 
         {secure && (
-          <TouchableOpacity onPress={() => setShow(!show)}>
+          <TouchableOpacity
+            onPress={() => setShow(!show)}
+            accessibilityRole="button"
+            accessibilityLabel={show ? 'Hide password' : 'Show password'}
+          >
             {show ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
           </TouchableOpacity>
         )}

@@ -54,7 +54,7 @@ export const loginService = async (payload: LoginPayload): Promise<AuthResponse>
 
 export const logoutService = async (): Promise<void> => {
   try {
-    await axiosInstance.get('/api/auth/logout');
+    await axiosInstance.post('/api/auth/logout');
   } catch (error) {
     const err = error as AxiosError<ApiError>;
     console.error('API ERROR:', err?.response?.data?.message || err.message);

@@ -5,7 +5,7 @@ import {
   addToWishlistService,
   removeFromWishlistService,
   clearWishlistService,
-} from '@/services/whishlistService';
+} from '@/services/wishlistService';
 
 export interface WishlistProduct {
   _id: string;

@@ -14,7 +14,7 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
     <View className="px-5 pt-4 pb-2 flex-row justify-between items-center">
       <View>
         <Text className="text-2xl font-bold" style={{ color: colors.text }}>
-          {firstName ? `Hi, ${firstName}` : 'Olayinka'}
+          {firstName ? `Hi, ${firstName}` : 'Welcome'}
         </Text>
         <Text className="text-sm" style={{ color: colors.textSecondary }}>
           Furniture Palace
