@@ -34,6 +34,11 @@ export default function SupportScreen() {
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (text.length < 10) {
+      addReply('Please enter at least 10 characters so we can help you better.');
+      setInput('');
+      return;
+    }
 
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: text }]);
     setInput('');
@@ -41,8 +46,8 @@ export default function SupportScreen() {
 
     try {
       if (!ticketIdRef.current) {
-        const res = await createTicketService({ subject: text.slice(0, 80), description: text });
-        ticketIdRef.current = res?.ticket?._id ?? res?._id ?? null;
+        const res = await createTicketService({ subject: text.slice(0, 80), message: text });
+        ticketIdRef.current = res?.ticketId ?? res?.ticket?._id ?? res?._id ?? null;
         addReply(
           'Your support ticket has been created. Our team will review it shortly. You can continue sending messages here.',
         );
