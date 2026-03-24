@@ -17,7 +17,11 @@ export default function CategoryChips({ categories, selected, onSelect }: Props)
   const { colors } = useTheme();
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3">
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 12 }}
+    >
       <View className="flex-row gap-2">
         {categories.map((c) => {
           const active = selected === c.id;
