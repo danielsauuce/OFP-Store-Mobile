@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 
@@ -34,15 +34,26 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
+  const [tokenChecked, setTokenChecked] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
 
-  // current user
-  const { data, isLoading } = useQuery<AuthResponse>({
+  useEffect(() => {
+    SecureStore.getItemAsync('accessToken').then((token) => {
+      setHasToken(!!token);
+      setTokenChecked(true);
+    });
+  }, []);
+
+  // current user — only runs when a stored token exists
+  const { data, isLoading: isQueryLoading } = useQuery<AuthResponse>({
     queryKey: authKeys.me,
     queryFn: checkAuthService,
     retry: false,
     staleTime: 10 * 60 * 1000, // 10 min
+    enabled: tokenChecked && hasToken,
   });
 
+  const isLoading = !tokenChecked || (hasToken && isQueryLoading);
   const user: User | null = data?.user ?? null;
 
   //login
@@ -51,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loginService({ email, password }),
     onSuccess: async (res) => {
       await SecureStore.setItemAsync('accessToken', res.accessToken);
+      setHasToken(true);
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
     },
   });
@@ -65,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       registerService({ fullName: name, email, password }),
     onSuccess: async (res) => {
       await SecureStore.setItemAsync('accessToken', res.accessToken);
+      setHasToken(true);
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
     },
   });
@@ -78,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     mutationFn: logoutService,
     onSettled: async () => {
       await SecureStore.deleteItemAsync('accessToken');
+      setHasToken(false);
       queryClient.setQueryData(authKeys.me, null);
       queryClient.clear();
     },

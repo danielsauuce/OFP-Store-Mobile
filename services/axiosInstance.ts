@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useCallback } from 'react';
 
-const API_URL = 'https://ofpstore-backend.onrender.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 const api = axios.create({
   baseURL: API_URL,
