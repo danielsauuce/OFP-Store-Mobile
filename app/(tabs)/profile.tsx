@@ -76,7 +76,12 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <ProfileAvatar fullName={user.fullName} email={user.email} />
+        <ProfileAvatar
+          fullName={user.fullName}
+          email={user.email}
+          profilePicture={user.profilePicture}
+          onUploadSuccess={() => queryClient.invalidateQueries({ queryKey: authKeys.me })}
+        />
 
         <ProfileMenu
           isDark={isDark}

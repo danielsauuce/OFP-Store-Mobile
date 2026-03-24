@@ -14,6 +14,7 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
+  profilePicture?: string;
 }
 
 interface AuthContextType {
