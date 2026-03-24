@@ -27,7 +27,15 @@ export default function ProductCard({ product, onPress }: Props) {
       className="w-[48%] rounded-2xl overflow-hidden border"
       style={{ backgroundColor: colors.surface, borderColor: colors.border }}
     >
-      <Image source={{ uri: product.images[0] }} className="w-full h-40" contentFit="cover" />
+      <View style={{ height: 160, backgroundColor: colors.border }}>
+        {product.images?.length > 0 && (
+          <Image
+            source={{ uri: product.images[0] }}
+            style={{ width: '100%', height: 160 }}
+            contentFit="cover"
+          />
+        )}
+      </View>
 
       <View className="p-3">
         <Text className="text-xs font-bold opacity-50 mb-1" style={{ color: colors.text }}>
