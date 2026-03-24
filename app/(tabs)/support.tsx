@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useChatScroll } from '@/hooks/useChatScroll';
-import ChatBubble from '@/components/chat/ChatBubble';
 import ChatInput from '@/components/chat/ChatInput';
+import SupportHeader from '@/components/support/SupportHeader';
+import ChatMessageList from '@/components/support/ChatMessageList';
 
 interface Message {
   id: string;
@@ -14,7 +14,6 @@ interface Message {
 
 export default function SupportScreen() {
   const { colors } = useTheme();
-  const listRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -25,8 +24,6 @@ export default function SupportScreen() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useChatScroll(listRef, [messages]);
 
   const send = async () => {
     const text = input.trim();
@@ -56,40 +53,8 @@ export default function SupportScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        {/* Header */}
-        <View
-          className="px-5 py-4 border-b"
-          style={{ borderColor: colors.border, backgroundColor: colors.surface }}
-        >
-          <Text className="text-xl font-bold" style={{ color: colors.text }}>
-            Support
-          </Text>
-          <Text className="text-sm" style={{ color: colors.textSecondary }}>
-            AI-powered assistant
-          </Text>
-        </View>
-
-        {/* Messages */}
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ChatBubble message={item} />}
-          ListFooterComponent={
-            loading ? (
-              <View className="flex-row items-center gap-2 px-4 py-2">
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text className="text-xs" style={{ color: colors.textSecondary }}>
-                  Thinking...
-                </Text>
-              </View>
-            ) : null
-          }
-        />
-
-        {/* Input */}
+        <SupportHeader />
+        <ChatMessageList messages={messages} loading={loading} />
         <ChatInput value={input} onChange={setInput} onSend={send} />
       </KeyboardAvoidingView>
     </SafeAreaView>
