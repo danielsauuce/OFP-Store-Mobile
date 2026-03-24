@@ -53,8 +53,8 @@ export default function ProfileAvatar({
     const asset = result.assets[0];
     const uri = asset.uri;
     const filename = uri.split('/').pop() ?? 'photo.jpg';
-    const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    const rawType = asset.mimeType ?? 'image/jpeg';
+    const type = rawType === 'image/jpg' ? 'image/jpeg' : rawType;
 
     setLocalImage(uri);
     setUploading(true);
