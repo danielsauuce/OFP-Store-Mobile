@@ -1,6 +1,9 @@
 import { AxiosError } from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import axiosInstance from './axiosInstance';
 import { RNFile } from './uploadService';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export async function getUserProfileService() {
   try {
@@ -26,19 +29,24 @@ export async function updateUserProfileService(profileData: Record<string, unkno
 
 export async function uploadProfilePictureService(file: RNFile) {
   try {
+    const token = await SecureStore.getItemAsync('accessToken');
+
     const formData = new FormData();
     formData.append('profilePicture', file as unknown as Blob);
 
-    const { data } = await axiosInstance.patch('/api/users/profile-picture', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // Use fetch directly so React Native sets Content-Type with the correct boundary.
+    // Axios overrides the header and strips the boundary, causing a 500 on the server.
+    const response = await fetch(`${API_URL}/api/users/profile-picture`, {
+      method: 'PATCH',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
     });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.message ?? 'Upload failed');
     return data;
   } catch (error) {
-    const err = error as AxiosError;
-    console.error(
-      'uploadProfilePicture error:',
-      (err.response?.data as Record<string, unknown>) ?? err.message,
-    );
+    console.error('uploadProfilePicture error:', error);
     throw error;
   }
 }
