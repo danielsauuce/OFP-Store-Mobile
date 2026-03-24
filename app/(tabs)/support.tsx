@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/contexts/ThemeContext';
+import { createTicketService, addTicketReplyService } from '@/services/supportService';
 import ChatInput from '@/components/chat/ChatInput';
 import SupportHeader from '@/components/support/SupportHeader';
 import ChatMessageList from '@/components/support/ChatMessageList';
@@ -14,6 +15,7 @@ interface Message {
 
 export default function SupportScreen() {
   const { colors } = useTheme();
+  const ticketIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -25,25 +27,34 @@ export default function SupportScreen() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const addReply = (content: string) => {
+    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'assistant', content }]);
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: text }]);
     setInput('');
     setLoading(true);
 
-    // Placeholder AI response — replace with real AI service call
-    setTimeout(() => {
-      const reply: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `Thanks for your message: "${text}". Our AI support is being set up. Please check back soon or contact us directly.`,
-      };
-      setMessages((prev) => [...prev, reply]);
+    try {
+      if (!ticketIdRef.current) {
+        const res = await createTicketService({ subject: text.slice(0, 80), description: text });
+        ticketIdRef.current = res?.ticket?._id ?? res?._id ?? null;
+        addReply(
+          'Your support ticket has been created. Our team will review it shortly. You can continue sending messages here.',
+        );
+      } else {
+        await addTicketReplyService(ticketIdRef.current, text);
+        addReply("Your message has been sent to the support team. We'll get back to you soon.");
+      }
+    } catch {
+      addReply("Sorry, we couldn't send your message. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

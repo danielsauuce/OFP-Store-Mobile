@@ -9,6 +9,7 @@ import ProductImageGallery from '@/components/productDetail/ProductImageGallery'
 import ProductInfo from '@/components/productDetail/ProductInfo';
 import ProductQuantitySelector from '@/components/productDetail/ProductQuantitySelector';
 import RelatedProducts from '@/components/productDetail/RelatedProducts';
+import ProductReviews from '@/components/productDetail/ProductReviews';
 import AddToCartBar from '@/components/productDetail/AddToCartBar';
 
 interface Product {
@@ -119,6 +120,7 @@ export default function ProductDetailScreen() {
           onChange={setQuantity}
         />
         <RelatedProducts products={related} onPress={(relId) => router.push(`/product/${relId}`)} />
+        <ProductReviews productId={id} />
       </ScrollView>
       <AddToCartBar inStock={product.inStock} adding={adding} onAddToCart={handleAddToCart} />
     </SafeAreaView>

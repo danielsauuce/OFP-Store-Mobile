@@ -1,11 +1,14 @@
-import { View, Alert, Switch } from 'react-native';
-import { ShoppingBag, Heart, Moon, LogOut, Trash2, ChevronRight } from 'lucide-react-native';
+import { View, Switch } from 'react-native';
+import { ShoppingBag, Heart, Moon, LogOut, Trash2, ChevronRight, UserPen, Lock } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import ProfileMenuItem from './ProfileMenuItem';
 
 interface ProfileMenuProps {
   isDark: boolean;
   toggleTheme: () => void;
+  onMyOrders: () => void;
+  onEditProfile: () => void;
+  onChangePassword: () => void;
   onLogout: () => void;
   onDeleteAccount: () => void;
   deleting: boolean;
@@ -14,6 +17,9 @@ interface ProfileMenuProps {
 export default function ProfileMenu({
   isDark,
   toggleTheme,
+  onMyOrders,
+  onEditProfile,
+  onChangePassword,
   onLogout,
   onDeleteAccount,
   deleting,
@@ -23,11 +29,29 @@ export default function ProfileMenu({
   return (
     <View className="px-5 gap-3">
       <ProfileMenuItem
+        Icon={UserPen}
+        iconColor={colors.primary}
+        iconBg={colors.primary + '20'}
+        label="Edit Profile"
+        onPress={onEditProfile}
+        right={<ChevronRight size={18} color={colors.textTertiary} />}
+      />
+
+      <ProfileMenuItem
+        Icon={Lock}
+        iconColor={colors.primary}
+        iconBg={colors.primary + '20'}
+        label="Change Password"
+        onPress={onChangePassword}
+        right={<ChevronRight size={18} color={colors.textTertiary} />}
+      />
+
+      <ProfileMenuItem
         Icon={ShoppingBag}
         iconColor={colors.primary}
         iconBg={colors.primary + '20'}
         label="My Orders"
-        onPress={() => Alert.alert('Orders', 'Orders screen coming soon')}
+        onPress={onMyOrders}
         right={<ChevronRight size={18} color={colors.textTertiary} />}
       />
 
@@ -36,7 +60,6 @@ export default function ProfileMenu({
         iconColor={colors.error}
         iconBg={colors.error + '20'}
         label="Wishlist"
-        onPress={() => Alert.alert('Wishlist', 'Wishlist coming soon')}
         right={<ChevronRight size={18} color={colors.textTertiary} />}
       />
 

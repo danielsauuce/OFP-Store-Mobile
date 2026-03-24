@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { forgotPasswordService } from '@/services/authService';
 import AuthHeader from '@/components/auth/AuthHeader';
 import AuthCard from '@/components/auth/AuthCard';
 
@@ -31,7 +32,7 @@ export default function AuthScreen() {
   const loading = mode === 'login' ? isLoginPending : isSignupPending;
 
   const handleAuth = async () => {
-    const { name, email, password, confirmPassword } = state;
+    const { name, email, password } = state;
 
     if (!email || !password || (mode === 'signup' && !name)) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -44,11 +45,15 @@ export default function AuthScreen() {
     }
 
     if (mode === 'reset') {
-      if (password !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
-        return;
+      try {
+        await forgotPasswordService(email);
+        Alert.alert('Email Sent', 'A password reset link has been sent to your email.', [
+          { text: 'OK', onPress: () => setMode('login') },
+        ]);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Something went wrong';
+        Alert.alert('Error', message);
       }
-      Alert.alert('Info', 'A reset link will be sent to your email.');
       return;
     }
 

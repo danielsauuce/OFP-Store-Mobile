@@ -2,18 +2,26 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, authKeys } from '@/contexts/AuthContext';
 import { deactivateAccountService } from '@/services/userService';
 import ProfileGuestView from '@/components/profile/ProfileGuestView';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import ProfileMenu from '@/components/profile/ProfileMenu';
+import EditProfileModal from '@/components/profile/EditProfileModal';
+import ChangePasswordModal from '@/components/profile/ChangePasswordModal';
+import OrdersModal from '@/components/profile/OrdersModal';
 
 export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
 
   if (!user) {
     return <ProfileGuestView onSignIn={() => router.push('/auth')} />;
@@ -73,11 +81,26 @@ export default function ProfileScreen() {
         <ProfileMenu
           isDark={isDark}
           toggleTheme={toggleTheme}
+          onMyOrders={() => setShowOrders(true)}
+          onEditProfile={() => setShowEditProfile(true)}
+          onChangePassword={() => setShowChangePassword(true)}
           onLogout={handleLogout}
           onDeleteAccount={handleDeleteAccount}
           deleting={deleting}
         />
       </ScrollView>
+
+      <EditProfileModal
+        visible={showEditProfile}
+        fullName={user.fullName}
+        email={user.email}
+        onClose={() => setShowEditProfile(false)}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: authKeys.me })}
+      />
+
+      <ChangePasswordModal visible={showChangePassword} onClose={() => setShowChangePassword(false)} />
+
+      <OrdersModal visible={showOrders} onClose={() => setShowOrders(false)} />
     </SafeAreaView>
   );
 }
