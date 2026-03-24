@@ -24,6 +24,7 @@ export default function OrdersModal({ visible, onClose }: OrdersModalProps) {
 
   useEffect(() => {
     if (visible) fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   return (

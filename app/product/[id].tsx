@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductByIdService, getAllProductsService } from '@/services/productService';
-import { addToCartService } from '@/services/cartService';
+import { useCart } from '@/contexts/CartContext';
 import ProductImageGallery from '@/components/productDetail/ProductImageGallery';
 import ProductInfo from '@/components/productDetail/ProductInfo';
 import ProductQuantitySelector from '@/components/productDetail/ProductQuantitySelector';
@@ -36,6 +36,7 @@ export default function ProductDetailScreen() {
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (!id) return;
@@ -58,7 +59,7 @@ export default function ProductDetailScreen() {
     if (!product) return;
     setAdding(true);
     try {
-      await addToCartService(product._id, quantity);
+      await addToCart(product._id, quantity);
       Alert.alert('Added to Cart', `${product.name} added successfully`, [
         { text: 'Continue Shopping', style: 'cancel' },
         { text: 'View Cart', onPress: () => router.push('/(tabs)/cart') },

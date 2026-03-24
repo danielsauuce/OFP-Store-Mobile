@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -70,7 +70,9 @@ export default function ShopScreen() {
       ) : filtered.length === 0 ? (
         <EmptyProducts />
       ) : (
-        <ProductGrid products={filtered} onPress={(id) => router.push(`/product/${id}`)} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <ProductGrid products={filtered} onPress={(id) => router.push(`/product/${id}`)} />
+        </ScrollView>
       )}
     </SafeAreaView>
   );

@@ -55,6 +55,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   useEffect(() => {
     fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   const average =

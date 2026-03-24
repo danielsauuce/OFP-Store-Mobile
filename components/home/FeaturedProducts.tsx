@@ -16,6 +16,8 @@ interface Product {
 interface FeaturedProductsProps {
   products: Product[];
   loading: boolean;
+  error?: boolean;
+  onRetry?: () => void;
   onSeeAllPress: () => void;
   onProductPress: (id: string) => void;
 }
@@ -23,6 +25,8 @@ interface FeaturedProductsProps {
 export default function FeaturedProducts({
   products,
   loading,
+  error,
+  onRetry,
   onSeeAllPress,
   onProductPress,
 }: FeaturedProductsProps) {
@@ -43,6 +47,15 @@ export default function FeaturedProducts({
 
       {loading ? (
         <ActivityIndicator color={colors.primary} className="mt-4" />
+      ) : error ? (
+        <TouchableOpacity onPress={onRetry} className="items-center mt-4">
+          <Text className="text-sm" style={{ color: colors.error }}>
+            Failed to load products.{' '}
+          </Text>
+          <Text className="text-sm font-semibold" style={{ color: colors.primary }}>
+            Tap to retry
+          </Text>
+        </TouchableOpacity>
       ) : (
         <ProductGrid products={products} onPress={onProductPress} />
       )}

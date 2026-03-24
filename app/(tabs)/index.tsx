@@ -28,15 +28,22 @@ export default function HomeScreen() {
 
   const [featured, setFeatured] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
+  const loadFeatured = () => {
+    setLoading(true);
+    setError(false);
     getAllProductsService({ limit: 6 })
       .then((res) => {
         const list = res?.products ?? res?.data ?? res;
         setFeatured(Array.isArray(list) ? list : []);
       })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadFeatured();
   }, []);
 
   return (
@@ -51,6 +58,8 @@ export default function HomeScreen() {
         <FeaturedProducts
           products={featured}
           loading={loading}
+          error={error}
+          onRetry={loadFeatured}
           onSeeAllPress={() => router.push('/(tabs)/shop')}
           onProductPress={(id) => router.push(`/product/${id}`)}
         />

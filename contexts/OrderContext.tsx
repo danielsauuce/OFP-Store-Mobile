@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getUserOrdersService,
   getOrderByIdService,
@@ -49,9 +50,17 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | null>(null);
 
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<OrdersPagination | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setOrders([]);
+      setPagination(null);
+    }
+  }, [user]);
 
   const fetchOrders = useCallback(async (page: number = 1, limit: number = 10, status?: string) => {
     setLoading(true);

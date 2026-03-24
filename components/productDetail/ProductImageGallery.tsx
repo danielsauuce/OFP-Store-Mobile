@@ -22,7 +22,7 @@ export default function ProductImageGallery({
   return (
     <View style={{ position: 'relative' }}>
       <Image
-        source={{ uri: images[activeImage] }}
+        source={{ uri: images[activeImage] ?? images[0] }}
         style={{ width, height: width * 0.85 }}
         resizeMode="cover"
       />
