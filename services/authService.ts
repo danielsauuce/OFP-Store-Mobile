@@ -62,12 +62,14 @@ export const logoutService = async (): Promise<void> => {
   }
 };
 
-export const checkAuthService = async (): Promise<AuthResponse> => {
+export const checkAuthService = async (): Promise<AuthResponse | null> => {
   try {
     const { data } = await axiosInstance.get<AuthResponse>('/api/auth/me');
     return data;
   } catch (error) {
     const err = error as AxiosError<ApiError>;
+    // 401 means the token is expired or invalid — not an error, just unauthenticated
+    if (err.response?.status === 401) return null;
     console.error('API ERROR:', err?.response?.data?.message || err.message);
     throw new Error(err?.response?.data?.message || 'Something went wrong');
   }

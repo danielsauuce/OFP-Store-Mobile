@@ -46,13 +46,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // current user — only runs when a stored token exists
-  const { data, isLoading: isQueryLoading } = useQuery<AuthResponse>({
+  const { data, isLoading: isQueryLoading } = useQuery<AuthResponse | null>({
     queryKey: authKeys.me,
     queryFn: checkAuthService,
     retry: false,
     staleTime: 10 * 60 * 1000, // 10 min
     enabled: tokenChecked && hasToken,
   });
+
+  // If the token was expired/invalid the check returns null — purge it so the
+  // next launch skips the check entirely instead of hitting 401 again.
+  useEffect(() => {
+    if (tokenChecked && hasToken && data === null) {
+      SecureStore.deleteItemAsync('accessToken');
+      setHasToken(false);
+    }
+  }, [tokenChecked, hasToken, data]);
 
   const isLoading = !tokenChecked || (hasToken && isQueryLoading);
   const user: User | null = data?.user ?? null;
