@@ -10,6 +10,7 @@ import { getAllProductsService } from '@/services/productService';
 import { getAllCategoriesService } from '@/services/categoryService';
 import ShopHeader from '@/components/shop/ShopHeader';
 import EmptyProducts from '@/components/shop/EmptyProducts';
+import FilterSheet, { DEFAULT_FILTERS, FilterState } from '@/components/shop/FilterSheet';
 import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
 
 type Product = NormalizedProduct;
@@ -31,6 +32,8 @@ export default function ShopScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     Promise.all([getAllProductsService(), getAllCategoriesService()])
@@ -51,11 +54,28 @@ export default function ShopScreen() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = useProducts(allProducts, selectedCategory, search);
+  const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
+  const maxPrice = filters.maxPrice !== '' ? parseFloat(filters.maxPrice) : undefined;
+
+  const filtered = useProducts(allProducts, selectedCategory, search, {
+    sort: filters.sort,
+    minPrice,
+    maxPrice,
+  });
+
+  const activeFilterCount =
+    (filters.sort !== 'newest' ? 1 : 0) +
+    (filters.minPrice !== '' ? 1 : 0) +
+    (filters.maxPrice !== '' ? 1 : 0);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
-      <ShopHeader search={search} onSearchChange={setSearch} />
+      <ShopHeader
+        search={search}
+        onSearchChange={setSearch}
+        activeFilterCount={activeFilterCount}
+        onFilterPress={() => setShowFilters(true)}
+      />
       <CategoryChips categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
 
       {loading ? (
@@ -67,6 +87,13 @@ export default function ShopScreen() {
           <ProductGrid products={filtered} onPress={(id) => router.push(`/product/${id}`)} />
         </ScrollView>
       )}
+
+      <FilterSheet
+        visible={showFilters}
+        filters={filters}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
     </SafeAreaView>
   );
 }

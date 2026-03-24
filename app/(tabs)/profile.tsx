@@ -12,6 +12,8 @@ import ProfileMenu from '@/components/profile/ProfileMenu';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import ChangePasswordModal from '@/components/profile/ChangePasswordModal';
 import OrdersModal from '@/components/profile/OrdersModal';
+import WishlistModal from '@/components/profile/WishlistModal';
+import AddressesModal from '@/components/profile/AddressesModal';
 
 export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -22,6 +24,8 @@ export default function ProfileScreen() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [showAddresses, setShowAddresses] = useState(false);
 
   if (!user) {
     return <ProfileGuestView onSignIn={() => router.push('/auth')} />;
@@ -89,6 +93,8 @@ export default function ProfileScreen() {
           onMyOrders={() => setShowOrders(true)}
           onEditProfile={() => setShowEditProfile(true)}
           onChangePassword={() => setShowChangePassword(true)}
+          onWishlist={() => setShowWishlist(true)}
+          onAddresses={() => setShowAddresses(true)}
           onLogout={handleLogout}
           onDeleteAccount={handleDeleteAccount}
           deleting={deleting}
@@ -106,6 +112,10 @@ export default function ProfileScreen() {
       <ChangePasswordModal visible={showChangePassword} onClose={() => setShowChangePassword(false)} />
 
       <OrdersModal visible={showOrders} onClose={() => setShowOrders(false)} />
+
+      <WishlistModal visible={showWishlist} onClose={() => setShowWishlist(false)} />
+
+      <AddressesModal visible={showAddresses} onClose={() => setShowAddresses(false)} />
     </SafeAreaView>
   );
 }

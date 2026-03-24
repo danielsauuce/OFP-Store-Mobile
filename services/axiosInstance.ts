@@ -1,12 +1,10 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { useCallback } from 'react';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 // Request interceptor — attaches token for all direct service calls
@@ -42,17 +40,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-export const useApi = () => {
-  const apiWithAuth = useCallback(async <T>(config: Parameters<typeof api.request>[0]) => {
-    const token = await SecureStore.getItemAsync('accessToken');
-    return api.request<T>({
-      ...config,
-      headers: { ...config.headers, ...(token && { Authorization: `Bearer ${token}` }) },
-    });
-  }, []);
-
-  return { api, apiWithAuth };
-};
 
 export default api;

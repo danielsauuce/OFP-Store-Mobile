@@ -1,5 +1,5 @@
 import { View, Switch } from 'react-native';
-import { ShoppingBag, Heart, Moon, LogOut, Trash2, ChevronRight, UserPen, Lock } from 'lucide-react-native';
+import { ShoppingBag, Heart, Moon, LogOut, Trash2, ChevronRight, UserPen, Lock, MapPin } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import ProfileMenuItem from './ProfileMenuItem';
 
@@ -9,6 +9,8 @@ interface ProfileMenuProps {
   onMyOrders: () => void;
   onEditProfile: () => void;
   onChangePassword: () => void;
+  onWishlist: () => void;
+  onAddresses: () => void;
   onLogout: () => void;
   onDeleteAccount: () => void;
   deleting: boolean;
@@ -20,6 +22,8 @@ export default function ProfileMenu({
   onMyOrders,
   onEditProfile,
   onChangePassword,
+  onWishlist,
+  onAddresses,
   onLogout,
   onDeleteAccount,
   deleting,
@@ -56,10 +60,20 @@ export default function ProfileMenu({
       />
 
       <ProfileMenuItem
+        Icon={MapPin}
+        iconColor={colors.primary}
+        iconBg={colors.primary + '20'}
+        label="Saved Addresses"
+        onPress={onAddresses}
+        right={<ChevronRight size={18} color={colors.textTertiary} />}
+      />
+
+      <ProfileMenuItem
         Icon={Heart}
         iconColor={colors.error}
         iconBg={colors.error + '20'}
         label="Wishlist"
+        onPress={onWishlist}
         right={<ChevronRight size={18} color={colors.textTertiary} />}
       />
 
