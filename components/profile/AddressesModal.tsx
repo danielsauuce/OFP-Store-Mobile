@@ -171,9 +171,7 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
     setSettingDefault(id);
     try {
       await setDefaultAddressService(id);
-      setAddresses((prev) =>
-        prev.map((a) => ({ ...a, isDefault: a._id === id })),
-      );
+      setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a._id === id })));
     } catch {
       Alert.alert('Error', 'Could not set default address');
     } finally {
@@ -207,7 +205,12 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-row items-center gap-2 mb-1">
-              <TouchableOpacity onPress={() => { setShowForm(false); setForm(EMPTY_FORM); }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowForm(false);
+                  setForm(EMPTY_FORM);
+                }}
+              >
                 <ChevronDown size={22} color={colors.textSecondary} />
               </TouchableOpacity>
               <Text className="text-base font-bold" style={{ color: colors.text }}>
@@ -215,7 +218,12 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
               </Text>
             </View>
 
-            <Field label="Full Name" value={form.fullName} onChange={set('fullName')} placeholder="John Doe" />
+            <Field
+              label="Full Name"
+              value={form.fullName}
+              onChange={set('fullName')}
+              placeholder="John Doe"
+            />
             <Field label="Street" value={form.street} onChange={set('street')} placeholder="123 Main St" />
 
             <View className="flex-row gap-3">
@@ -229,14 +237,30 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
 
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <Field label="Postal Code" value={form.postalCode} onChange={set('postalCode')} placeholder="SW1A 1AA" />
+                <Field
+                  label="Postal Code"
+                  value={form.postalCode}
+                  onChange={set('postalCode')}
+                  placeholder="SW1A 1AA"
+                />
               </View>
               <View className="flex-1">
-                <Field label="Country" value={form.country} onChange={set('country')} placeholder="United Kingdom" />
+                <Field
+                  label="Country"
+                  value={form.country}
+                  onChange={set('country')}
+                  placeholder="United Kingdom"
+                />
               </View>
             </View>
 
-            <Field label="Delivery Note" value={form.note} onChange={set('note')} placeholder="Leave at door, ring bell, etc." optional />
+            <Field
+              label="Delivery Note"
+              value={form.note}
+              onChange={set('note')}
+              placeholder="Leave at door, ring bell, etc."
+              optional
+            />
 
             <TouchableOpacity
               className="h-12 rounded-xl items-center justify-center mt-2"

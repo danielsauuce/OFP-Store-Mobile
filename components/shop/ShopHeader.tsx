@@ -9,7 +9,12 @@ interface ShopHeaderProps {
   onFilterPress?: () => void;
 }
 
-export default function ShopHeader({ search, onSearchChange, activeFilterCount = 0, onFilterPress }: ShopHeaderProps) {
+export default function ShopHeader({
+  search,
+  onSearchChange,
+  activeFilterCount = 0,
+  onFilterPress,
+}: ShopHeaderProps) {
   const { colors } = useTheme();
 
   return (

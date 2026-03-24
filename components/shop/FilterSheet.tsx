@@ -53,9 +53,7 @@ export default function FilterSheet({ visible, filters, onApply, onClose }: Filt
   };
 
   const activeCount =
-    (local.sort !== 'newest' ? 1 : 0) +
-    (local.minPrice !== '' ? 1 : 0) +
-    (local.maxPrice !== '' ? 1 : 0);
+    (local.sort !== 'newest' ? 1 : 0) + (local.minPrice !== '' ? 1 : 0) + (local.maxPrice !== '' ? 1 : 0);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -76,7 +74,10 @@ export default function FilterSheet({ visible, filters, onApply, onClose }: Filt
         <ScrollView contentContainerStyle={{ padding: 20, gap: 24 }} showsVerticalScrollIndicator={false}>
           {/* Sort */}
           <View className="gap-3">
-            <Text className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.textSecondary }}>
+            <Text
+              className="text-sm font-bold uppercase tracking-wide"
+              style={{ color: colors.textSecondary }}
+            >
               Sort By
             </Text>
             <View className="gap-2">
@@ -108,7 +109,10 @@ export default function FilterSheet({ visible, filters, onApply, onClose }: Filt
 
           {/* Price Range */}
           <View className="gap-3">
-            <Text className="text-sm font-bold uppercase tracking-wide" style={{ color: colors.textSecondary }}>
+            <Text
+              className="text-sm font-bold uppercase tracking-wide"
+              style={{ color: colors.textSecondary }}
+            >
               Price Range
             </Text>
             <View className="flex-row gap-3 items-center">

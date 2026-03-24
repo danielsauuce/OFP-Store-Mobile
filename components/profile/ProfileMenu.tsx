@@ -1,5 +1,15 @@
 import { View, Switch } from 'react-native';
-import { ShoppingBag, Heart, Moon, LogOut, Trash2, ChevronRight, UserPen, Lock, MapPin } from 'lucide-react-native';
+import {
+  ShoppingBag,
+  Heart,
+  Moon,
+  LogOut,
+  Trash2,
+  ChevronRight,
+  UserPen,
+  Lock,
+  MapPin,
+} from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import ProfileMenuItem from './ProfileMenuItem';
 
