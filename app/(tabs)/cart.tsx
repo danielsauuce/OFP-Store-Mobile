@@ -115,9 +115,9 @@ export default function CartScreen() {
       ) : (
         <>
           <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-            {items.map((item) => (
+            {items.map((item, index) => (
               <CartItem
-                key={item._id}
+                key={item._id ?? item.product?._id ?? index}
                 item={item}
                 onUpdate={(qty) => handleUpdate(item.product._id, qty)}
                 onRemove={() => handleRemove(item.product._id)}

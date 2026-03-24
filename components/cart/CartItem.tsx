@@ -10,6 +10,7 @@ interface CartProduct {
   name: string;
   price: number;
   images: string[];
+  primaryImage?: { secureUrl?: string; url?: string };
 }
 
 interface CartItemData {
@@ -32,7 +33,16 @@ export default function CartItem({ item, onUpdate, onRemove }: Props) {
       className="flex-row p-3 mx-5 mb-3 rounded-2xl border"
       style={{ backgroundColor: colors.surface, borderColor: colors.border }}
     >
-      <Image source={{ uri: item.product.images[0] }} className="w-24 h-24 rounded-xl" />
+      <Image
+        source={{
+          uri:
+            item.product.images?.[0] ??
+            item.product.primaryImage?.secureUrl ??
+            item.product.primaryImage?.url,
+        }}
+        style={{ width: 96, height: 96, borderRadius: 12 }}
+        contentFit="cover"
+      />
 
       <View className="flex-1 ml-3 justify-between">
         <View className="flex-row justify-between">
@@ -40,7 +50,7 @@ export default function CartItem({ item, onUpdate, onRemove }: Props) {
             {item.product.name}
           </Text>
 
-          <TouchableOpacity onPress={onRemove}>
+          <TouchableOpacity onPress={onRemove} accessibilityRole="button" accessibilityLabel="Remove item">
             <Trash2 size={18} color={colors.error} />
           </TouchableOpacity>
         </View>
@@ -51,9 +61,11 @@ export default function CartItem({ item, onUpdate, onRemove }: Props) {
 
         <View className="flex-row items-center gap-3">
           <TouchableOpacity
-            onPress={() => onUpdate(item.quantity - 1)}
+            onPress={() => onUpdate(Math.max(1, item.quantity - 1))}
             className="w-8 h-8 rounded border items-center justify-center"
             style={{ borderColor: colors.border }}
+            accessibilityRole="button"
+            accessibilityLabel="Decrease quantity"
           >
             <Minus size={14} color={colors.text} />
           </TouchableOpacity>
@@ -66,6 +78,8 @@ export default function CartItem({ item, onUpdate, onRemove }: Props) {
             onPress={() => onUpdate(item.quantity + 1)}
             className="w-8 h-8 rounded items-center justify-center"
             style={{ backgroundColor: colors.primary }}
+            accessibilityRole="button"
+            accessibilityLabel="Increase quantity"
           >
             <Plus size={14} color="#fff" />
           </TouchableOpacity>
