@@ -7,8 +7,34 @@ interface OrderParams {
   status?: string;
 }
 
+export interface OrderCreateItem {
+  product: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderCreateAddress {
+  fullName: string;
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  note?: string;
+}
+
+export interface OrderCreatePayload {
+  items: OrderCreateItem[];
+  shippingAddress: OrderCreateAddress;
+  paymentMethod: string;
+  subtotal: number;
+  shippingFee: number;
+  total: number;
+  note?: string;
+}
+
 // User Endpoints
-export async function createOrderService(orderData: Record<string, unknown>) {
+export async function createOrderService(orderData: OrderCreatePayload) {
   try {
     const { data } = await axiosInstance.post('/api/orders', orderData);
     return data;

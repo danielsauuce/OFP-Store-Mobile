@@ -35,6 +35,9 @@ export default function CategoryChips({ categories, selected, onSelect }: Props)
                 backgroundColor: active ? colors.primary : colors.surface,
                 borderColor: active ? colors.primary : colors.border,
               }}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={`${c.name}${active ? ', selected' : ''}`}
             >
               <Text className="font-semibold" style={{ color: active ? '#fff' : colors.text }}>
                 {c.name}

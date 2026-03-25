@@ -1,4 +1,5 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface HeroBannerProps {
@@ -14,7 +15,8 @@ export default function HeroBanner({ onShopPress }: HeroBannerProps) {
         source={{
           uri: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=60',
         }}
-        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
+        contentFit="cover"
       />
       <View className="absolute inset-0 justify-end p-5" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
         <Text className="text-white text-xl font-bold">New Collection</Text>

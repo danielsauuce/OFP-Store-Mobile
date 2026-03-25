@@ -3,8 +3,11 @@ import * as SecureStore from 'expo-secure-store';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
+const API_TIMEOUT = Number(process.env.EXPO_PUBLIC_API_TIMEOUT) || 15000;
+
 const api = axios.create({
   baseURL: API_URL,
+  timeout: API_TIMEOUT,
 });
 
 // Request interceptor — attaches token for all direct service calls

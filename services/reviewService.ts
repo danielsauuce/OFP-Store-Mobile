@@ -15,7 +15,14 @@ export async function getProductReviewsService(productId: string, params: Record
 
 // Authenticated User
 
-export async function createReviewService(reviewData: Record<string, unknown>) {
+export interface CreateReviewData {
+  productId: string;
+  rating: number;
+  comment: string;
+  title?: string;
+}
+
+export async function createReviewService(reviewData: CreateReviewData) {
   try {
     const { data } = await axiosInstance.post('/api/reviews', reviewData);
     return data;

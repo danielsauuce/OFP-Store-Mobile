@@ -66,24 +66,41 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [fetchCart]);
 
   const addToCart = async (productId: string, quantity: number = 1, variantSku?: string) => {
-    await addToCartService(productId, quantity, variantSku ?? null);
-    await fetchCart();
+    try {
+      await addToCartService(productId, quantity, variantSku ?? null);
+      await fetchCart();
+    } catch (err) {
+      throw new Error(`Failed to add product to cart: ${err instanceof Error ? err.message : err}`);
+    }
   };
 
   const updateItem = async (productId: string, quantity: number) => {
-    if (quantity < 1) return;
-    await updateCartItemService(productId, quantity);
-    await fetchCart();
+    if (quantity < 1) throw new RangeError('quantity must be >= 1');
+    try {
+      await updateCartItemService(productId, quantity);
+      await fetchCart();
+    } catch (err) {
+      if (err instanceof RangeError) throw err;
+      throw new Error(`Failed to update cart item: ${err instanceof Error ? err.message : err}`);
+    }
   };
 
   const removeItem = async (productId: string) => {
-    await removeCartItemService(productId);
-    await fetchCart();
+    try {
+      await removeCartItemService(productId);
+      await fetchCart();
+    } catch (err) {
+      throw new Error(`Failed to remove cart item: ${err instanceof Error ? err.message : err}`);
+    }
   };
 
   const clearCart = async () => {
-    await clearCartService();
-    await fetchCart();
+    try {
+      await clearCartService();
+      await fetchCart();
+    } catch (err) {
+      throw new Error(`Failed to clear cart: ${err instanceof Error ? err.message : err}`);
+    }
   };
 
   const itemCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;

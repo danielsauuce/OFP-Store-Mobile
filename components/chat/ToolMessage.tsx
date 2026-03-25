@@ -40,7 +40,7 @@ export default function ToolMessage({ part }: Props) {
   if (part.state === 'output-error') {
     return (
       <Text className="text-xs mt-1" style={{ color: colors.error }}>
-        {part.errorText}
+        {part.errorText ?? 'An error occurred'}
       </Text>
     );
   }

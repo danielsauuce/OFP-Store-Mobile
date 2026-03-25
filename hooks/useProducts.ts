@@ -23,9 +23,11 @@ export function useProducts<T extends Product>(
   const { sort = 'newest', minPrice, maxPrice } = options;
 
   return useMemo(() => {
+    const normalizedSearch = search.toLowerCase();
+
     let result = products.filter((p) => {
       const matchCategory = category === 'all' || p.category === category;
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = p.name.toLowerCase().includes(normalizedSearch);
       const matchMin = minPrice === undefined || p.price >= minPrice;
       const matchMax = maxPrice === undefined || p.price <= maxPrice;
       return matchCategory && matchSearch && matchMin && matchMax;

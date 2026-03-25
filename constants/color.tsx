@@ -2,6 +2,7 @@ export const Colors = {
   light: {
     primary: '#8B4513',
     primaryDark: '#6B3410',
+    onPrimary: '#FFFFFF',
     secondary: '#D4A574',
     accent: '#C19A6B',
     background: '#FDFBF7',
@@ -18,6 +19,7 @@ export const Colors = {
   dark: {
     primary: '#D4A574',
     primaryDark: '#C19A6B',
+    onPrimary: '#1A1410',
     secondary: '#8B4513',
     accent: '#B8956A',
     background: '#1A1410',

@@ -28,7 +28,7 @@ export default function SupportScreen() {
   const [loading, setLoading] = useState(false);
 
   const addReply = (content: string) => {
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'assistant', content }]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', content }]);
   };
 
   const send = async () => {
@@ -40,7 +40,7 @@ export default function SupportScreen() {
       return;
     }
 
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: text }]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'user', content: text }]);
     setInput('');
     setLoading(true);
 

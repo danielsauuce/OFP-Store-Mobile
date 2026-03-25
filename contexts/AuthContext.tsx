@@ -96,9 +96,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signupMutation.mutateAsync({ name, email, password });
   };
 
-  // logout
+  // logout — always clears local state even if the server call fails
   const logoutMutation = useMutation({
-    mutationFn: logoutService,
+    mutationFn: () => logoutService().catch(() => {}),
     onSettled: async () => {
       await SecureStore.deleteItemAsync('accessToken');
       setHasToken(false);

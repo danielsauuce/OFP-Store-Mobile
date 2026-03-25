@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface Message {
+export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -26,7 +26,7 @@ export default function ChatBubble({ message }: Props) {
           borderBottomLeftRadius: isUser ? 16 : 4,
         }}
       >
-        <Text className="text-sm leading-5" style={{ color: isUser ? '#fff' : colors.text }}>
+        <Text className="text-sm leading-5" style={{ color: isUser ? colors.onPrimary : colors.text }}>
           {message.content}
         </Text>
       </View>

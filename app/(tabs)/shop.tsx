@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -32,10 +32,13 @@ export default function ShopScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
+    setLoadError(false);
     Promise.all([getAllProductsService(), getAllCategoriesService()])
       .then(([prodRes, catRes]) => {
         const prodList = prodRes?.data?.products ?? prodRes?.products ?? prodRes?.data ?? prodRes;
@@ -50,8 +53,13 @@ export default function ShopScreen() {
         );
         setCategories([ALL_CATEGORY, ...cats]);
       })
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
@@ -80,6 +88,19 @@ export default function ShopScreen() {
 
       {loading ? (
         <ActivityIndicator color={colors.primary} className="mt-10" />
+      ) : loadError ? (
+        <View className="flex-1 items-center justify-center gap-3">
+          <Text className="font-semibold text-lg" style={{ color: colors.text }}>
+            Could not load products
+          </Text>
+          <TouchableOpacity
+            className="px-6 py-3 rounded-xl"
+            style={{ backgroundColor: colors.primary }}
+            onPress={loadData}
+          >
+            <Text className="text-white font-semibold">Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : filtered.length === 0 ? (
         <EmptyProducts />
       ) : (

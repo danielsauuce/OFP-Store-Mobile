@@ -88,6 +88,11 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
     const res = await createOrderService(orderData);
     const newOrder: Order = res.order ?? res;
     setOrders((prev) => [newOrder, ...prev]);
+    setPagination((prev) => {
+      if (!prev) return prev;
+      const newTotal = prev.total + 1;
+      return { ...prev, total: newTotal, totalPages: Math.ceil(newTotal / prev.limit) };
+    });
     return newOrder;
   };
 

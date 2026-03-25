@@ -73,7 +73,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
       )}
 
       <AuthButton
-        title={mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Reset Password'}
+        label={mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Reset Password'}
         onPress={onSubmit}
         loading={loading}
       />

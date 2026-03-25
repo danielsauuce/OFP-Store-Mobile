@@ -32,7 +32,9 @@ export default function AuthScreen() {
   const loading = mode === 'login' ? isLoginPending : isSignupPending;
 
   const handleAuth = async () => {
-    const { name, email, password } = state;
+    const email = state.email.trim();
+    const password = state.password.trim();
+    const name = state.name.trim();
 
     if (!email || !password || (mode === 'signup' && !name)) {
       Alert.alert('Error', 'Please fill in all fields');

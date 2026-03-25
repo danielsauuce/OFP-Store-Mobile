@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, Alert, ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -38,13 +38,16 @@ export default function CartScreen() {
 
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   const fetchCart = useCallback(async () => {
+    setFetchError(false);
     try {
       const res = await getCartService();
       setCart(res.cart ?? res ?? null);
     } catch {
       setCart(null);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -98,6 +101,26 @@ export default function CartScreen() {
         style={{ backgroundColor: colors.background }}
       >
         <ActivityIndicator color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <SafeAreaView
+        className="flex-1 items-center justify-center gap-3"
+        style={{ backgroundColor: colors.background }}
+      >
+        <Text className="font-semibold text-lg" style={{ color: colors.text }}>
+          Could not load cart
+        </Text>
+        <TouchableOpacity
+          className="px-6 py-3 rounded-xl"
+          style={{ backgroundColor: colors.primary }}
+          onPress={fetchCart}
+        >
+          <Text className="text-white font-semibold">Retry</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }

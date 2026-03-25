@@ -59,18 +59,33 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
   }, [fetchWishlist]);
 
   const addToWishlist = async (productId: string) => {
-    await addToWishlistService(productId);
-    await fetchWishlist();
+    try {
+      await addToWishlistService(productId);
+      await fetchWishlist();
+    } catch (err) {
+      console.error('addToWishlist error:', err);
+      throw err;
+    }
   };
 
   const removeFromWishlist = async (productId: string) => {
-    await removeFromWishlistService(productId);
-    await fetchWishlist();
+    try {
+      await removeFromWishlistService(productId);
+      await fetchWishlist();
+    } catch (err) {
+      console.error('removeFromWishlist error:', err);
+      throw err;
+    }
   };
 
   const clearWishlist = async () => {
-    await clearWishlistService();
-    setItems([]);
+    try {
+      await clearWishlistService();
+      setItems([]);
+    } catch (err) {
+      console.error('clearWishlist error:', err);
+      throw err;
+    }
   };
 
   const isInWishlist = (productId: string) => items.some((i) => i.product._id === productId);
