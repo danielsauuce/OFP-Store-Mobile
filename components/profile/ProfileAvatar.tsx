@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { uploadProfilePictureService } from '@/services/userService';
+import { uploadProfilePictureService, deleteProfilePictureService } from '@/services/userService';
 
 interface ProfileAvatarProps {
   fullName: string;
@@ -69,12 +69,29 @@ export default function ProfileAvatar({
     }
   };
 
+  const handleDeletePhoto = async () => {
+    setUploading(true);
+    try {
+      await deleteProfilePictureService();
+      setLocalImage(null);
+      onUploadSuccess?.();
+    } catch {
+      Alert.alert('Error', 'Could not remove photo. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handlePress = () => {
-    Alert.alert('Profile Photo', 'Choose a source', [
+    const options: { text: string; onPress?: () => void; style?: 'cancel' | 'destructive' }[] = [
       { text: 'Camera', onPress: () => launchPicker('camera') },
       { text: 'Photo Library', onPress: () => launchPicker('library') },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+    ];
+    if (imageUri) {
+      options.push({ text: 'Remove Photo', style: 'destructive', onPress: handleDeletePhoto });
+    }
+    options.push({ text: 'Cancel', style: 'cancel' });
+    Alert.alert('Profile Photo', 'Choose a source', options);
   };
 
   return (

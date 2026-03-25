@@ -6,6 +6,7 @@ import { createTicketService, addTicketReplyService } from '@/services/supportSe
 import ChatInput from '@/components/chat/ChatInput';
 import SupportHeader from '@/components/support/SupportHeader';
 import ChatMessageList from '@/components/support/ChatMessageList';
+import TicketHistoryModal from '@/components/support/TicketHistoryModal';
 
 interface Message {
   id: string;
@@ -26,6 +27,7 @@ export default function SupportScreen() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showTickets, setShowTickets] = useState(false);
 
   const addReply = (content: string) => {
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', content }]);
@@ -69,10 +71,12 @@ export default function SupportScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <SupportHeader />
+        <SupportHeader onViewTickets={() => setShowTickets(true)} />
         <ChatMessageList messages={messages} loading={loading} />
         <ChatInput value={input} onChange={setInput} onSend={send} />
       </KeyboardAvoidingView>
+
+      <TicketHistoryModal visible={showTickets} onClose={() => setShowTickets(false)} />
     </SafeAreaView>
   );
 }

@@ -10,11 +10,12 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { X, Plus, MapPin, Trash2, CheckCircle2, ChevronDown } from 'lucide-react-native';
+import { X, Plus, MapPin, Trash2, Pencil, CheckCircle2, ChevronDown } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   getAddressesService,
   addAddressService,
+  updateAddressService,
   deleteAddressService,
   setDefaultAddressService,
 } from '@/services/userService';
@@ -103,6 +104,7 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<AddressFormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
@@ -124,11 +126,26 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
     if (visible) {
       fetchAddresses();
       setShowForm(false);
+      setEditingId(null);
       setForm(EMPTY_FORM);
     }
   }, [visible]);
 
   const set = (key: keyof AddressFormState) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const handleEdit = (addr: Address) => {
+    setEditingId(addr._id);
+    setForm({
+      fullName: addr.fullName,
+      street: addr.street,
+      city: addr.city,
+      state: addr.state,
+      postalCode: addr.postalCode,
+      country: addr.country,
+      note: addr.note ?? '',
+    });
+    setShowForm(true);
+  };
 
   const handleSave = async () => {
     const { fullName, street, city, state, postalCode, country } = form;
@@ -138,9 +155,15 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
     }
     setSaving(true);
     try {
-      await addAddressService({ fullName, street, city, state, postalCode, country, note: form.note });
+      const payload = { fullName, street, city, state, postalCode, country, note: form.note };
+      if (editingId) {
+        await updateAddressService(editingId, payload);
+      } else {
+        await addAddressService(payload);
+      }
       await fetchAddresses();
       setShowForm(false);
+      setEditingId(null);
       setForm(EMPTY_FORM);
     } catch (e: unknown) {
       Alert.alert('Error', e instanceof Error ? e.message : 'Could not save address');
@@ -208,13 +231,14 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
               <TouchableOpacity
                 onPress={() => {
                   setShowForm(false);
+                  setEditingId(null);
                   setForm(EMPTY_FORM);
                 }}
               >
                 <ChevronDown size={22} color={colors.textSecondary} />
               </TouchableOpacity>
               <Text className="text-base font-bold" style={{ color: colors.text }}>
-                New Address
+                {editingId ? 'Edit Address' : 'New Address'}
               </Text>
             </View>
 
@@ -271,7 +295,9 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
               {saving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-semibold text-base">Save Address</Text>
+                <Text className="text-white font-semibold text-base">
+                  {editingId ? 'Update Address' : 'Save Address'}
+                </Text>
               )}
             </TouchableOpacity>
           </ScrollView>
@@ -324,13 +350,22 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
                         ) : null}
                       </View>
 
-                      <TouchableOpacity
-                        className="p-1"
-                        onPress={() => handleDelete(item._id)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Trash2 size={16} color={colors.error} />
-                      </TouchableOpacity>
+                      <View className="flex-row items-center gap-3">
+                        <TouchableOpacity
+                          className="p-1"
+                          onPress={() => handleEdit(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Pencil size={16} color={colors.primary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="p-1"
+                          onPress={() => handleDelete(item._id)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Trash2 size={16} color={colors.error} />
+                        </TouchableOpacity>
+                      </View>
                     </View>
 
                     <View className="flex-row items-center justify-between pt-1">

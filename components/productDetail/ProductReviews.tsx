@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { Star } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Star, Pencil, Trash2 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { getProductReviewsService } from '@/services/reviewService';
+import { getProductReviewsService, deleteReviewService } from '@/services/reviewService';
 import ReviewForm from './ReviewForm';
 
 interface Review {
@@ -11,7 +11,7 @@ interface Review {
   rating: number;
   title?: string;
   comment: string;
-  user: { fullName: string };
+  user: { _id?: string; fullName: string };
   createdAt: string;
 }
 
@@ -40,6 +40,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
 
   const fetchReviews = async () => {
     try {
@@ -57,6 +58,24 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     fetchReviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
+
+  const handleDeleteReview = (reviewId: string) => {
+    Alert.alert('Delete Review', 'Are you sure you want to delete your review?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteReviewService(reviewId);
+            setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+          } catch {
+            Alert.alert('Error', 'Could not delete review');
+          }
+        },
+      },
+    ]);
+  };
 
   const average =
     reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : null;
@@ -85,38 +104,62 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         </Text>
       ) : (
         <View className="gap-3">
-          {reviews.map((review) => (
-            <View
-              key={review._id}
-              className="p-4 rounded-2xl gap-1"
-              style={{ backgroundColor: colors.surface }}
-            >
-              <View className="flex-row justify-between items-center">
-                <Text className="font-semibold text-sm" style={{ color: colors.text }}>
-                  {review.user?.fullName ?? 'Anonymous'}
+          {reviews.map((review) => {
+            const isOwn = user && review.user?._id === user.id;
+            return (
+              <View
+                key={review._id}
+                className="p-4 rounded-2xl gap-1"
+                style={{ backgroundColor: colors.surface }}
+              >
+                <View className="flex-row justify-between items-center">
+                  <Text className="font-semibold text-sm" style={{ color: colors.text }}>
+                    {review.user?.fullName ?? 'Anonymous'}
+                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <StarDisplay rating={review.rating} />
+                    {isOwn && (
+                      <View className="flex-row items-center gap-2 ml-2">
+                        <TouchableOpacity
+                          onPress={() => setEditingReview(review)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Pencil size={14} color={colors.primary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteReview(review._id)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Trash2 size={14} color={colors.error} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                {review.title && (
+                  <Text className="font-semibold text-sm" style={{ color: colors.text }}>
+                    {review.title}
+                  </Text>
+                )}
+                <Text className="text-sm" style={{ color: colors.textSecondary }}>
+                  {review.comment}
                 </Text>
-                <StarDisplay rating={review.rating} />
+                <Text className="text-xs" style={{ color: colors.textTertiary }}>
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </Text>
               </View>
-              {review.title && (
-                <Text className="font-semibold text-sm" style={{ color: colors.text }}>
-                  {review.title}
-                </Text>
-              )}
-              <Text className="text-sm" style={{ color: colors.textSecondary }}>
-                {review.comment}
-              </Text>
-              <Text className="text-xs" style={{ color: colors.textTertiary }}>
-                {new Date(review.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
 
       {user && (
         <ReviewForm
           productId={productId}
+          editingReview={editingReview}
+          onCancelEdit={() => setEditingReview(null)}
           onSubmitted={() => {
+            setEditingReview(null);
             setLoading(true);
             fetchReviews();
           }}
