@@ -7,12 +7,14 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useOrders } from '@/contexts/OrderContext';
+import { OrderCreatePayload } from '@/services/orderService';
 import CheckoutStepper from '@/components/checkout/CheckoutStepper';
 import AddressStep, { ShippingAddress } from '@/components/checkout/AddressStep';
 import PaymentStep, { PaymentMethod } from '@/components/checkout/PaymentStep';
 import ReviewStep from '@/components/checkout/ReviewStep';
 
 const TOTAL_STEPS = 3;
+const SHIPPING_FEE = 15;
 
 const STEP_LABELS: Record<number, string> = {
   1: 'Continue to Payment',
@@ -70,7 +72,12 @@ export default function CheckoutScreen() {
     // Step 3 — place order
     setPlacing(true);
     try {
-      const order = await createOrder({
+      const payload: OrderCreatePayload = {
+        items: items.map((i) => ({
+          product: i.product._id,
+          quantity: i.quantity,
+          price: i.product.price,
+        })),
         shippingAddress: {
           fullName: address.fullName,
           street: address.street,
@@ -78,10 +85,14 @@ export default function CheckoutScreen() {
           state: address.state,
           postalCode: address.postalCode,
           country: address.country,
+          ...(address.note.trim() ? { note: address.note.trim() } : {}),
         },
         paymentMethod,
-        ...(address.note.trim() ? { note: address.note.trim() } : {}),
-      });
+        subtotal,
+        shippingFee: SHIPPING_FEE,
+        total: subtotal + SHIPPING_FEE,
+      };
+      const order = await createOrder(payload);
 
       await clearCart();
       router.replace(`/order-confirmation?orderId=${order._id}`);

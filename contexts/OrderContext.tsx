@@ -5,6 +5,7 @@ import {
   getOrderByIdService,
   createOrderService,
   cancelOrderService,
+  OrderCreatePayload,
 } from '@/services/orderService';
 
 export interface OrderProduct {
@@ -43,7 +44,7 @@ interface OrderContextType {
   loading: boolean;
   fetchOrders: (page?: number, limit?: number, status?: string) => Promise<void>;
   getOrder: (orderId: string) => Promise<Order>;
-  createOrder: (orderData: Record<string, unknown>) => Promise<Order>;
+  createOrder: (orderData: OrderCreatePayload) => Promise<Order>;
   cancelOrder: (orderId: string) => Promise<void>;
 }
 
@@ -84,7 +85,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
     return res.order ?? res;
   };
 
-  const createOrder = async (orderData: Record<string, unknown>): Promise<Order> => {
+  const createOrder = async (orderData: OrderCreatePayload): Promise<Order> => {
     const res = await createOrderService(orderData);
     const newOrder: Order = res.order ?? res;
     setOrders((prev) => [newOrder, ...prev]);
