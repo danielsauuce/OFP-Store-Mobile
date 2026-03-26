@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { AuthForm } from '@/components/forms/AuthForm';
 
@@ -35,8 +35,8 @@ interface AuthCardProps {
 export default function AuthCard({ mode, setMode, state, setState, onSubmit, loading }: AuthCardProps) {
   return (
     <Card>
-      <Text className="text-2xl font-bold mb-2">{TITLES[mode]}</Text>
-      <Text className="text-gray-400 mb-6">{SUBTITLES[mode]}</Text>
+      <Text className="text-2xl font-bold text-light-text dark:text-dark-text mb-2">{TITLES[mode]}</Text>
+      <Text className="text-light-text-secondary dark:text-dark-text-secondary mb-6">{SUBTITLES[mode]}</Text>
       <AuthForm
         mode={mode}
         setMode={setMode}

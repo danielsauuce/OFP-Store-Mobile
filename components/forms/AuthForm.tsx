@@ -30,7 +30,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
         <Input
           label="Full Name"
           placeholder="John Doe"
-          icon={<User size={20} color="#9CA3AF" />}
+          icon={<User size={20} color="#9B8B7E" />}
           value={name}
           onChangeText={(v) => setState({ ...state, name: v })}
         />
@@ -39,7 +39,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
       <Input
         label="Email"
         placeholder="you@example.com"
-        icon={<Mail size={20} color="#9CA3AF" />}
+        icon={<Mail size={20} color="#9B8B7E" />}
         value={email}
         onChangeText={(v) => setState({ ...state, email: v })}
         keyboardType="email-address"
@@ -49,7 +49,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
       <Input
         label={mode === 'reset' ? 'New Password' : 'Password'}
         placeholder="••••••••"
-        icon={<Lock size={20} color="#9CA3AF" />}
+        icon={<Lock size={20} color="#9B8B7E" />}
         secure
         value={password}
         onChangeText={(v) => setState({ ...state, password: v })}
@@ -59,7 +59,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
         <Input
           label="Confirm Password"
           placeholder="••••••••"
-          icon={<Lock size={20} color="#9CA3AF" />}
+          icon={<Lock size={20} color="#9B8B7E" />}
           secure
           value={confirmPassword}
           onChangeText={(v) => setState({ ...state, confirmPassword: v })}
@@ -68,7 +68,9 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
 
       {mode === 'login' && (
         <TouchableOpacity onPress={() => setMode('reset')} disabled={loading} className="self-end -mt-2">
-          <Text className="text-indigo-500 font-semibold text-sm">Forgot Password?</Text>
+          <Text className="text-light-primary dark:text-dark-primary font-semibold text-sm">
+            Forgot Password?
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -81,11 +83,11 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
       <View className="flex-row justify-center items-center gap-2 mt-1">
         {mode === 'reset' ? (
           <TouchableOpacity onPress={() => setMode('login')} disabled={loading}>
-            <Text className="text-indigo-500 font-bold">Back to Sign In</Text>
+            <Text className="text-light-primary dark:text-dark-primary font-bold">Back to Sign In</Text>
           </TouchableOpacity>
         ) : (
           <>
-            <Text className="text-gray-500 text-sm">
+            <Text className="text-light-text-tertiary dark:text-dark-text-tertiary text-sm">
               {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
             </Text>
 
@@ -93,7 +95,7 @@ export const AuthForm = ({ mode, setMode, state, setState, onSubmit, loading }: 
               onPress={() => setMode(mode === 'login' ? 'signup' : 'login')}
               disabled={loading}
             >
-              <Text className="text-indigo-500 font-bold text-sm">
+              <Text className="text-light-primary dark:text-dark-primary font-bold text-sm">
                 {mode === 'login' ? 'Sign Up' : 'Sign In'}
               </Text>
             </TouchableOpacity>
