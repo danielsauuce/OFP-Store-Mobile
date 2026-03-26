@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  FlatList,
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
+import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, ScrollView } from 'react-native';
 import { X, Ticket, ChevronRight, Clock, MessageSquare } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getMyTicketsService, getTicketByIdService } from '@/services/supportService';
@@ -179,7 +171,10 @@ export default function TicketHistoryModal({ visible, onClose }: TicketHistoryMo
                       }}
                     >
                       <View className="flex-row items-center justify-between">
-                        <Text className="text-xs font-semibold" style={{ color: isAdmin ? colors.textSecondary : colors.primary }}>
+                        <Text
+                          className="text-xs font-semibold"
+                          style={{ color: isAdmin ? colors.textSecondary : colors.primary }}
+                        >
                           {isAdmin ? 'Support Team' : 'You'}
                         </Text>
                         <Text className="text-xs" style={{ color: colors.textTertiary }}>
@@ -232,7 +227,11 @@ export default function TicketHistoryModal({ visible, onClose }: TicketHistoryMo
                 activeOpacity={0.7}
               >
                 <View className="flex-row items-start justify-between">
-                  <Text className="font-semibold text-sm flex-1 mr-3" style={{ color: colors.text }} numberOfLines={2}>
+                  <Text
+                    className="font-semibold text-sm flex-1 mr-3"
+                    style={{ color: colors.text }}
+                    numberOfLines={2}
+                  >
                     {item.subject}
                   </Text>
                   <StatusBadge status={item.status} />

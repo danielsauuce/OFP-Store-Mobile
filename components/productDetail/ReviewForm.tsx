@@ -49,7 +49,11 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
     setSubmitting(true);
     try {
       if (editingReview) {
-        await updateReviewService(editingReview._id, { rating, title: title.trim(), comment: comment.trim() });
+        await updateReviewService(editingReview._id, {
+          rating,
+          title: title.trim(),
+          comment: comment.trim(),
+        });
         Alert.alert('Updated', 'Your review has been updated.');
       } else {
         await createReviewService({ productId, rating, title: title.trim(), comment: comment.trim() });
@@ -136,7 +140,9 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
         {submitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className="text-white font-semibold">{editingReview ? 'Update Review' : 'Submit Review'}</Text>
+          <Text className="text-white font-semibold">
+            {editingReview ? 'Update Review' : 'Submit Review'}
+          </Text>
         )}
       </TouchableOpacity>
     </View>
