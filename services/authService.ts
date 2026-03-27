@@ -68,8 +68,8 @@ export const checkAuthService = async (): Promise<AuthResponse | null> => {
     return data;
   } catch (error) {
     const err = error as AxiosError<ApiError>;
-    // 401 means the token is expired or invalid — not an error, just unauthenticated
-    if (err.response?.status === 401) return null;
+    // 401 = expired/invalid token, network errors = treat as unauthenticated
+    if (err.response?.status === 401 || err.code === 'ECONNABORTED' || !err.response) return null;
     console.error('API ERROR:', err?.response?.data?.message || err.message);
     throw new Error(err?.response?.data?.message || 'Something went wrong');
   }

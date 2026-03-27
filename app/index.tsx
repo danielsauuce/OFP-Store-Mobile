@@ -21,10 +21,6 @@ export default function WelcomeScreen() {
     }
   }, [user, isLoading, router]);
 
-  if (isLoading) {
-    return <View className="flex-1 bg-light-primary dark:bg-dark-primary" />;
-  }
-
   if (user) return null;
 
   return (
