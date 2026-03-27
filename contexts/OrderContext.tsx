@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getUserOrdersService,
@@ -38,6 +39,12 @@ export interface OrdersPagination {
   totalPages: number;
 }
 
+interface OrderQueryParams {
+  page: number;
+  limit: number;
+  status?: string;
+}
+
 interface OrderContextType {
   orders: Order[];
   pagination: OrdersPagination | null;
@@ -48,66 +55,75 @@ interface OrderContextType {
   cancelOrder: (orderId: string) => Promise<void>;
 }
 
+export const orderKeys = {
+  all: ['orders'] as const,
+  list: (page: number, limit: number, status?: string) => ['orders', 'list', page, limit, status] as const,
+};
+
 const OrderContext = createContext<OrderContextType | null>(null);
 
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [pagination, setPagination] = useState<OrdersPagination | null>(null);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const [queryParams, setQueryParams] = useState<OrderQueryParams>({ page: 1, limit: 10 });
 
   useEffect(() => {
     if (!user) {
-      setOrders([]);
-      setPagination(null);
+      queryClient.removeQueries({ queryKey: orderKeys.all });
     }
-  }, [user]);
+  }, [user, queryClient]);
 
-  const fetchOrders = useCallback(async (page: number = 1, limit: number = 10, status?: string) => {
-    setLoading(true);
-    try {
-      const res = await getUserOrdersService(page, limit, status);
-      // Sort newest first
+  const { data, isLoading } = useQuery({
+    queryKey: orderKeys.list(queryParams.page, queryParams.limit, queryParams.status),
+    queryFn: async () => {
+      const res = await getUserOrdersService(queryParams.page, queryParams.limit, queryParams.status);
       const fetched: Order[] = res.orders ?? res ?? [];
-      setOrders(
-        [...fetched].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-      );
-      if (res.pagination) setPagination(res.pagination);
-    } catch {
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      return {
+        orders: [...fetched].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
+        pagination: res.pagination ?? null,
+      };
+    },
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
+
+  const fetchOrders = async (page: number = 1, limit: number = 10, status?: string) => {
+    setQueryParams({ page, limit, status });
+    await queryClient.invalidateQueries({ queryKey: orderKeys.all });
+  };
 
   const getOrder = async (orderId: string): Promise<Order> => {
     const res = await getOrderByIdService(orderId);
     return res.order ?? res;
   };
 
+  const createMutation = useMutation({
+    mutationFn: (orderData: OrderCreatePayload) => createOrderService(orderData),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: orderKeys.all }),
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (orderId: string) => cancelOrderService(orderId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: orderKeys.all }),
+  });
+
   const createOrder = async (orderData: OrderCreatePayload): Promise<Order> => {
-    const res = await createOrderService(orderData);
-    const newOrder: Order = res.order ?? res;
-    setOrders((prev) => [newOrder, ...prev]);
-    setPagination((prev) => {
-      if (!prev) return prev;
-      const newTotal = prev.total + 1;
-      return { ...prev, total: newTotal, totalPages: Math.ceil(newTotal / prev.limit) };
-    });
-    return newOrder;
+    const res = await createMutation.mutateAsync(orderData);
+    return res.order ?? res;
   };
 
   const cancelOrder = async (orderId: string) => {
-    await cancelOrderService(orderId);
-    setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: 'cancelled' } : o)));
+    await cancelMutation.mutateAsync(orderId);
   };
 
   return (
     <OrderContext.Provider
       value={{
-        orders,
-        pagination,
-        loading,
+        orders: data?.orders ?? [],
+        pagination: data?.pagination ?? null,
+        loading: isLoading,
         fetchOrders,
         getOrder,
         createOrder,

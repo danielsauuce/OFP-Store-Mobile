@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllProductsService } from '@/services/productService';
@@ -18,25 +19,20 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const [featured, setFeatured] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  const loadFeatured = () => {
-    setLoading(true);
-    setError(false);
-    getAllProductsService({ limit: 6 })
-      .then((res) => {
-        const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
-        setFeatured(Array.isArray(list) ? list.map(normalizeProduct) : []);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadFeatured();
-  }, []);
+  const {
+    data: featured = [],
+    isLoading: loading,
+    isError: error,
+    refetch,
+  } = useQuery<Product[]>({
+    queryKey: ['products', 'featured'],
+    queryFn: async () => {
+      const res = await getAllProductsService({ limit: 6 });
+      const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
+      return Array.isArray(list) ? list.map(normalizeProduct) : [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -51,7 +47,7 @@ export default function HomeScreen() {
           products={featured}
           loading={loading}
           error={error}
-          onRetry={loadFeatured}
+          onRetry={refetch}
           onSeeAllPress={() => router.push('/(tabs)/shop')}
           onProductPress={(id) => router.push(`/product/${id}`)}
         />

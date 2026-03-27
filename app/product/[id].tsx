@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, ActivityIndicator, Alert, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getProductByIdService, getAllProductsService } from '@/services/productService';
 import { useCart } from '@/contexts/CartContext';
@@ -19,32 +20,35 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const router = useRouter();
-
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
-  const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    getProductByIdService(id)
-      .then((res) => {
-        const p: Product = normalizeProduct(res.product ?? res);
-        setProduct(p);
-        return getAllProductsService({ category: p.category, limit: 4 });
-      })
-      .then((res) => {
-        const raw = res?.data?.products ?? res?.products ?? res?.data ?? res ?? [];
-        const products: Product[] = (Array.isArray(raw) ? raw : []).map(normalizeProduct);
-        setRelated(products.filter((p) => p._id !== id).slice(0, 4));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [id]);
+  const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(0);
+  const [adding, setAdding] = useState(false);
+
+  const { data: product, isLoading } = useQuery<Product | null>({
+    queryKey: ['products', id],
+    queryFn: async () => {
+      const res = await getProductByIdService(id);
+      return normalizeProduct(res.product ?? res);
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: related = [] } = useQuery<Product[]>({
+    queryKey: ['products', 'related', product?.category, id],
+    queryFn: async () => {
+      const res = await getAllProductsService({ category: product!.category, limit: 4 });
+      const raw = res?.data?.products ?? res?.products ?? res?.data ?? res ?? [];
+      return (Array.isArray(raw) ? raw : [])
+        .map(normalizeProduct)
+        .filter((p) => p._id !== id)
+        .slice(0, 4);
+    },
+    enabled: !!product?.category,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -62,7 +66,7 @@ export default function ProductDetailScreen() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <SafeAreaView
         className="flex-1 items-center justify-center"

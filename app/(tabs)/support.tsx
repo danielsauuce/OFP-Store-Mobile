@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createTicketService, addTicketReplyService } from '@/services/supportService';
 import ChatInput from '@/components/chat/ChatInput';
@@ -26,12 +27,23 @@ export default function SupportScreen() {
     },
   ]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showTickets, setShowTickets] = useState(false);
 
   const addReply = (content: string) => {
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', content }]);
   };
+
+  const createTicketMutation = useMutation({
+    mutationFn: ({ subject, message }: { subject: string; message: string }) =>
+      createTicketService({ subject, message }),
+  });
+
+  const addReplyMutation = useMutation({
+    mutationFn: ({ ticketId, message }: { ticketId: string; message: string }) =>
+      addTicketReplyService(ticketId, message),
+  });
+
+  const loading = createTicketMutation.isPending || addReplyMutation.isPending;
 
   const send = async () => {
     const text = input.trim();
@@ -44,23 +56,20 @@ export default function SupportScreen() {
 
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'user', content: text }]);
     setInput('');
-    setLoading(true);
 
     try {
       if (!ticketIdRef.current) {
-        const res = await createTicketService({ subject: text.slice(0, 80), message: text });
+        const res = await createTicketMutation.mutateAsync({ subject: text.slice(0, 80), message: text });
         ticketIdRef.current = res?.ticketId ?? res?.ticket?._id ?? res?._id ?? null;
         addReply(
           'Your support ticket has been created. Our team will review it shortly. You can continue sending messages here.',
         );
       } else {
-        await addTicketReplyService(ticketIdRef.current, text);
+        await addReplyMutation.mutateAsync({ ticketId: ticketIdRef.current, message: text });
         addReply("Your message has been sent to the support team. We'll get back to you soon.");
       }
     } catch {
       addReply("Sorry, we couldn't send your message. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 

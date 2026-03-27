@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Star } from 'lucide-react-native';
+import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createReviewService, updateReviewService } from '@/services/reviewService';
 
@@ -23,7 +24,6 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (editingReview) {
@@ -37,7 +37,35 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
     }
   }, [editingReview]);
 
-  const handleSubmit = async () => {
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (editingReview) {
+        return updateReviewService(editingReview._id, {
+          rating,
+          title: title.trim(),
+          comment: comment.trim(),
+        });
+      }
+      return createReviewService({ productId, rating, title: title.trim(), comment: comment.trim() });
+    },
+    onSuccess: () => {
+      if (editingReview) {
+        Alert.alert('Updated', 'Your review has been updated.');
+      } else {
+        Alert.alert('Thank you!', 'Your review has been submitted.');
+      }
+      setRating(0);
+      setTitle('');
+      setComment('');
+      onSubmitted();
+    },
+    onError: (e: unknown) => {
+      const message = e instanceof Error ? e.message : 'Could not submit review';
+      Alert.alert('Error', message);
+    },
+  });
+
+  const handleSubmit = () => {
     if (rating === 0) {
       Alert.alert('Error', 'Please select a rating');
       return;
@@ -46,29 +74,7 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
       Alert.alert('Error', 'Please write a comment');
       return;
     }
-    setSubmitting(true);
-    try {
-      if (editingReview) {
-        await updateReviewService(editingReview._id, {
-          rating,
-          title: title.trim(),
-          comment: comment.trim(),
-        });
-        Alert.alert('Updated', 'Your review has been updated.');
-      } else {
-        await createReviewService({ productId, rating, title: title.trim(), comment: comment.trim() });
-        Alert.alert('Thank you!', 'Your review has been submitted.');
-      }
-      setRating(0);
-      setTitle('');
-      setComment('');
-      onSubmitted();
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Could not submit review';
-      Alert.alert('Error', message);
-    } finally {
-      setSubmitting(false);
-    }
+    submitMutation.mutate();
   };
 
   return (
@@ -133,11 +139,11 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
 
       <TouchableOpacity
         className="h-12 rounded-xl items-center justify-center"
-        style={{ backgroundColor: submitting ? colors.border : colors.primary }}
+        style={{ backgroundColor: submitMutation.isPending ? colors.border : colors.primary }}
         onPress={handleSubmit}
-        disabled={submitting}
+        disabled={submitMutation.isPending}
       >
-        {submitting ? (
+        {submitMutation.isPending ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text className="text-white font-semibold">

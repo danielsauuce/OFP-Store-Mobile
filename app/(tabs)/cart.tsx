@@ -1,67 +1,23 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React from 'react';
 import { ScrollView, Alert, ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useCart } from '@/contexts/CartContext';
 import CartItem from '@/components/cart/CartItem';
 import CartHeader from '@/components/cart/CartHeader';
 import EmptyCart from '@/components/cart/EmptyCart';
 import CartSummary from '@/components/cart/CartSummary';
-import {
-  getCartService,
-  updateCartItemService,
-  removeCartItemService,
-  clearCartService,
-} from '@/services/cartService';
-
-interface CartProduct {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-}
-
-interface CartItemData {
-  _id: string;
-  product: CartProduct;
-  quantity: number;
-}
-
-interface Cart {
-  items: CartItemData[];
-  subtotal: number;
-}
 
 export default function CartScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-
-  const fetchCart = useCallback(async () => {
-    setFetchError(false);
-    try {
-      const res = await getCartService();
-      setCart(res.cart ?? res ?? null);
-    } catch {
-      setCart(null);
-      setFetchError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  const { cart, loading, fetchCart, updateItem, removeItem, clearCart } = useCart();
 
   const handleUpdate = async (productId: string, quantity: number) => {
     if (quantity < 1) return;
     try {
-      await updateCartItemService(productId, quantity);
-      await fetchCart();
+      await updateItem(productId, quantity);
     } catch {
       Alert.alert('Error', 'Could not update item');
     }
@@ -69,8 +25,7 @@ export default function CartScreen() {
 
   const handleRemove = async (productId: string) => {
     try {
-      await removeCartItemService(productId);
-      await fetchCart();
+      await removeItem(productId);
     } catch {
       Alert.alert('Error', 'Could not remove item');
     }
@@ -84,8 +39,7 @@ export default function CartScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await clearCartService();
-            await fetchCart();
+            await clearCart();
           } catch {
             Alert.alert('Error', 'Could not clear cart');
           }
@@ -105,7 +59,7 @@ export default function CartScreen() {
     );
   }
 
-  if (fetchError) {
+  if (!cart && !loading) {
     return (
       <SafeAreaView
         className="flex-1 items-center justify-center gap-3"

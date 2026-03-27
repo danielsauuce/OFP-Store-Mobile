@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Star, Pencil, Trash2 } from 'lucide-react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getProductReviewsService, deleteReviewService } from '@/services/reviewService';
@@ -18,6 +19,10 @@ interface Review {
 interface ProductReviewsProps {
   productId: string;
 }
+
+export const reviewKeys = {
+  byProduct: (productId: string) => ['reviews', productId] as const,
+};
 
 function StarDisplay({ rating }: { rating: number }) {
   const { colors } = useTheme();
@@ -38,26 +43,24 @@ function StarDisplay({ rating }: { rating: number }) {
 export default function ProductReviews({ productId }: ProductReviewsProps) {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [editingReview, setEditingReview] = useState<Review | null>(null);
 
-  const fetchReviews = async () => {
-    try {
+  const { data: reviews = [], isLoading: loading } = useQuery<Review[]>({
+    queryKey: reviewKeys.byProduct(productId),
+    queryFn: async () => {
       const res = await getProductReviewsService(productId);
       const list: Review[] = res?.reviews ?? res?.data ?? res ?? [];
-      setReviews(Array.isArray(list) ? list : []);
-    } catch {
-      setReviews([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return Array.isArray(list) ? list : [];
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  const deleteMutation = useMutation({
+    mutationFn: (reviewId: string) => deleteReviewService(reviewId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(productId) }),
+    onError: () => Alert.alert('Error', 'Could not delete review'),
+  });
 
   const handleDeleteReview = (reviewId: string) => {
     Alert.alert('Delete Review', 'Are you sure you want to delete your review?', [
@@ -65,14 +68,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteReviewService(reviewId);
-            setReviews((prev) => prev.filter((r) => r._id !== reviewId));
-          } catch {
-            Alert.alert('Error', 'Could not delete review');
-          }
-        },
+        onPress: () => deleteMutation.mutate(reviewId),
       },
     ]);
   };
@@ -160,8 +156,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           onCancelEdit={() => setEditingReview(null)}
           onSubmitted={() => {
             setEditingReview(null);
-            setLoading(true);
-            fetchReviews();
+            queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(productId) });
           }}
         />
       )}

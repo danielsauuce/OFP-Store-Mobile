@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { X, Plus, MapPin, Trash2, Pencil, CheckCircle2, ChevronDown } from 'lucide-react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   getAddressesService,
@@ -57,6 +58,10 @@ interface AddressesModalProps {
   onClose: () => void;
 }
 
+export const addressKeys = {
+  list: ['addresses'] as const,
+};
+
 function Field({
   label,
   value,
@@ -101,35 +106,61 @@ function Field({
 
 export default function AddressesModal({ visible, onClose }: AddressesModalProps) {
   const { colors } = useTheme();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<AddressFormState>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
 
-  const fetchAddresses = async () => {
-    setLoading(true);
-    try {
-      const res = await getAddressesService();
-      const list: Address[] = res?.addresses ?? res?.data ?? res ?? [];
-      setAddresses(Array.isArray(list) ? list : []);
-    } catch {
-      setAddresses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (visible) {
-      fetchAddresses();
+    if (!visible) {
       setShowForm(false);
       setEditingId(null);
       setForm(EMPTY_FORM);
     }
   }, [visible]);
+
+  const { data: addresses = [], isLoading: loading } = useQuery<Address[]>({
+    queryKey: addressKeys.list,
+    queryFn: async () => {
+      const res = await getAddressesService();
+      const list: Address[] = res?.addresses ?? res?.data ?? res ?? [];
+      return Array.isArray(list) ? list : [];
+    },
+    enabled: visible,
+    staleTime: 0,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string | null;
+      payload: Omit<AddressFormState, 'note'> & { note: string };
+    }) => (id ? updateAddressService(id, payload) : addAddressService(payload)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addressKeys.list });
+      setShowForm(false);
+      setEditingId(null);
+      setForm(EMPTY_FORM);
+    },
+    onError: (e: unknown) => {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Could not save address');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteAddressService(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addressKeys.list }),
+    onError: () => Alert.alert('Error', 'Could not remove address'),
+  });
+
+  const setDefaultMutation = useMutation({
+    mutationFn: (id: string) => setDefaultAddressService(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addressKeys.list }),
+    onError: () => Alert.alert('Error', 'Could not set default address'),
+  });
 
   const set = (key: keyof AddressFormState) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -147,29 +178,16 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
     setShowForm(true);
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const { fullName, street, city, state, postalCode, country } = form;
     if (!fullName || !street || !city || !state || !postalCode || !country) {
       Alert.alert('Missing fields', 'Please fill in all required fields.');
       return;
     }
-    setSaving(true);
-    try {
-      const payload = { fullName, street, city, state, postalCode, country, note: form.note };
-      if (editingId) {
-        await updateAddressService(editingId, payload);
-      } else {
-        await addAddressService(payload);
-      }
-      await fetchAddresses();
-      setShowForm(false);
-      setEditingId(null);
-      setForm(EMPTY_FORM);
-    } catch (e: unknown) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Could not save address');
-    } finally {
-      setSaving(false);
-    }
+    saveMutation.mutate({
+      id: editingId,
+      payload: { fullName, street, city, state, postalCode, country, note: form.note },
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -178,28 +196,16 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
       {
         text: 'Remove',
         style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteAddressService(id);
-            setAddresses((prev) => prev.filter((a) => a._id !== id));
-          } catch {
-            Alert.alert('Error', 'Could not remove address');
-          }
-        },
+        onPress: () => deleteMutation.mutate(id),
       },
     ]);
   };
 
-  const handleSetDefault = async (id: string) => {
+  const handleSetDefault = (id: string) => {
     setSettingDefault(id);
-    try {
-      await setDefaultAddressService(id);
-      setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a._id === id })));
-    } catch {
-      Alert.alert('Error', 'Could not set default address');
-    } finally {
-      setSettingDefault(null);
-    }
+    setDefaultMutation.mutate(id, {
+      onSettled: () => setSettingDefault(null),
+    });
   };
 
   return (
@@ -288,11 +294,11 @@ export default function AddressesModal({ visible, onClose }: AddressesModalProps
 
             <TouchableOpacity
               className="h-12 rounded-xl items-center justify-center mt-2"
-              style={{ backgroundColor: saving ? colors.border : colors.primary }}
+              style={{ backgroundColor: saveMutation.isPending ? colors.border : colors.primary }}
               onPress={handleSave}
-              disabled={saving}
+              disabled={saveMutation.isPending}
             >
-              {saving ? (
+              {saveMutation.isPending ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text className="text-white font-semibold text-base">

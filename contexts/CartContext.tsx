@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getCartService,
@@ -37,38 +38,68 @@ interface CartContextType {
   clearCart: () => Promise<void>;
 }
 
+export const cartKeys = {
+  cart: ['cart'] as const,
+};
+
 const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchCart = useCallback(async () => {
-    if (!user) {
-      setCart(null);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await getCartService();
-      setCart(res.cart ?? res ?? null);
-    } catch {
-      setCart(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Re-fetch whenever auth state changes
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    if (!user) {
+      queryClient.removeQueries({ queryKey: cartKeys.cart });
+    }
+  }, [user, queryClient]);
+
+  const { data, isLoading } = useQuery<Cart | null>({
+    queryKey: cartKeys.cart,
+    queryFn: async () => {
+      const res = await getCartService();
+      return res.cart ?? res ?? null;
+    },
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const fetchCart = async () => {
+    await queryClient.invalidateQueries({ queryKey: cartKeys.cart });
+  };
+
+  const addMutation = useMutation({
+    mutationFn: ({
+      productId,
+      quantity,
+      variantSku,
+    }: {
+      productId: string;
+      quantity: number;
+      variantSku: string | null;
+    }) => addToCartService(productId, quantity, variantSku),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ productId, quantity }: { productId: string; quantity: number }) =>
+      updateCartItemService(productId, quantity),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (productId: string) => removeCartItemService(productId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: () => clearCartService(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
+  });
 
   const addToCart = async (productId: string, quantity: number = 1, variantSku?: string) => {
     try {
-      await addToCartService(productId, quantity, variantSku ?? null);
-      await fetchCart();
+      await addMutation.mutateAsync({ productId, quantity, variantSku: variantSku ?? null });
     } catch (err) {
       throw new Error(`Failed to add product to cart: ${err instanceof Error ? err.message : err}`);
     }
@@ -77,8 +108,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const updateItem = async (productId: string, quantity: number) => {
     if (quantity < 1) throw new RangeError('quantity must be >= 1');
     try {
-      await updateCartItemService(productId, quantity);
-      await fetchCart();
+      await updateMutation.mutateAsync({ productId, quantity });
     } catch (err) {
       if (err instanceof RangeError) throw err;
       throw new Error(`Failed to update cart item: ${err instanceof Error ? err.message : err}`);
@@ -87,8 +117,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeItem = async (productId: string) => {
     try {
-      await removeCartItemService(productId);
-      await fetchCart();
+      await removeMutation.mutateAsync(productId);
     } catch (err) {
       throw new Error(`Failed to remove cart item: ${err instanceof Error ? err.message : err}`);
     }
@@ -96,14 +125,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const clearCart = async () => {
     try {
-      await clearCartService();
-      await fetchCart();
+      await clearMutation.mutateAsync();
     } catch (err) {
       throw new Error(`Failed to clear cart: ${err instanceof Error ? err.message : err}`);
     }
   };
 
+  const cart: Cart | null = user ? (data ?? null) : null;
   const itemCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+  const loading = isLoading;
 
   return (
     <CartContext.Provider

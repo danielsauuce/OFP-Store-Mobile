@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { X } from 'lucide-react-native';
+import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { changePasswordService } from '@/services/authService';
@@ -15,7 +16,6 @@ export default function ChangePasswordModal({ visible, onClose }: ChangePassword
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setCurrentPassword('');
@@ -23,7 +23,26 @@ export default function ChangePasswordModal({ visible, onClose }: ChangePassword
     setConfirmPassword('');
   };
 
-  const handleSave = async () => {
+  const changeMutation = useMutation({
+    mutationFn: ({
+      currentPassword: cp,
+      newPassword: np,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => changePasswordService({ currentPassword: cp, newPassword: np }),
+    onSuccess: () => {
+      Alert.alert('Success', 'Password changed successfully');
+      reset();
+      onClose();
+    },
+    onError: (e: unknown) => {
+      const message = e instanceof Error ? e.message : 'Could not change password';
+      Alert.alert('Error', message);
+    },
+  });
+
+  const handleSave = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -36,18 +55,7 @@ export default function ChangePasswordModal({ visible, onClose }: ChangePassword
       Alert.alert('Error', 'New passwords do not match');
       return;
     }
-    setSaving(true);
-    try {
-      await changePasswordService({ currentPassword, newPassword });
-      Alert.alert('Success', 'Password changed successfully');
-      reset();
-      onClose();
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Could not change password';
-      Alert.alert('Error', message);
-    } finally {
-      setSaving(false);
-    }
+    changeMutation.mutate({ currentPassword, newPassword });
   };
 
   return (
@@ -92,11 +100,11 @@ export default function ChangePasswordModal({ visible, onClose }: ChangePassword
         <View className="px-5 pb-8 pt-4">
           <TouchableOpacity
             className="h-14 rounded-2xl items-center justify-center"
-            style={{ backgroundColor: saving ? colors.border : colors.primary }}
+            style={{ backgroundColor: changeMutation.isPending ? colors.border : colors.primary }}
             onPress={handleSave}
-            disabled={saving}
+            disabled={changeMutation.isPending}
           >
-            {saving ? (
+            {changeMutation.isPending ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <Text className="text-white font-bold text-base">Change Password</Text>

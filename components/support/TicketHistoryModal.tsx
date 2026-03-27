@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, ScrollView } from 'react-native';
 import { X, Ticket, ChevronRight, Clock, MessageSquare } from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getMyTicketsService, getTicketByIdService } from '@/services/supportService';
 
@@ -29,6 +30,11 @@ interface TicketHistoryModalProps {
   onClose: () => void;
 }
 
+export const ticketKeys = {
+  list: ['tickets'] as const,
+  detail: (id: string) => ['tickets', id] as const,
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   open: { label: 'Open', color: '#2563EB', bg: '#2563EB20' },
   in_progress: { label: 'In Progress', color: '#F59E0B', bg: '#F59E0B20' },
@@ -49,43 +55,34 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function TicketHistoryModal({ visible, onClose }: TicketHistoryModalProps) {
   const { colors } = useTheme();
-  const [tickets, setTickets] = useState<TicketSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const res = await getMyTicketsService();
-      const list: TicketSummary[] = res?.tickets ?? res?.data ?? res ?? [];
-      setTickets(Array.isArray(list) ? list : []);
-    } catch {
-      setTickets([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (visible) {
-      fetchTickets();
-      setSelectedTicket(null);
+    if (!visible) {
+      setSelectedTicketId(null);
     }
   }, [visible]);
 
-  const handleViewTicket = async (ticketId: string) => {
-    setLoadingDetail(true);
-    try {
-      const res = await getTicketByIdService(ticketId);
-      const ticket: TicketDetail = res?.ticket ?? res;
-      setSelectedTicket(ticket);
-    } catch {
-      setSelectedTicket(null);
-    } finally {
-      setLoadingDetail(false);
-    }
-  };
+  const { data: tickets = [], isLoading: loading } = useQuery<TicketSummary[]>({
+    queryKey: ticketKeys.list,
+    queryFn: async () => {
+      const res = await getMyTicketsService();
+      const list: TicketSummary[] = res?.tickets ?? res?.data ?? res ?? [];
+      return Array.isArray(list) ? list : [];
+    },
+    enabled: visible,
+    staleTime: 0,
+  });
+
+  const { data: selectedTicket, isLoading: loadingDetail } = useQuery<TicketDetail | null>({
+    queryKey: ticketKeys.detail(selectedTicketId!),
+    queryFn: async () => {
+      const res = await getTicketByIdService(selectedTicketId!);
+      return res?.ticket ?? res ?? null;
+    },
+    enabled: !!selectedTicketId,
+    staleTime: 0,
+  });
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -106,15 +103,15 @@ export default function TicketHistoryModal({ visible, onClose }: TicketHistoryMo
           style={{ borderColor: colors.border }}
         >
           <View className="flex-row items-center gap-2">
-            {selectedTicket && (
-              <TouchableOpacity onPress={() => setSelectedTicket(null)} className="mr-1">
+            {selectedTicketId && (
+              <TouchableOpacity onPress={() => setSelectedTicketId(null)} className="mr-1">
                 <Text className="text-sm font-semibold" style={{ color: colors.primary }}>
                   Back
                 </Text>
               </TouchableOpacity>
             )}
             <Text className="text-lg font-bold" style={{ color: colors.text }}>
-              {selectedTicket ? 'Ticket Detail' : 'My Tickets'}
+              {selectedTicketId ? 'Ticket Detail' : 'My Tickets'}
             </Text>
           </View>
           <TouchableOpacity onPress={onClose}>
@@ -223,7 +220,7 @@ export default function TicketHistoryModal({ visible, onClose }: TicketHistoryMo
               <TouchableOpacity
                 className="p-4 rounded-2xl gap-2"
                 style={{ backgroundColor: colors.surface }}
-                onPress={() => handleViewTicket(item._id)}
+                onPress={() => setSelectedTicketId(item._id)}
                 activeOpacity={0.7}
               >
                 <View className="flex-row items-start justify-between">

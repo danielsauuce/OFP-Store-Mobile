@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'lucide-react-native';
+import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { uploadProfilePictureService, deleteProfilePictureService } from '@/services/userService';
 
@@ -20,7 +21,6 @@ export default function ProfileAvatar({
   onUploadSuccess,
 }: ProfileAvatarProps) {
   const { colors } = useTheme();
-  const [uploading, setUploading] = useState(false);
   const [localImage, setLocalImage] = useState<string | null>(null);
 
   const initials = fullName
@@ -31,6 +31,27 @@ export default function ProfileAvatar({
     .slice(0, 2);
 
   const imageUri = localImage ?? profilePicture;
+
+  const uploadMutation = useMutation({
+    mutationFn: (imageData: { uri: string; name: string; type: string }) =>
+      uploadProfilePictureService(imageData),
+    onSuccess: () => onUploadSuccess?.(),
+    onError: () => {
+      Alert.alert('Error', 'Could not upload photo. Please try again.');
+      setLocalImage(null);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProfilePictureService(),
+    onSuccess: () => {
+      setLocalImage(null);
+      onUploadSuccess?.();
+    },
+    onError: () => Alert.alert('Error', 'Could not remove photo. Please try again.'),
+  });
+
+  const uploading = uploadMutation.isPending || deleteMutation.isPending;
 
   const launchPicker = async (source: 'camera' | 'library') => {
     const result =
@@ -57,29 +78,11 @@ export default function ProfileAvatar({
     const type = rawType === 'image/jpg' ? 'image/jpeg' : rawType;
 
     setLocalImage(uri);
-    setUploading(true);
-    try {
-      await uploadProfilePictureService({ uri, name: filename, type });
-      onUploadSuccess?.();
-    } catch {
-      Alert.alert('Error', 'Could not upload photo. Please try again.');
-      setLocalImage(null);
-    } finally {
-      setUploading(false);
-    }
+    uploadMutation.mutate({ uri, name: filename, type });
   };
 
-  const handleDeletePhoto = async () => {
-    setUploading(true);
-    try {
-      await deleteProfilePictureService();
-      setLocalImage(null);
-      onUploadSuccess?.();
-    } catch {
-      Alert.alert('Error', 'Could not remove photo. Please try again.');
-    } finally {
-      setUploading(false);
-    }
+  const handleDeletePhoto = () => {
+    deleteMutation.mutate();
   };
 
   const handlePress = () => {

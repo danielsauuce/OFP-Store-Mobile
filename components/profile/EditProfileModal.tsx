@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { X } from 'lucide-react-native';
+import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { updateUserProfileService } from '@/services/userService';
@@ -23,24 +24,26 @@ export default function EditProfileModal({
   const { colors } = useTheme();
   const [name, setName] = useState(fullName);
   const [emailVal, setEmailVal] = useState(email);
-  const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
+  const saveMutation = useMutation({
+    mutationFn: ({ fullName: fn, email: em }: { fullName: string; email: string }) =>
+      updateUserProfileService({ fullName: fn, email: em }),
+    onSuccess: () => {
+      onSaved();
+      onClose();
+    },
+    onError: (e: unknown) => {
+      const message = e instanceof Error ? e.message : 'Could not update profile';
+      Alert.alert('Error', message);
+    },
+  });
+
+  const handleSave = () => {
     if (!name.trim() || !emailVal.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    setSaving(true);
-    try {
-      await updateUserProfileService({ fullName: name.trim(), email: emailVal.trim() });
-      onSaved();
-      onClose();
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Could not update profile';
-      Alert.alert('Error', message);
-    } finally {
-      setSaving(false);
-    }
+    saveMutation.mutate({ fullName: name.trim(), email: emailVal.trim() });
   };
 
   return (
@@ -79,11 +82,11 @@ export default function EditProfileModal({
         <View className="px-5 pb-8 pt-4">
           <TouchableOpacity
             className="h-14 rounded-2xl items-center justify-center"
-            style={{ backgroundColor: saving ? colors.border : colors.primary }}
+            style={{ backgroundColor: saveMutation.isPending ? colors.border : colors.primary }}
             onPress={handleSave}
-            disabled={saving}
+            disabled={saveMutation.isPending}
           >
-            {saving ? (
+            {saveMutation.isPending ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <Text className="text-white font-bold text-base">Save Changes</Text>

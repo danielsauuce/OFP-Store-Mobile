@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
@@ -27,40 +28,42 @@ export default function ShopScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([ALL_CATEGORY]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
-  const loadData = () => {
-    setLoading(true);
-    setLoadError(false);
-    Promise.all([getAllProductsService(), getAllCategoriesService()])
-      .then(([prodRes, catRes]) => {
-        const prodList = prodRes?.data?.products ?? prodRes?.products ?? prodRes?.data ?? prodRes;
-        setAllProducts(Array.isArray(prodList) ? prodList.map(normalizeProduct) : []);
-        const catList = catRes?.categories ?? catRes?.data ?? catRes;
-        const cats: Category[] = (Array.isArray(catList) ? catList : []).map(
-          (c: { _id: string; name: string; slug: string }) => ({
-            id: c._id,
-            name: c.name,
-            slug: c.slug,
-          }),
-        );
-        setCategories([ALL_CATEGORY, ...cats]);
-      })
-      .catch(() => setLoadError(true))
-      .finally(() => setLoading(false));
-  };
+  const {
+    data: allProducts = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Product[]>({
+    queryKey: ['products', 'all'],
+    queryFn: async () => {
+      const res = await getAllProductsService();
+      const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
+      return Array.isArray(list) ? list.map(normalizeProduct) : [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: categories = [ALL_CATEGORY] } = useQuery<Category[]>({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await getAllCategoriesService();
+      const catList = res?.categories ?? res?.data ?? res;
+      const cats: Category[] = (Array.isArray(catList) ? catList : []).map(
+        (c: { _id: string; name: string; slug: string }) => ({
+          id: c._id,
+          name: c.name,
+          slug: c.slug,
+        }),
+      );
+      return [ALL_CATEGORY, ...cats];
+    },
+    staleTime: 10 * 60 * 1000,
+  });
 
   const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
   const maxPrice = filters.maxPrice !== '' ? parseFloat(filters.maxPrice) : undefined;
@@ -86,9 +89,9 @@ export default function ShopScreen() {
       />
       <CategoryChips categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
 
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator color={colors.primary} className="mt-10" />
-      ) : loadError ? (
+      ) : isError ? (
         <View className="flex-1 items-center justify-center gap-3">
           <Text className="font-semibold text-lg" style={{ color: colors.text }}>
             Could not load products
@@ -96,7 +99,7 @@ export default function ShopScreen() {
           <TouchableOpacity
             className="px-6 py-3 rounded-xl"
             style={{ backgroundColor: colors.primary }}
-            onPress={loadData}
+            onPress={() => refetch()}
           >
             <Text className="text-white font-semibold">Retry</Text>
           </TouchableOpacity>
