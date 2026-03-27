@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import ShopHeader from '@/components/shop/ShopHeader';
 import EmptyProducts from '@/components/shop/EmptyProducts';
 import FilterSheet, { DEFAULT_FILTERS, FilterState } from '@/components/shop/FilterSheet';
 import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
+import SkeletonProductGrid from '@/components/ui/SkeletonProductGrid';
 
 type Product = NormalizedProduct;
 
@@ -90,7 +91,9 @@ export default function ShopScreen() {
       <CategoryChips categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} className="mt-10" />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <SkeletonProductGrid count={6} />
+        </ScrollView>
       ) : isError ? (
         <View className="flex-1 items-center justify-center gap-3">
           <Text className="font-semibold text-lg" style={{ color: colors.text }}>

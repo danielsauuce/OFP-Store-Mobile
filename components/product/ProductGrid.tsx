@@ -19,8 +19,8 @@ interface Props {
 export default function ProductGrid({ products = [], onPress }: Props) {
   return (
     <View className="flex-row flex-wrap justify-between px-5 gap-y-3">
-      {products.map((product) => (
-        <ProductCard key={product._id} product={product} onPress={() => onPress(product._id)} />
+      {products.map((product, index) => (
+        <ProductCard key={product._id} product={product} index={index} onPress={() => onPress(product._id)} />
       ))}
     </View>
   );

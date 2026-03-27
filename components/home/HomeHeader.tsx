@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { ShoppingBag } from 'lucide-react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface HomeHeaderProps {
@@ -11,10 +12,15 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
   const { colors } = useTheme();
 
   return (
-    <View className="px-5 pt-4 pb-2 flex-row justify-between items-center">
+    <MotiView
+      from={{ opacity: 0, translateY: -16 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 400 }}
+      className="px-5 pt-4 pb-2 flex-row justify-between items-center"
+    >
       <View>
         <Text className="text-2xl font-bold" style={{ color: colors.text }}>
-          {firstName ? `Hi, ${firstName}` : 'Welcome'}
+          {firstName ? `Hi, ${firstName} 👋` : 'Welcome'}
         </Text>
         <Text className="text-sm" style={{ color: colors.textSecondary }}>
           Furniture Palace
@@ -23,6 +29,6 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
       <TouchableOpacity onPress={onCartPress}>
         <ShoppingBag size={24} color={colors.primary} />
       </TouchableOpacity>
-    </View>
+    </MotiView>
   );
 }

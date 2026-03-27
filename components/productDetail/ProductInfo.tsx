@@ -1,4 +1,5 @@
 import { View, Text } from 'react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -27,7 +28,12 @@ export default function ProductInfo({
 
   return (
     <View className="px-5 pt-5 gap-3">
-      <View className="flex-row justify-between items-start">
+      <MotiView
+        from={{ opacity: 0, translateY: 12 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 380 }}
+        className="flex-row justify-between items-start"
+      >
         <View className="flex-1 mr-4">
           <Text className="text-xs font-bold uppercase opacity-50 mb-1" style={{ color: colors.text }}>
             {category}
@@ -39,25 +45,40 @@ export default function ProductInfo({
         <Text className="text-2xl font-bold" style={{ color: colors.primary }}>
           {formatCurrency(price)}
         </Text>
-      </View>
+      </MotiView>
 
-      <View
+      <MotiView
+        from={{ opacity: 0, translateX: -8 }}
+        animate={{ opacity: 1, translateX: 0 }}
+        transition={{ type: 'timing', duration: 360, delay: 80 }}
         className="self-start px-3 py-1 rounded-full"
         style={{ backgroundColor: inStock ? colors.success + '20' : colors.error + '20' }}
       >
         <Text className="text-xs font-semibold" style={{ color: inStock ? colors.success : colors.error }}>
           {inStock ? `In Stock (${stockQuantity} left)` : 'Out of Stock'}
         </Text>
-      </View>
+      </MotiView>
 
       {description && (
-        <Text className="text-sm leading-6" style={{ color: colors.textSecondary }}>
-          {description}
-        </Text>
+        <MotiView
+          from={{ opacity: 0, translateY: 8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 360, delay: 160 }}
+        >
+          <Text className="text-sm leading-6" style={{ color: colors.textSecondary }}>
+            {description}
+          </Text>
+        </MotiView>
       )}
 
       {(material || dimensions) && (
-        <View className="p-4 rounded-2xl gap-2" style={{ backgroundColor: colors.surfaceVariant }}>
+        <MotiView
+          from={{ opacity: 0, translateY: 8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 360, delay: 240 }}
+          className="p-4 rounded-2xl gap-2"
+          style={{ backgroundColor: colors.surfaceVariant }}
+        >
           {material && (
             <View className="flex-row justify-between">
               <Text className="text-sm font-semibold" style={{ color: colors.textSecondary }}>
@@ -78,7 +99,7 @@ export default function ProductInfo({
               </Text>
             </View>
           )}
-        </View>
+        </MotiView>
       )}
     </View>
   );

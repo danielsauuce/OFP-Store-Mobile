@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Text } from 'react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export interface Message {
@@ -17,8 +18,13 @@ export default function ChatBubble({ message }: Props) {
   const isUser = message.role === 'user';
 
   return (
-    <View className={`flex-row ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <View
+    <MotiView
+      from={{ opacity: 0, translateX: isUser ? 16 : -16, scale: 0.95 }}
+      animate={{ opacity: 1, translateX: 0, scale: 1 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 220 }}
+      className={`flex-row ${isUser ? 'justify-end' : 'justify-start'}`}
+    >
+      <MotiView
         className="px-4 py-3 rounded-2xl max-w-[80%]"
         style={{
           backgroundColor: isUser ? colors.primary : colors.surface,
@@ -29,7 +35,7 @@ export default function ChatBubble({ message }: Props) {
         <Text className="text-sm leading-5" style={{ color: isUser ? colors.onPrimary : colors.text }}>
           {message.content}
         </Text>
-      </View>
-    </View>
+      </MotiView>
+    </MotiView>
   );
 }

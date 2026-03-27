@@ -96,6 +96,7 @@ export default function CartScreen() {
               <CartItem
                 key={item._id ?? item.product?._id ?? index}
                 item={item}
+                index={index}
                 onUpdate={(qty) => handleUpdate(item.product._id, qty)}
                 onRemove={() => handleRemove(item.product._id)}
               />

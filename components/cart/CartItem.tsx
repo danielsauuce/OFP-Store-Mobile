@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Minus, Plus, Trash2 } from 'lucide-react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -21,15 +22,19 @@ interface CartItemData {
 
 interface Props {
   item: CartItemData;
+  index?: number;
   onUpdate: (quantity: number) => void;
   onRemove: () => void;
 }
 
-export default function CartItem({ item, onUpdate, onRemove }: Props) {
+export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props) {
   const { colors } = useTheme();
 
   return (
-    <View
+    <MotiView
+      from={{ opacity: 0, translateX: 30 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 180, delay: index * 60 }}
       className="flex-row p-3 mx-5 mb-3 rounded-2xl border"
       style={{ backgroundColor: colors.surface, borderColor: colors.border }}
     >
@@ -85,6 +90,6 @@ export default function CartItem({ item, onUpdate, onRemove }: Props) {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </MotiView>
   );
 }
