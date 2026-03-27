@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { ShoppingBag } from 'lucide-react-native';
+import { ShoppingBag, Hand } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -19,9 +19,12 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
       className="px-5 pt-4 pb-2 flex-row justify-between items-center"
     >
       <View>
-        <Text className="text-2xl font-bold" style={{ color: colors.text }}>
-          {firstName ? `Hi, ${firstName} 👋` : 'Welcome'}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          <Text className="text-2xl font-bold" style={{ color: colors.text }}>
+            {firstName ? `Hi, ${firstName}` : 'Welcome'}
+          </Text>
+          {firstName && <Hand size={20} color={colors.primary} />}
+        </View>
         <Text className="text-sm" style={{ color: colors.textSecondary }}>
           Furniture Palace
         </Text>
