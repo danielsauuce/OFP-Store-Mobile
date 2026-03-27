@@ -39,7 +39,7 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <HomeHeader
           firstName={user?.fullName.split(' ')[0] ?? null}
-          onCartPress={() => router.push('/(tabs)/shop')}
+          onCartPress={() => router.push('/(tabs)/cart')}
         />
         <HeroBanner onShopPress={() => router.push('/(tabs)/shop')} />
         <QualityHighlights />
