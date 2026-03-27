@@ -1,5 +1,6 @@
-import React from 'react';
-import { ScrollView, TouchableOpacity, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, Pressable, Text } from 'react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Category {
@@ -15,37 +16,56 @@ interface Props {
 
 export default function CategoryChips({ categories, selected, onSelect }: Props) {
   const { colors } = useTheme();
+  const [pressed, setPressed] = useState<string | null>(null);
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 12 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, gap: 8 }}
     >
-      <View className="flex-row gap-2">
-        {categories.map((c) => {
-          const active = selected === c.id;
+      {categories.map((c) => {
+        const active = selected === c.id;
 
-          return (
-            <TouchableOpacity
-              key={c.id}
-              onPress={() => onSelect(c.id)}
-              className="px-5 py-2 rounded-full border"
-              style={{
+        return (
+          <Pressable
+            key={c.id}
+            onPress={() => onSelect(c.id)}
+            onPressIn={() => setPressed(c.id)}
+            onPressOut={() => setPressed(null)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`${c.name}${active ? ', selected' : ''}`}
+          >
+            <MotiView
+              animate={{
+                scale: pressed === c.id ? 0.94 : 1,
                 backgroundColor: active ? colors.primary : colors.surface,
-                borderColor: active ? colors.primary : colors.border,
               }}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={`${c.name}${active ? ', selected' : ''}`}
+              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              style={{
+                paddingHorizontal: 18,
+                paddingVertical: 8,
+                borderRadius: 100,
+                borderWidth: active ? 0 : 1,
+                borderColor: colors.border,
+                shadowColor: active ? colors.primary : 'transparent',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: active ? 0.28 : 0,
+                shadowRadius: 6,
+                elevation: active ? 4 : 0,
+              }}
             >
-              <Text className="font-semibold" style={{ color: active ? '#fff' : colors.text }}>
+              <Text
+                className="text-sm font-semibold"
+                style={{ color: active ? '#fff' : colors.textSecondary }}
+              >
                 {c.name}
               </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+            </MotiView>
+          </Pressable>
+        );
+      })}
     </ScrollView>
   );
 }
