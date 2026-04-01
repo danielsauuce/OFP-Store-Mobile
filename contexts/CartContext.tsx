@@ -58,7 +58,32 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     queryKey: cartKeys.cart,
     queryFn: async () => {
       const res = await getCartService();
-      return res.cart ?? res ?? null;
+      const raw: Cart | null = res.cart ?? res ?? null;
+      if (!raw) return null;
+
+      // Normalize each product — backend may return images as objects or use primaryImage
+      const items = (raw.items ?? []).map((item) => {
+        const p = item.product as CartProduct & {
+          primaryImage?: { secureUrl?: string; url?: string };
+        };
+        let images: string[] = [];
+        if (Array.isArray(p.images) && p.images.length > 0) {
+          images = p.images.map((img) =>
+            typeof img === 'string'
+              ? img
+              : ((img as { secureUrl?: string; url?: string }).secureUrl ??
+                (img as { secureUrl?: string; url?: string }).url ??
+                ''),
+          );
+        } else if (p.primaryImage?.secureUrl) {
+          images = [p.primaryImage.secureUrl];
+        } else if (p.primaryImage?.url) {
+          images = [p.primaryImage.url];
+        }
+        return { ...item, product: { ...p, images } };
+      });
+
+      return { ...raw, items };
     },
     enabled: !!user,
     staleTime: 2 * 60 * 1000,

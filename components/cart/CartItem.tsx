@@ -61,7 +61,7 @@ export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props)
         </View>
 
         <Text style={{ color: colors.primary }} className="font-bold">
-          {formatCurrency(item.product.price)}
+          {formatCurrency(Number(item.product.price) || 0)}
         </Text>
 
         <View className="flex-row items-center gap-3">
