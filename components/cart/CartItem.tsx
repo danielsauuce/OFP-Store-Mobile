@@ -18,6 +18,7 @@ interface CartItemData {
   _id: string;
   product: CartProduct;
   quantity: number;
+  price?: number;
 }
 
 interface Props {
@@ -61,7 +62,7 @@ export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props)
         </View>
 
         <Text style={{ color: colors.primary }} className="font-bold">
-          {formatCurrency(Number(item.product.price) || 0)}
+          {formatCurrency(Number(item.price ?? item.product.price) || 0)}
         </Text>
 
         <View className="flex-row items-center gap-3">

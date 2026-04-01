@@ -20,6 +20,7 @@ export interface CartItem {
   _id: string;
   product: CartProduct;
   quantity: number;
+  price?: number; // price locked at time of adding to cart (may live here, not on product)
 }
 
 export interface Cart {
@@ -80,7 +81,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         } else if (p.primaryImage?.url) {
           images = [p.primaryImage.url];
         }
-        return { ...item, product: { ...p, images } };
+        // Resolve price: item-level price takes priority over product.price (backend may lock price on item)
+        const rawItem = item as CartItem & { price?: number };
+        const resolvedPrice = rawItem.price ?? p.price ?? 0;
+        return { ...item, product: { ...p, images, price: resolvedPrice }, price: resolvedPrice };
       });
 
       return { ...raw, items };
