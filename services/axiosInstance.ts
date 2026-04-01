@@ -34,11 +34,18 @@ api.interceptors.response.use(
           status: error.response.status,
         });
       }
+    } else if (error.code === 'ECONNABORTED') {
+      console.warn('API request timed out', {
+        endpoint: error.config?.url,
+        method: error.config?.method,
+      });
+      error.message = 'Request timed out. The server may be starting up — please try again.';
     } else if (error.request) {
       console.warn('API request failed - no response', {
         endpoint: error.config?.url,
         method: error.config?.method,
       });
+      error.message = 'No response from server. Check your internet connection.';
     }
     return Promise.reject(error);
   },
