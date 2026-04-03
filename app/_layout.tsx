@@ -33,6 +33,7 @@ export default function RootLayout() {
                     name="order-confirmation"
                     options={{ headerShown: false, gestureEnabled: false }}
                   />
+                  <Stack.Screen name="notifications" options={{ headerShown: false }} />
                 </Stack>
               </OrderProvider>
             </WishlistProvider>
