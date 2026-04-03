@@ -3,11 +3,11 @@ import { ClipboardList, Headphones } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface SupportHeaderProps {
-  onViewTickets?: () => void;
+  onViewHistory?: () => void;
   onNewChat?: () => void;
 }
 
-export default function SupportHeader({ onViewTickets, onNewChat }: SupportHeaderProps) {
+export default function SupportHeader({ onViewHistory, onNewChat }: SupportHeaderProps) {
   const { colors } = useTheme();
 
   return (
@@ -45,15 +45,15 @@ export default function SupportHeader({ onViewTickets, onNewChat }: SupportHeade
           </TouchableOpacity>
         )}
 
-        {onViewTickets && (
+        {onViewHistory && (
           <TouchableOpacity
-            onPress={onViewTickets}
+            onPress={onViewHistory}
             className="flex-row items-center gap-1.5 px-3 py-2 rounded-xl"
             style={{ backgroundColor: colors.primary + '15' }}
           >
             <ClipboardList size={16} color={colors.primary} />
             <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
-              Tickets
+              History
             </Text>
           </TouchableOpacity>
         )}

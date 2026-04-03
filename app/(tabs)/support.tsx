@@ -5,11 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getMyTicketsService,
-  getTicketByIdService,
-  createTicketService,
-  addTicketReplyService,
-} from '@/services/supportService';
+  getConversationsService,
+  getMessagesService,
+  createConversationService,
+  sendChatMessageService,
+  ChatMessage,
+} from '@/services/chatService';
 import ChatInput from '@/components/chat/ChatInput';
 import SupportHeader from '@/components/support/SupportHeader';
 import ChatMessageList from '@/components/support/ChatMessageList';
@@ -26,138 +27,130 @@ const WELCOME: LocalMessage = {
     'Hi! Welcome to Olayinka Furniture Palace support. How can we help you today? A member of our team will be with you shortly.',
 };
 
+function toLocal(msg: ChatMessage, userId: string): LocalMessage {
+  return {
+    id: msg._id,
+    role: msg.sender._id === userId ? 'user' : 'assistant',
+    content: msg.content,
+  };
+}
+
 export default function SupportScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const ticketIdRef = useRef<string | null>(null);
+  const convIdRef = useRef<string | null>(null);
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<LocalMessage[]>([WELCOME]);
   const [conversationReady, setConversationReady] = useState(false);
-  const [showTickets, setShowTickets] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  // Load most recent open ticket on mount
   const { isLoading: loadingConversations } = useQuery({
-    queryKey: ['support', 'active'],
+    queryKey: ['chat', 'conversations'],
     queryFn: async () => {
-      const res = await getMyTicketsService();
-      const list = res?.tickets ?? res?.data ?? res ?? [];
-      const open = Array.isArray(list)
-        ? (list.find((t: { status: string }) => t.status === 'open' || t.status === 'in_progress') ?? list[0])
-        : null;
-
-      if (open) {
-        ticketIdRef.current = open._id;
-
-        // Load full ticket with replies
-        const detail = await getTicketByIdService(open._id);
-        const ticket = detail?.ticket ?? detail;
-        if (ticket) {
-          const msgs: LocalMessage[] = [
-            WELCOME,
-            { id: ticket._id + '_msg', role: 'user', content: ticket.message },
-          ];
-          (ticket.replies ?? []).forEach((r: { _id: string; text: string; sender: string }) => {
-            msgs.push({
-              id: r._id,
-              role: r.sender === 'admin' ? 'assistant' : 'user',
-              content: r.text,
-            });
-          });
-          setLocalMessages(msgs);
+      try {
+        const res = await getConversationsService();
+        const list = res?.conversations ?? res ?? [];
+        if (Array.isArray(list) && list.length > 0) {
+          const latest = list[0];
+          convIdRef.current = latest._id;
+          if (user) {
+            const msgRes = await getMessagesService(latest._id, 1, 100);
+            const msgs: ChatMessage[] = msgRes?.messages ?? msgRes ?? [];
+            if (msgs.length > 0) {
+              setLocalMessages([WELCOME, ...msgs.map((m) => toLocal(m, user.id))]);
+            }
+          }
           setConversationReady(true);
         }
+        return list;
+      } catch {
+        // No conversations yet or endpoint not reachable — start fresh
+        return [];
       }
-      return list;
     },
     enabled: !!user,
     staleTime: 30_000,
     retry: false,
   });
 
-  // Create new ticket (first message in a new conversation)
   const createMutation = useMutation({
-    mutationFn: (message: string) => createTicketService({ subject: 'Support Chat', message }),
+    mutationFn: createConversationService,
     onSuccess: (res) => {
-      const id = res?.ticket?._id ?? res?._id;
+      const id = res?.conversation?._id ?? (res as { _id?: string })?._id;
       if (id) {
-        ticketIdRef.current = id;
+        convIdRef.current = id;
         setConversationReady(true);
-        qc.invalidateQueries({ queryKey: ['support', 'active'] });
-        qc.invalidateQueries({ queryKey: ['tickets'] });
+        qc.invalidateQueries({ queryKey: ['chat', 'conversations'] });
       }
     },
   });
 
-  // Reply to existing ticket
-  const replyMutation = useMutation({
-    mutationFn: ({ ticketId, text }: { ticketId: string; text: string }) =>
-      addTicketReplyService(ticketId, text),
+  const sendMutation = useMutation({
+    mutationFn: ({ convId, content }: { convId: string; content: string }) =>
+      sendChatMessageService(convId, content),
     onSuccess: (res) => {
-      const reply = res?.reply ?? res;
-      if (reply) {
+      if (res?.message && user) {
+        const real = toLocal(res.message, user.id);
         setLocalMessages((prev) => {
           const idx = prev.findLastIndex((m) => m.id === '__optimistic__');
           if (idx === -1) return prev;
           const next = [...prev];
-          next[idx] = { id: reply._id ?? uid(), role: 'user', content: reply.text };
+          next[idx] = real;
           return next;
         });
       }
     },
     onError: () => {
-      setLocalMessages((prev) => prev.filter((m) => m.id !== '__optimistic__'));
       setLocalMessages((prev) => [
-        ...prev,
+        ...prev.filter((m) => m.id !== '__optimistic__'),
         { id: uid(), role: 'assistant', content: "Sorry, your message couldn't be sent. Please try again." },
       ]);
     },
   });
 
-  const isSending = createMutation.isPending || replyMutation.isPending;
+  const isSending = createMutation.isPending || sendMutation.isPending;
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || isSending) return;
     setInput('');
 
-    // Optimistic message
     setLocalMessages((prev) => [...prev, { id: '__optimistic__', role: 'user', content: text }]);
 
     try {
-      if (!ticketIdRef.current) {
-        // First message — create a ticket
-        const res = await createMutation.mutateAsync(text);
-        const id = res?.ticket?._id ?? res?._id;
-        if (!id) {
-          setLocalMessages((prev) => [
-            ...prev.filter((m) => m.id !== '__optimistic__'),
-            {
-              id: uid(),
-              role: 'assistant',
-              content: "Sorry, we couldn't start a conversation. Please try again.",
-            },
-          ]);
-          return;
-        }
-        // Replace optimistic with real message (the ticket's own message)
-        setLocalMessages((prev) =>
-          prev.map((m) => (m.id === '__optimistic__' ? { ...m, id: id + '_msg' } : m)),
-        );
-      } else {
-        await replyMutation.mutateAsync({ ticketId: ticketIdRef.current, text });
+      let convId = convIdRef.current;
+
+      if (!convId) {
+        const res = await createMutation.mutateAsync();
+        convId = res?.conversation?._id ?? (res as { _id?: string })?._id ?? null;
+        convIdRef.current = convId;
       }
+
+      if (!convId) {
+        setLocalMessages((prev) => [
+          ...prev.filter((m) => m.id !== '__optimistic__'),
+          {
+            id: uid(),
+            role: 'assistant',
+            content: "Sorry, we couldn't start a conversation. Please try again.",
+          },
+        ]);
+        return;
+      }
+
+      await sendMutation.mutateAsync({ convId, content: text });
     } catch {
       setLocalMessages((prev) => [
         ...prev.filter((m) => m.id !== '__optimistic__'),
         { id: uid(), role: 'assistant', content: "Sorry, your message couldn't be sent. Please try again." },
       ]);
     }
-  }, [input, isSending, createMutation, replyMutation]);
+  }, [input, isSending, createMutation, sendMutation]);
 
   const handleNewConversation = useCallback(() => {
-    ticketIdRef.current = null;
+    convIdRef.current = null;
     setConversationReady(false);
     setLocalMessages([WELCOME]);
   }, []);
@@ -170,7 +163,7 @@ export default function SupportScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <SupportHeader
-          onViewTickets={() => setShowTickets(true)}
+          onViewHistory={() => setShowHistory(true)}
           onNewChat={conversationReady ? handleNewConversation : undefined}
         />
 
@@ -201,7 +194,7 @@ export default function SupportScreen() {
         <ChatInput value={input} onChange={setInput} onSend={handleSend} />
       </KeyboardAvoidingView>
 
-      <TicketHistoryModal visible={showTickets} onClose={() => setShowTickets(false)} />
+      <TicketHistoryModal visible={showHistory} onClose={() => setShowHistory(false)} />
     </SafeAreaView>
   );
 }
