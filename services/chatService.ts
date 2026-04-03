@@ -35,10 +35,12 @@ export const getMessagesService = async (
   limit = 50,
 ): Promise<{ messages: ChatMessage[]; total: number; page: number }> => {
   if (!conversationId) throw new TypeError('conversationId is required');
+
   const encodedId = encodeURIComponent(conversationId);
   const { data } = await axiosInstance.get(`/api/chat/conversations/${encodedId}/messages`, {
     params: { page, limit },
   });
+
   return data;
 };
 
