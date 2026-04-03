@@ -1,5 +1,12 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { KeyboardAvoidingView, Platform, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquarePlus } from 'lucide-react-native';
@@ -19,6 +26,8 @@ import TicketHistoryModal from '@/components/support/TicketHistoryModal';
 
 type LocalMessage = { id: string; role: 'user' | 'assistant'; content: string };
 
+const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
 function toLocal(msg: ChatMessage, currentUserId: string): LocalMessage {
   return {
     id: msg._id,
@@ -31,7 +40,7 @@ const WELCOME: LocalMessage = {
   id: '__welcome__',
   role: 'assistant',
   content:
-    "Hi! Welcome to Olayinka Furniture Palace support. How can we help you today? A member of our team will be with you shortly.",
+    'Hi! Welcome to Olayinka Furniture Palace support. How can we help you today? A member of our team will be with you shortly.',
 };
 
 export default function SupportScreen() {
@@ -49,22 +58,27 @@ export default function SupportScreen() {
   const { isLoading: loadingConversations } = useQuery({
     queryKey: ['chat', 'conversations'],
     queryFn: async () => {
-      const res = await getConversationsService();
-      const list = res?.conversations ?? res ?? [];
-      if (list.length > 0) {
-        const latest = list[0];
-        conversationIdRef.current = latest._id;
+      try {
+        const res = await getConversationsService();
+        const list = res?.conversations ?? res ?? [];
+        if (list.length > 0) {
+          const latest = list[0];
+          conversationIdRef.current = latest._id;
 
-        // Load messages for existing conversation
-        const msgRes = await getMessagesService(latest._id, 1, 100);
-        const msgs: ChatMessage[] = msgRes?.messages ?? msgRes ?? [];
-        if (msgs.length > 0 && user) {
-          const mapped = msgs.map((m) => toLocal(m, user.id));
-          setLocalMessages([WELCOME, ...mapped]);
+          // Load messages for existing conversation
+          const msgRes = await getMessagesService(latest._id, 1, 100);
+          const msgs: ChatMessage[] = msgRes?.messages ?? msgRes ?? [];
+          if (msgs.length > 0 && user) {
+            const mapped = msgs.map((m) => toLocal(m, user.id));
+            setLocalMessages([WELCOME, ...mapped]);
+          }
+          setConversationReady(true);
         }
-        setConversationReady(true);
+        return list;
+      } catch {
+        // 403 or network error — treat as no existing conversation, let user start fresh
+        return [];
       }
-      return list;
     },
     enabled: !!user,
     staleTime: 30_000,
@@ -74,7 +88,7 @@ export default function SupportScreen() {
   const createConversationMutation = useMutation({
     mutationFn: createConversationService,
     onSuccess: (res) => {
-      const id = res?.conversation?._id ?? (res as Record<string, unknown>)?._id as string;
+      const id = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string);
       if (id) {
         conversationIdRef.current = id;
         setConversationReady(true);
@@ -121,14 +135,18 @@ export default function SupportScreen() {
 
       if (!convId) {
         const res = await createConversationMutation.mutateAsync();
-        convId = res?.conversation?._id ?? (res as Record<string, unknown>)?._id as string ?? null;
+        convId = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string) ?? null;
         conversationIdRef.current = convId;
       }
 
       if (!convId) {
         setLocalMessages((prev) => [
           ...prev.filter((m) => m.id !== '__optimistic__'),
-          { id: crypto.randomUUID(), role: 'assistant', content: "Sorry, we couldn't start a conversation. Please try again." },
+          {
+            id: uid(),
+            role: 'assistant',
+            content: "Sorry, we couldn't start a conversation. Please try again.",
+          },
         ]);
         return;
       }
@@ -138,7 +156,7 @@ export default function SupportScreen() {
       setLocalMessages((prev) => [
         ...prev.filter((m) => m.id !== '__optimistic__'),
         {
-          id: crypto.randomUUID(),
+          id: uid(),
           role: 'assistant',
           content: "Sorry, your message couldn't be sent. Please try again.",
         },
@@ -151,7 +169,7 @@ export default function SupportScreen() {
     setConversationReady(false);
     setLocalMessages([WELCOME]);
     const res = await createConversationMutation.mutateAsync();
-    const id = res?.conversation?._id ?? (res as Record<string, unknown>)?._id as string;
+    const id = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string);
     if (id) conversationIdRef.current = id;
   }, [createConversationMutation]);
 
