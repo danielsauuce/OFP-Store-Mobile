@@ -27,9 +27,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Silence expected 401 on the auth-check endpoint — it just means no active session
+      // Silence expected 401 on auth-check and 403 on chat (user-scoped endpoints)
       const isAuthCheck = error.config?.url?.includes('/api/auth/me');
-      if (!(isAuthCheck && error.response.status === 401)) {
+      const isChatSilenced = error.config?.url?.includes('/api/chat/') && error.response.status === 403;
+      if (!(isAuthCheck && error.response.status === 401) && !isChatSilenced) {
         console.error(`API request failed: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
           status: error.response.status,
         });

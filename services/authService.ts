@@ -22,6 +22,7 @@ export interface AuthResponse {
     id: string;
     fullName: string;
     email: string;
+    profilePicture?: string;
   };
   accessToken: string;
 }

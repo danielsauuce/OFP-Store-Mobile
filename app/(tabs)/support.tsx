@@ -1,24 +1,15 @@
 import React, { useRef, useState, useCallback } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquarePlus } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getConversationsService,
-  getMessagesService,
-  createConversationService,
-  sendChatMessageService,
-  ChatMessage,
-} from '@/services/chatService';
+  getMyTicketsService,
+  getTicketByIdService,
+  createTicketService,
+  addTicketReplyService,
+} from '@/services/supportService';
 import ChatInput from '@/components/chat/ChatInput';
 import SupportHeader from '@/components/support/SupportHeader';
 import ChatMessageList from '@/components/support/ChatMessageList';
@@ -27,14 +18,6 @@ import TicketHistoryModal from '@/components/support/TicketHistoryModal';
 type LocalMessage = { id: string; role: 'user' | 'assistant'; content: string };
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-function toLocal(msg: ChatMessage, currentUserId: string): LocalMessage {
-  return {
-    id: msg._id,
-    role: msg.sender._id === currentUserId ? 'user' : 'assistant',
-    content: msg.content,
-  };
-}
 
 const WELCOME: LocalMessage = {
   id: '__welcome__',
@@ -48,130 +31,136 @@ export default function SupportScreen() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const conversationIdRef = useRef<string | null>(null);
+  const ticketIdRef = useRef<string | null>(null);
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<LocalMessage[]>([WELCOME]);
   const [conversationReady, setConversationReady] = useState(false);
   const [showTickets, setShowTickets] = useState(false);
 
-  // Load existing conversations on mount
+  // Load most recent open ticket on mount
   const { isLoading: loadingConversations } = useQuery({
-    queryKey: ['chat', 'conversations'],
+    queryKey: ['support', 'active'],
     queryFn: async () => {
-      try {
-        const res = await getConversationsService();
-        const list = res?.conversations ?? res ?? [];
-        if (list.length > 0) {
-          const latest = list[0];
-          conversationIdRef.current = latest._id;
+      const res = await getMyTicketsService();
+      const list = res?.tickets ?? res?.data ?? res ?? [];
+      const open = Array.isArray(list)
+        ? (list.find((t: { status: string }) => t.status === 'open' || t.status === 'in_progress') ?? list[0])
+        : null;
 
-          // Load messages for existing conversation
-          const msgRes = await getMessagesService(latest._id, 1, 100);
-          const msgs: ChatMessage[] = msgRes?.messages ?? msgRes ?? [];
-          if (msgs.length > 0 && user) {
-            const mapped = msgs.map((m) => toLocal(m, user.id));
-            setLocalMessages([WELCOME, ...mapped]);
-          }
+      if (open) {
+        ticketIdRef.current = open._id;
+
+        // Load full ticket with replies
+        const detail = await getTicketByIdService(open._id);
+        const ticket = detail?.ticket ?? detail;
+        if (ticket) {
+          const msgs: LocalMessage[] = [
+            WELCOME,
+            { id: ticket._id + '_msg', role: 'user', content: ticket.message },
+          ];
+          (ticket.replies ?? []).forEach((r: { _id: string; text: string; sender: string }) => {
+            msgs.push({
+              id: r._id,
+              role: r.sender === 'admin' ? 'assistant' : 'user',
+              content: r.text,
+            });
+          });
+          setLocalMessages(msgs);
           setConversationReady(true);
         }
-        return list;
-      } catch {
-        // 403 or network error — treat as no existing conversation, let user start fresh
-        return [];
       }
+      return list;
     },
     enabled: !!user,
     staleTime: 30_000,
     retry: false,
   });
 
-  const createConversationMutation = useMutation({
-    mutationFn: createConversationService,
+  // Create new ticket (first message in a new conversation)
+  const createMutation = useMutation({
+    mutationFn: (message: string) => createTicketService({ subject: 'Support Chat', message }),
     onSuccess: (res) => {
-      const id = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string);
+      const id = res?.ticket?._id ?? res?._id;
       if (id) {
-        conversationIdRef.current = id;
+        ticketIdRef.current = id;
         setConversationReady(true);
-        qc.invalidateQueries({ queryKey: ['chat', 'conversations'] });
+        qc.invalidateQueries({ queryKey: ['support', 'active'] });
+        qc.invalidateQueries({ queryKey: ['tickets'] });
       }
     },
   });
 
-  const sendMutation = useMutation({
-    mutationFn: ({ convId, content }: { convId: string; content: string }) =>
-      sendChatMessageService(convId, content),
+  // Reply to existing ticket
+  const replyMutation = useMutation({
+    mutationFn: ({ ticketId, text }: { ticketId: string; text: string }) =>
+      addTicketReplyService(ticketId, text),
     onSuccess: (res) => {
-      if (res?.message && user) {
-        // Replace the optimistic message with the real one
-        const real = toLocal(res.message, user.id);
+      const reply = res?.reply ?? res;
+      if (reply) {
         setLocalMessages((prev) => {
           const idx = prev.findLastIndex((m) => m.id === '__optimistic__');
           if (idx === -1) return prev;
           const next = [...prev];
-          next[idx] = real;
+          next[idx] = { id: reply._id ?? uid(), role: 'user', content: reply.text };
           return next;
         });
       }
     },
     onError: () => {
-      // Remove failed optimistic message
       setLocalMessages((prev) => prev.filter((m) => m.id !== '__optimistic__'));
+      setLocalMessages((prev) => [
+        ...prev,
+        { id: uid(), role: 'assistant', content: "Sorry, your message couldn't be sent. Please try again." },
+      ]);
     },
   });
 
-  const isSending = createConversationMutation.isPending || sendMutation.isPending;
+  const isSending = createMutation.isPending || replyMutation.isPending;
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || isSending) return;
     setInput('');
 
-    // Optimistic user message
-    const optimistic: LocalMessage = { id: '__optimistic__', role: 'user', content: text };
-    setLocalMessages((prev) => [...prev, optimistic]);
+    // Optimistic message
+    setLocalMessages((prev) => [...prev, { id: '__optimistic__', role: 'user', content: text }]);
 
     try {
-      let convId = conversationIdRef.current;
-
-      if (!convId) {
-        const res = await createConversationMutation.mutateAsync();
-        convId = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string) ?? null;
-        conversationIdRef.current = convId;
+      if (!ticketIdRef.current) {
+        // First message — create a ticket
+        const res = await createMutation.mutateAsync(text);
+        const id = res?.ticket?._id ?? res?._id;
+        if (!id) {
+          setLocalMessages((prev) => [
+            ...prev.filter((m) => m.id !== '__optimistic__'),
+            {
+              id: uid(),
+              role: 'assistant',
+              content: "Sorry, we couldn't start a conversation. Please try again.",
+            },
+          ]);
+          return;
+        }
+        // Replace optimistic with real message (the ticket's own message)
+        setLocalMessages((prev) =>
+          prev.map((m) => (m.id === '__optimistic__' ? { ...m, id: id + '_msg' } : m)),
+        );
+      } else {
+        await replyMutation.mutateAsync({ ticketId: ticketIdRef.current, text });
       }
-
-      if (!convId) {
-        setLocalMessages((prev) => [
-          ...prev.filter((m) => m.id !== '__optimistic__'),
-          {
-            id: uid(),
-            role: 'assistant',
-            content: "Sorry, we couldn't start a conversation. Please try again.",
-          },
-        ]);
-        return;
-      }
-
-      await sendMutation.mutateAsync({ convId, content: text });
     } catch {
       setLocalMessages((prev) => [
         ...prev.filter((m) => m.id !== '__optimistic__'),
-        {
-          id: uid(),
-          role: 'assistant',
-          content: "Sorry, your message couldn't be sent. Please try again.",
-        },
+        { id: uid(), role: 'assistant', content: "Sorry, your message couldn't be sent. Please try again." },
       ]);
     }
-  }, [input, isSending, createConversationMutation, sendMutation]);
+  }, [input, isSending, createMutation, replyMutation]);
 
-  const handleNewConversation = useCallback(async () => {
-    conversationIdRef.current = null;
+  const handleNewConversation = useCallback(() => {
+    ticketIdRef.current = null;
     setConversationReady(false);
     setLocalMessages([WELCOME]);
-    const res = await createConversationMutation.mutateAsync();
-    const id = res?.conversation?._id ?? ((res as Record<string, unknown>)?._id as string);
-    if (id) conversationIdRef.current = id;
-  }, [createConversationMutation]);
+  }, []);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -194,8 +183,7 @@ export default function SupportScreen() {
           </View>
         ) : (
           <>
-            {/* Existing conversation badge */}
-            {conversationReady && !loadingConversations && (
+            {conversationReady && (
               <View
                 className="mx-4 mt-3 mb-1 px-3 py-2 rounded-xl flex-row items-center gap-2"
                 style={{ backgroundColor: colors.success + '15' }}
@@ -204,12 +192,8 @@ export default function SupportScreen() {
                 <Text className="text-xs font-semibold flex-1" style={{ color: colors.success }}>
                   Connected — our team can see your messages
                 </Text>
-                <TouchableOpacity onPress={handleNewConversation}>
-                  <MessageSquarePlus size={16} color={colors.success} />
-                </TouchableOpacity>
               </View>
             )}
-
             <ChatMessageList messages={localMessages} loading={isSending} />
           </>
         )}

@@ -84,7 +84,17 @@ export default function ProfileScreen() {
           fullName={user.fullName}
           email={user.email}
           profilePicture={user.profilePicture}
-          onUploadSuccess={() => queryClient.invalidateQueries({ queryKey: authKeys.me })}
+          onUploadSuccess={(newUrl) => {
+            // Patch the cached user directly so the picture persists without waiting for re-fetch
+            queryClient.setQueryData(
+              authKeys.me,
+              (old: { user: typeof user; accessToken: string } | null) => {
+                if (!old) return old;
+                return { ...old, user: { ...old.user, profilePicture: newUrl ?? undefined } };
+              },
+            );
+            queryClient.invalidateQueries({ queryKey: authKeys.me });
+          }}
         />
 
         <ProfileMenu

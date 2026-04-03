@@ -11,7 +11,7 @@ interface ProfileAvatarProps {
   fullName: string;
   email: string;
   profilePicture?: string;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: (newUrl?: string) => void;
 }
 
 export default function ProfileAvatar({
@@ -35,7 +35,11 @@ export default function ProfileAvatar({
   const uploadMutation = useMutation({
     mutationFn: (imageData: { uri: string; name: string; type: string }) =>
       uploadProfilePictureService(imageData),
-    onSuccess: () => onUploadSuccess?.(),
+    onSuccess: (res) => {
+      const newUrl: string | undefined =
+        res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
+      onUploadSuccess?.(newUrl);
+    },
     onError: () => {
       Alert.alert('Error', 'Could not upload photo. Please try again.');
       setLocalImage(null);
@@ -46,7 +50,7 @@ export default function ProfileAvatar({
     mutationFn: () => deleteProfilePictureService(),
     onSuccess: () => {
       setLocalImage(null);
-      onUploadSuccess?.();
+      onUploadSuccess?.(undefined);
     },
     onError: () => Alert.alert('Error', 'Could not remove photo. Please try again.'),
   });
