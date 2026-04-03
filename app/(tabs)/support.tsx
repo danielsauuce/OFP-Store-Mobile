@@ -205,7 +205,10 @@ export default function SupportScreen() {
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: socketReady ? colors.success : colors.textTertiary }}
                 />
-                <Text className="text-xs font-semibold" style={{ color: socketReady ? colors.success : colors.textSecondary }}>
+                <Text
+                  className="text-xs font-semibold"
+                  style={{ color: socketReady ? colors.success : colors.textSecondary }}
+                >
                   {socketReady ? 'Connected — our team can see your messages' : 'Reconnecting…'}
                 </Text>
               </View>

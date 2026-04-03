@@ -33,11 +33,7 @@ export default function ProductCard({ product, onPress, onAddToCart, index = 0 }
       transition={{ type: 'timing', duration: 380, delay: Math.min(index * 70, 350) }}
       className="w-[48%]"
     >
-      <Pressable
-        onPress={onPress}
-        onPressIn={() => setPressed(true)}
-        onPressOut={() => setPressed(false)}
-      >
+      <Pressable onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)}>
         <MotiView
           animate={{ scale: pressed ? 0.97 : 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 22 }}
@@ -72,14 +68,24 @@ export default function ProductCard({ product, onPress, onAddToCart, index = 0 }
               {product.name}
             </Text>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 4,
+              }}
+            >
               <Text style={{ color: colors.text, fontSize: 15, fontWeight: '800' }}>
                 {formatCurrency(product.price)}
               </Text>
 
               {product.inStock && onAddToCart && (
                 <TouchableOpacity
-                  onPress={(e) => { e.stopPropagation?.(); onAddToCart(); }}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    onAddToCart();
+                  }}
                   hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                   style={{
                     width: 34,

@@ -28,11 +28,7 @@ export default function WelcomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#111' }}>
       {/* Full-bleed hero image */}
-      <Image
-        source={heroImage}
-        style={{ position: 'absolute', width, height }}
-        contentFit="cover"
-      />
+      <Image source={heroImage} style={{ position: 'absolute', width, height }} contentFit="cover" />
 
       {/* Dark gradient overlay — heavier at bottom where text sits */}
       <LinearGradient
@@ -60,7 +56,9 @@ export default function WelcomeScreen() {
               borderColor: 'rgba(255,255,255,0.2)',
             }}
           >
-            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', letterSpacing: 1 }}>
+            <Text
+              style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', letterSpacing: 1 }}
+            >
               OLAYINKA FURNITURE PALACE
             </Text>
           </View>
@@ -125,9 +123,7 @@ export default function WelcomeScreen() {
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
-                  Start Shopping
-                </Text>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>Start Shopping</Text>
               </MotiView>
             </Pressable>
 
@@ -158,7 +154,9 @@ export default function WelcomeScreen() {
           >
             {['Handcrafted', 'Fast Delivery', 'Lifetime Support'].map((f) => (
               <View key={f} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.6)' }} />
+                <View
+                  style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.6)' }}
+                />
                 <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '500' }}>{f}</Text>
               </View>
             ))}
