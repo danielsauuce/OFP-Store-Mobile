@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Text, Pressable, View } from 'react-native';
+import { Text, Pressable, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { MotiView } from 'moti';
+import { ShoppingCart } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -17,10 +18,11 @@ interface Product {
 interface Props {
   product: Product;
   onPress: () => void;
+  onAddToCart?: () => void;
   index?: number;
 }
 
-export default function ProductCard({ product, onPress, index = 0 }: Props) {
+export default function ProductCard({ product, onPress, onAddToCart, index = 0 }: Props) {
   const { colors } = useTheme();
   const [pressed, setPressed] = useState(false);
 
@@ -31,14 +33,27 @@ export default function ProductCard({ product, onPress, index = 0 }: Props) {
       transition={{ type: 'timing', duration: 380, delay: Math.min(index * 70, 350) }}
       className="w-[48%]"
     >
-      <Pressable onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+      >
         <MotiView
           animate={{ scale: pressed ? 0.97 : 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-          className="rounded-2xl overflow-hidden border"
-          style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 20,
+            overflow: 'hidden',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.07,
+            shadowRadius: 12,
+            elevation: 3,
+          }}
         >
-          <View style={{ height: 160, backgroundColor: colors.border }}>
+          {/* Image */}
+          <View style={{ height: 160, backgroundColor: colors.surfaceVariant }}>
             {product.images?.length > 0 && (
               <Image
                 source={{ uri: product.images[0] }}
@@ -48,33 +63,36 @@ export default function ProductCard({ product, onPress, index = 0 }: Props) {
             )}
           </View>
 
-          <View className="p-3">
-            <Text className="text-xs font-bold opacity-50 mb-1" style={{ color: colors.text }}>
-              {product.category.toUpperCase()}
-            </Text>
-
-            <Text className="text-sm font-semibold mb-2" numberOfLines={2} style={{ color: colors.text }}>
+          {/* Info row */}
+          <View style={{ paddingHorizontal: 12, paddingVertical: 12, gap: 4 }}>
+            <Text
+              numberOfLines={2}
+              style={{ color: colors.text, fontSize: 13, fontWeight: '600', lineHeight: 18 }}
+            >
               {product.name}
             </Text>
 
-            <View className="flex-row justify-between items-center">
-              <Text style={{ color: colors.primary }} className="font-bold">
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+              <Text style={{ color: colors.text, fontSize: 15, fontWeight: '800' }}>
                 {formatCurrency(product.price)}
               </Text>
 
-              <View
-                className="px-2 py-1 rounded"
-                style={{
-                  backgroundColor: product.inStock ? colors.success + '20' : colors.error + '20',
-                }}
-              >
-                <Text
-                  className="text-[10px] font-semibold"
-                  style={{ color: product.inStock ? colors.success : colors.error }}
+              {product.inStock && onAddToCart && (
+                <TouchableOpacity
+                  onPress={(e) => { e.stopPropagation?.(); onAddToCart(); }}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    backgroundColor: colors.surfaceVariant,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
-                  {product.inStock ? 'In Stock' : 'Out'}
-                </Text>
-              </View>
+                  <ShoppingCart size={16} color={colors.text} strokeWidth={2} />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </MotiView>
