@@ -1,12 +1,5 @@
 import React, { useCallback } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -79,11 +72,7 @@ function NotificationCard({
         {/* Content */}
         <View className="flex-1 gap-0.5">
           <View className="flex-row items-center justify-between">
-            <Text
-              className="text-sm font-bold flex-1 mr-2"
-              style={{ color: colors.text }}
-              numberOfLines={1}
-            >
+            <Text className="text-sm font-bold flex-1 mr-2" style={{ color: colors.text }} numberOfLines={1}>
               {item.title}
             </Text>
             {!item.isRead && (
@@ -154,10 +143,7 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       {/* Header */}
-      <View
-        className="flex-row items-center px-4 py-3 border-b"
-        style={{ borderColor: colors.border }}
-      >
+      <View className="flex-row items-center px-4 py-3 border-b" style={{ borderColor: colors.border }}>
         <TouchableOpacity
           onPress={() => router.back()}
           className="w-9 h-9 rounded-full items-center justify-center mr-3"
@@ -227,15 +213,9 @@ export default function NotificationsScreen() {
           contentContainerStyle={{ paddingTop: 12, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              tintColor={colors.primary}
-            />
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
           }
-          renderItem={({ item, index }) => (
-            <NotificationCard item={item} onRead={handleRead} index={index} />
-          )}
+          renderItem={({ item, index }) => <NotificationCard item={item} onRead={handleRead} index={index} />}
         />
       )}
     </SafeAreaView>
