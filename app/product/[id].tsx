@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,6 +10,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useToast } from '@/contexts/ToastContext';
 import { getProductByIdService, getAllProductsService } from '@/services/productService';
 import { getProductReviewsService } from '@/services/reviewService';
 import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
@@ -29,6 +30,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { showToast } = useToast();
 
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
@@ -85,8 +87,15 @@ export default function ProductDetailScreen() {
     if (!product) return;
     setWishlistLoading(true);
     try {
-      if (inWishlist) await removeFromWishlist(product._id);
-      else await addToWishlist(product._id);
+      if (inWishlist) {
+        await removeFromWishlist(product._id);
+        showToast('Removed from wishlist', 'info');
+      } else {
+        await addToWishlist(product._id);
+        showToast('Added to wishlist!', 'success');
+      }
+    } catch {
+      showToast('Could not update wishlist. Try again.', 'error');
     } finally {
       setWishlistLoading(false);
     }
@@ -97,12 +106,9 @@ export default function ProductDetailScreen() {
     setAdding(true);
     try {
       await addToCart(product._id, quantity);
-      Alert.alert('Added to Cart', `${product.name} added successfully`, [
-        { text: 'Continue Shopping', style: 'cancel' },
-        { text: 'View Cart', onPress: () => router.push('/(tabs)/cart') },
-      ]);
+      showToast(`${product.name} added to cart!`, 'success');
     } catch {
-      Alert.alert('Error', 'Could not add to cart. Please try again.');
+      showToast('Could not add to cart. Please try again.', 'error');
     } finally {
       setAdding(false);
     }
