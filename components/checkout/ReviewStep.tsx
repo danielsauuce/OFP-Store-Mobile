@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import { MapPin, CreditCard, Banknote, Building2 } from 'lucide-react-native';
+import { MapPin, Banknote, Building2 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 import type { ShippingAddress } from './AddressStep';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Alert, ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, Alert, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';

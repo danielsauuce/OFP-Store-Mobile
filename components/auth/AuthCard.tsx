@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { AuthForm } from '@/components/forms/AuthForm';
 

@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CheckCircle2, ShoppingBag, ClipboardList } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function OrderConfirmationScreen() {
   const { colors } = useTheme();
