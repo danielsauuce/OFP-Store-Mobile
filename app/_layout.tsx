@@ -6,6 +6,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { NotificationsProvider } from '@/contexts/NotificationsContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,18 +26,20 @@ export default function RootLayout() {
             <WishlistProvider>
               <OrderProvider>
                 <ToastProvider>
-                  <Stack>
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="auth" options={{ headerShown: false, presentation: 'modal' }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
-                    <Stack.Screen name="checkout" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="order-confirmation"
-                      options={{ headerShown: false, gestureEnabled: false }}
-                    />
-                    <Stack.Screen name="notifications" options={{ headerShown: false }} />
-                  </Stack>
+                  <NotificationsProvider>
+                    <Stack>
+                      <Stack.Screen name="index" options={{ headerShown: false }} />
+                      <Stack.Screen name="auth" options={{ headerShown: false, presentation: 'modal' }} />
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
+                      <Stack.Screen name="checkout" options={{ headerShown: false }} />
+                      <Stack.Screen
+                        name="order-confirmation"
+                        options={{ headerShown: false, gestureEnabled: false }}
+                      />
+                      <Stack.Screen name="notifications" options={{ headerShown: false }} />
+                    </Stack>
+                  </NotificationsProvider>
                 </ToastProvider>
               </OrderProvider>
             </WishlistProvider>

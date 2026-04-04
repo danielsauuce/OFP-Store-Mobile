@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUnreadCountService } from '@/services/notificationsService';
+import { useNotifications } from '@/contexts/NotificationsContext';
 
 interface HomeHeaderProps {
   firstName: string | null;
@@ -17,6 +18,8 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
   const { user } = useAuth();
   const router = useRouter();
 
+  const { unreadCount: socketUnread } = useNotifications();
+
   const { data: unreadData } = useQuery({
     queryKey: ['notifications', 'unreadCount'],
     queryFn: getUnreadCountService,
@@ -25,7 +28,7 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
     staleTime: 30_000,
   });
 
-  const unreadCount = unreadData?.unreadCount ?? 0;
+  const unreadCount = Math.max(socketUnread, unreadData?.unreadCount ?? 0);
 
   return (
     <MotiView

@@ -15,3 +15,16 @@ export async function createChatSocket(): Promise<Socket> {
   socket.connect();
   return socket;
 }
+
+export async function createNotificationsSocket(): Promise<Socket> {
+  const token = await SecureStore.getItemAsync('accessToken');
+
+  const socket = io(`${BACKEND_URL}/notifications`, {
+    auth: token ? { token } : undefined,
+    transports: ['websocket', 'polling'],
+    autoConnect: false,
+  });
+
+  socket.connect();
+  return socket;
+}
