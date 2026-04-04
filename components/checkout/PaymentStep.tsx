@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Banknote, CreditCard, Building2, Check } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export type PaymentMethod = 'cash_on_delivery' | 'bank_transfer';
+export type PaymentMethod = 'pay_on_delivery' | 'bank';
 
 interface Option {
   id: PaymentMethod | 'card';
@@ -22,14 +22,14 @@ export default function PaymentStep({ selected, onSelect }: Props) {
 
   const options: Option[] = [
     {
-      id: 'cash_on_delivery',
-      label: 'Cash on Delivery',
+      id: 'pay_on_delivery',
+      label: 'Pay on Delivery',
       description: 'Pay in cash when your order arrives',
       icon: <Banknote size={22} color={colors.primary} />,
       available: true,
     },
     {
-      id: 'bank_transfer',
+      id: 'bank',
       label: 'Bank Transfer',
       description: 'Transfer directly to our account',
       icon: <Building2 size={22} color={colors.primary} />,

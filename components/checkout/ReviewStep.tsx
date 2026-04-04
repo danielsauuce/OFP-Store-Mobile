@@ -27,8 +27,8 @@ interface Props {
 }
 
 const PAYMENT_LABELS: Record<PaymentMethod, { label: string; icon: React.ReactNode }> = {
-  cash_on_delivery: { label: 'Cash on Delivery', icon: null },
-  bank_transfer: { label: 'Bank Transfer', icon: null },
+  pay_on_delivery: { label: 'Pay on Delivery', icon: null },
+  bank: { label: 'Bank Transfer', icon: null },
 };
 
 export default function ReviewStep({ items, subtotal, address, paymentMethod }: Props) {
@@ -36,7 +36,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
   const total = subtotal + SHIPPING_FEE;
 
   const getPaymentIcon = () => {
-    if (paymentMethod === 'cash_on_delivery') return <Banknote size={16} color={colors.primary} />;
+    if (paymentMethod === 'pay_on_delivery') return <Banknote size={16} color={colors.primary} />;
     return <Building2 size={16} color={colors.primary} />;
   };
 

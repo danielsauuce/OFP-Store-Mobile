@@ -14,7 +14,6 @@ import PaymentStep, { PaymentMethod } from '@/components/checkout/PaymentStep';
 import ReviewStep from '@/components/checkout/ReviewStep';
 
 const TOTAL_STEPS = 3;
-const SHIPPING_FEE = 15;
 
 const STEP_LABELS: Record<number, string> = {
   1: 'Continue to Payment',
@@ -42,10 +41,9 @@ export default function CheckoutScreen() {
     note: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_on_delivery');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pay_on_delivery');
 
   const items = cart?.items ?? [];
-  const subtotal = cart?.total ?? 0;
 
   const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
     setAddress((prev) => ({ ...prev, [field]: value }));
@@ -88,9 +86,6 @@ export default function CheckoutScreen() {
           ...(address.note.trim() ? { note: address.note.trim() } : {}),
         },
         paymentMethod,
-        subtotal,
-        shippingFee: SHIPPING_FEE,
-        total: subtotal + SHIPPING_FEE,
       };
       const order = await createOrder(payload);
 
@@ -135,7 +130,12 @@ export default function CheckoutScreen() {
         {step === 1 && <AddressStep address={address} onChange={handleAddressChange} />}
         {step === 2 && <PaymentStep selected={paymentMethod} onSelect={setPaymentMethod} />}
         {step === 3 && (
-          <ReviewStep items={items} subtotal={subtotal} address={address} paymentMethod={paymentMethod} />
+          <ReviewStep
+            items={items}
+            subtotal={cart?.total ?? 0}
+            address={address}
+            paymentMethod={paymentMethod}
+          />
         )}
       </View>
 

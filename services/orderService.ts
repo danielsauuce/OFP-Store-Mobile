@@ -26,10 +26,7 @@ export interface OrderCreateAddress {
 export interface OrderCreatePayload {
   items: OrderCreateItem[];
   shippingAddress: OrderCreateAddress;
-  paymentMethod: string;
-  subtotal: number;
-  shippingFee: number;
-  total: number;
+  paymentMethod: 'pay_on_delivery' | 'bank' | 'card';
   note?: string;
 }
 
