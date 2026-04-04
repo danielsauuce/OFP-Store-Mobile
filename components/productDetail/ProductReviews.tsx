@@ -12,7 +12,6 @@ import ReviewForm from './ReviewForm';
 interface Review {
   _id: string;
   rating: number;
-  title?: string;
   content: string;
   user: { _id?: string; fullName: string };
   createdAt: string;
@@ -178,13 +177,6 @@ function ReviewCard({
           </View>
         </View>
       </View>
-
-      {/* Title */}
-      {review.title ? (
-        <Text className="text-[13px] font-bold" style={{ color: colors.text }}>
-          {review.title}
-        </Text>
-      ) : null}
 
       {/* Content */}
       <Text className="text-[13px] leading-5" style={{ color: colors.textSecondary }}>

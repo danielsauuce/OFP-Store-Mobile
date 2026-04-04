@@ -9,7 +9,6 @@ import { createReviewService, updateReviewService } from '@/services/reviewServi
 interface EditingReview {
   _id: string;
   rating: number;
-  title?: string;
   content: string;
 }
 
@@ -26,19 +25,15 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
   const { colors } = useTheme();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
-  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [contentFocused, setContentFocused] = useState(false);
-  const [titleFocused, setTitleFocused] = useState(false);
 
   useEffect(() => {
     if (editingReview) {
       setRating(editingReview.rating);
-      setTitle(editingReview.title ?? '');
       setContent(editingReview.content);
     } else {
       setRating(0);
-      setTitle('');
       setContent('');
     }
   }, [editingReview]);
@@ -48,20 +43,17 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
       if (editingReview) {
         return updateReviewService(editingReview._id, {
           rating,
-          title: title.trim(),
           content: content.trim(),
         });
       }
       return createReviewService({
         product: productId,
         rating,
-        title: title.trim(),
         content: content.trim(),
       });
     },
     onSuccess: () => {
       setRating(0);
-      setTitle('');
       setContent('');
       onSubmitted();
     },
@@ -155,31 +147,6 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
         >
           {displayRating > 0 ? LABELS[displayRating] : 'Tap to rate'}
         </Text>
-      </View>
-
-      {/* Title input */}
-      <View style={{ gap: 6 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>
-          Title <Text style={{ color: colors.textSecondary, fontWeight: '400' }}>(optional)</Text>
-        </Text>
-        <TextInput
-          value={title}
-          onChangeText={setTitle}
-          onFocus={() => setTitleFocused(true)}
-          onBlur={() => setTitleFocused(false)}
-          placeholder="Summarise your experience"
-          placeholderTextColor={colors.textTertiary}
-          style={{
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            borderRadius: 12,
-            fontSize: 14,
-            backgroundColor: colors.background,
-            borderWidth: 1.5,
-            borderColor: titleFocused ? colors.primary : colors.border,
-            color: colors.text,
-          }}
-        />
       </View>
 
       {/* Content input */}

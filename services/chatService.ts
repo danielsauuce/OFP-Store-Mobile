@@ -32,14 +32,10 @@ export interface Conversation {
 // ── REST helpers for chat history ────────────────────────────────────────────
 
 export async function getConversationsService() {
-  try {
-    const { data } = await axiosInstance.get('/api/chat/conversations');
-    return data;
-  } catch (error) {
-    const err = error as AxiosError;
-    console.error('getConversations error:', (err.response?.data as Record<string, unknown>) ?? err.message);
-    throw error;
-  }
+  // NOTE: This endpoint is admin-only on the backend. For regular users it returns 403.
+  // Callers must handle the error gracefully (return [] on failure).
+  const { data } = await axiosInstance.get('/api/chat/conversations');
+  return data;
 }
 
 export async function getMessagesService(conversationId: string, page: number = 1, limit: number = 50) {

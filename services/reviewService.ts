@@ -19,7 +19,6 @@ export interface CreateReviewData {
   product: string; // product _id — matches Mongoose schema field name
   rating: number;
   content: string;
-  title?: string;
 }
 
 export async function createReviewService(reviewData: CreateReviewData) {
