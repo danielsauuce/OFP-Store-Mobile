@@ -54,13 +54,16 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     queryKey: wishlistKeys.list,
     queryFn: async () => {
       const res = await getWishlistService();
-      // Backend may return: {wishlist:{items:[...]}} | {items:[...]} | [{product:{...}}] | {data:{items:[...]}}
-      const list: WishlistItem[] =
-        res.wishlist?.items ?? res.data?.items ?? res.items ?? (Array.isArray(res) ? res : []);
-      if (!Array.isArray(list)) return [];
+      // API spec: { wishlist: { products: [...] } } — products are direct product objects
+      // Fallback handles legacy shapes just in case
+      const rawProducts: (WishlistProduct & { primaryImage?: CloudinaryImage })[] =
+        res.wishlist?.products ??
+        res.wishlist?.items?.map((i: { product: WishlistProduct }) => i.product) ??
+        res.products ??
+        (Array.isArray(res) ? res : []);
+      if (!Array.isArray(rawProducts)) return [];
       // Normalize product images — Cloudinary may return objects instead of strings
-      return list.map((item) => {
-        const p = item.product as WishlistProduct & { primaryImage?: CloudinaryImage };
+      return rawProducts.map((p) => {
         const images: string[] = (p.images ?? [])
           .map((img: string | CloudinaryImage) => {
             if (typeof img === 'string') return img;
@@ -68,10 +71,12 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
           })
           .filter(Boolean);
         const fallback = p.primaryImage?.secure_url ?? p.primaryImage?.secureUrl ?? p.primaryImage?.url;
-        return {
-          ...item,
-          product: { ...p, images: images.length > 0 ? images : fallback ? [fallback] : [] },
+        const normalizedProduct: WishlistProduct = {
+          ...p,
+          images: images.length > 0 ? images : fallback ? [fallback] : [],
         };
+        // Wrap as WishlistItem using product._id as the item key
+        return { _id: p._id, product: normalizedProduct };
       });
     },
     enabled: !!user,
