@@ -1,0 +1,151 @@
+# ── Maestro E2E: Full Checkout Flow ──────────────────────────────────────────
+# Covers:
+#   Cart → Proceed to Checkout
+#   → Step 1: Delivery Address form
+#   → Step 2: Payment Method selection
+#   → Step 3: Order Review
+#   → Place Order → Order Confirmation screen
+#
+# Prerequisite: At least one item must be in the cart.
+# Run 03_product_detail_and_cart.yaml first, or add an item manually.
+#
+# Run: maestro test .maestro/flows/04_checkout.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Navigate to Cart ──────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Cart'
+    optional: true
+- tapOn:
+    id: 'cart-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Cart'
+
+# If cart is empty, add an item first via Shop
+- tapOn:
+    text: 'Continue Shopping'
+    optional: true
+- tapOn:
+    text: 'Shop'
+    optional: true
+- waitForAnimationToEnd
+
+- tapOn:
+    index: 0
+    id: 'product-card'
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Buy Now'
+    optional: true
+- waitForAnimationToEnd
+
+# ── Cart: Proceed to Checkout ─────────────────────────────────────────────────
+- assertVisible:
+    text: 'Proceed to Checkout'
+- tapOn:
+    text: 'Proceed to Checkout'
+
+# ── Step 1: Delivery Address ──────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Checkout'
+
+# Full Name
+- tapOn:
+    text: 'e.g. John Doe'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+# Street Address
+- tapOn:
+    text: 'e.g. 12 Oak Lane, Flat 3'
+    optional: true
+- clearText
+- inputText: '42 Testing Street'
+- hideKeyboard
+
+# City
+- tapOn:
+    text: 'London'
+    optional: true
+- clearText
+- inputText: 'Manchester'
+- hideKeyboard
+
+# County / State
+- tapOn:
+    text: 'Greater London'
+    optional: true
+- clearText
+- inputText: 'Greater Manchester'
+- hideKeyboard
+
+# Postcode
+- tapOn:
+    text: 'EC1A 1BB'
+    optional: true
+- clearText
+- inputText: 'M1 1AE'
+- hideKeyboard
+
+# Country
+- tapOn:
+    text: 'United Kingdom'
+    optional: true
+- clearText
+- inputText: 'United Kingdom'
+- hideKeyboard
+
+# Continue to Payment
+- tapOn:
+    text: 'Continue to Payment'
+
+# ── Step 2: Payment Method ────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Pay on Delivery'
+    optional: true
+
+- tapOn:
+    text: 'Pay on Delivery'
+    optional: true
+
+- tapOn:
+    text: 'Review Order'
+
+# ── Step 3: Order Review ──────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Place Order'
+
+- tapOn:
+    text: 'Place Order'
+
+# ── Order Confirmation ────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Order Placed!'
+
+- assertVisible:
+    text: 'Confirmed'
+    optional: true
+
+- assertVisible:
+    text: 'Continue Shopping'
+
+# Tap "Continue Shopping" to return to Shop
+- tapOn:
+    text: 'Continue Shopping'
+
+- waitForAnimationToEnd

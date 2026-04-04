@@ -1,0 +1,83 @@
+# ── Maestro E2E: Product Detail → Wishlist → Cart ────────────────────────────
+# Covers:
+#   Home → tap a featured product → product detail screen
+#   → toggle wishlist heart
+#   → adjust quantity
+#   → "Buy Now" → lands on Cart
+#
+# Run: maestro test .maestro/flows/03_product_detail_and_cart.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Home screen ───────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true
+
+# Tap a featured product card on the home screen
+- tapOn:
+    id: 'featured-product-0'
+    optional: true
+
+# Fallback: go through Shop tab
+- tapOn:
+    text: 'Shop'
+    optional: true
+- waitForAnimationToEnd
+
+# Tap the first product in the list
+- tapOn:
+    index: 0
+    id: 'product-card'
+    optional: true
+
+# ── Product Detail screen ─────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+# Confirm we're on a product page (price is visible)
+- assertVisible:
+    text: 'Add to Cart'
+    optional: true
+- assertVisible:
+    text: 'Buy Now'
+    optional: true
+
+# Toggle wishlist (heart button)
+- tapOn:
+    accessibilityLabel: 'Add to wishlist'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Wishlist'
+    optional: true
+- waitForAnimationToEnd
+
+# Increase quantity
+- tapOn:
+    accessibilityLabel: 'Increase quantity'
+    optional: true
+- waitForAnimationToEnd
+
+# Decrease quantity back to 1
+- tapOn:
+    accessibilityLabel: 'Decrease quantity'
+    optional: true
+- waitForAnimationToEnd
+
+# Add to Cart / Buy Now
+- tapOn:
+    text: 'Buy Now'
+    optional: true
+
+# ── Cart screen ───────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Cart'
+    optional: true
+
+# Verify item appears in cart
+- assertVisible:
+    text: 'Proceed to Checkout'
+    optional: true

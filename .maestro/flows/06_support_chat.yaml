@@ -1,0 +1,92 @@
+# ── Maestro E2E: Support Chat ─────────────────────────────────────────────────
+# Covers:
+#   → Support tab → wait for connection
+#   → Send a message
+#   → View Chat History (TicketHistoryModal)
+#   → Close history
+#   → Start new chat
+#
+# Run: maestro test .maestro/flows/06_support_chat.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Navigate to Support tab ───────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Support'
+    optional: true
+- tapOn:
+    id: 'support-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Support'
+    optional: true
+
+# Wait for the welcome message to appear
+- assertVisible:
+    text: 'Welcome to Olayinka Furniture Palace support'
+    optional: true
+
+# Wait for connection banner (Connecting → Connected)
+- waitForAnimationToEnd
+
+# ── Send a message ────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'Hello, I need help with my recent order.'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Send message'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Message should appear as a sent bubble
+- assertVisible:
+    text: 'Hello, I need help with my recent order.'
+    optional: true
+
+# ── Send a second message ─────────────────────────────────────────────────────
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'My order number is #12345. It has not arrived yet.'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Send message'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── View Chat History ─────────────────────────────────────────────────────────
+- tapOn:
+    text: 'View History'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Chat History'
+    optional: true
+
+# Close the history modal
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+
+- waitForAnimationToEnd

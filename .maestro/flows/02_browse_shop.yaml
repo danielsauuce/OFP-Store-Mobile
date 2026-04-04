@@ -1,0 +1,98 @@
+# ── Maestro E2E: Browse & Search Products ────────────────────────────────────
+# Covers: Home → Shop tab → Search → Category filter → Price filter → Product tap
+#
+# Assumes user is already logged in (run 01_auth.yaml first, or use an account
+# whose session is stored on the device).
+#
+# Run: maestro test .maestro/flows/02_browse_shop.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Home screen ───────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true
+
+# Tap "See All" on the featured products section to jump to Shop
+- tapOn:
+    text: 'See All'
+    optional: true
+
+# Or navigate via the Shop tab
+- tapOn:
+    text: 'Shop'
+    optional: true
+- tapOn:
+    id: 'shop-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Shop'
+
+# ── Search ────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Search products...'
+    optional: true
+- inputText: 'sofa'
+- waitForAnimationToEnd
+
+# Clear search
+- clearText
+- hideKeyboard
+- waitForAnimationToEnd
+
+# ── Category filter ───────────────────────────────────────────────────────────
+# Tap first non-"All" category chip (Chairs, Tables, etc.)
+- tapOn:
+    text: 'Chairs'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Reset to all
+- tapOn:
+    text: 'All'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Filter sheet ──────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Filter'
+    optional: true
+- tapOn:
+    id: 'filter-button'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Sort by price
+- tapOn:
+    text: 'Price: Low to High'
+    optional: true
+
+# Apply
+- tapOn:
+    text: 'Apply'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Tap a product card ────────────────────────────────────────────────────────
+# Tap the first visible product in the grid
+- tapOn:
+    index: 0
+    text: 'Add to Cart'
+    optional: true
+
+# Or tap the first product image / name area
+- tapOn:
+    index: 0
+    id: 'product-card'
+    optional: true
+
+- waitForAnimationToEnd

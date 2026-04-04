@@ -1,0 +1,462 @@
+# ── Maestro E2E: Full Application Journey ─────────────────────────────────────
+# Runs the complete user flow end-to-end in a single session:
+#
+#   Welcome → Sign Up → Home
+#   → Shop (search + filter) → Product Detail → Wishlist → Cart
+#   → Checkout (address + payment + review) → Order Confirmation
+#   → Notifications
+#   → Support Chat (send messages)
+#   → Profile (edit profile + orders + addresses + wishlist)
+#   → Support Tickets (create + reply)
+#   → Logout → Welcome screen
+#
+# Run all individual flows:
+#   maestro test .maestro/flows/
+#
+# Run only this master flow:
+#   maestro test .maestro/flows/00_full_e2e.yaml
+
+appId: com.ofp.store.mobile
+---
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1. WELCOME & SIGN UP
+# ═══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Transform Your Space with Style'
+
+- tapOn:
+    text: 'Start Shopping'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Welcome Back'
+
+# Switch to Sign Up tab
+- tapOn:
+    text: 'Sign Up'
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'John Doe'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+- tapOn:
+    text: 'you@example.com'
+    optional: true
+- clearText
+- inputText: 'e2e.testuser@ofp.test'
+- hideKeyboard
+
+- tapOn:
+    text: '••••••••'
+    optional: true
+- clearText
+- inputText: 'TestPass123!'
+- hideKeyboard
+
+- tapOn:
+    text: 'Sign Up'
+
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. HOME SCREEN
+# ═══════════════════════════════════════════════════════════════════════════════
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true
+
+# Tap bell → Notifications screen
+- tapOn:
+    id: 'notifications-bell'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Notifications'
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Mark all read'
+    optional: true
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: 'All caught up'
+    optional: true
+
+- back
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 3. SHOP — BROWSE, SEARCH, FILTER
+# ═══════════════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: 'Shop'
+    optional: true
+- tapOn:
+    id: 'shop-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Shop'
+
+# Search for a product
+- tapOn:
+    text: 'Search products...'
+    optional: true
+- inputText: 'sofa'
+- waitForAnimationToEnd
+- clearText
+- hideKeyboard
+- waitForAnimationToEnd
+
+# Apply price filter
+- tapOn:
+    text: 'Filter'
+    optional: true
+- tapOn:
+    id: 'filter-button'
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Price: Low to High'
+    optional: true
+- tapOn:
+    text: 'Apply'
+    optional: true
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 4. PRODUCT DETAIL — WISHLIST + ADD TO CART
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tap the first product card
+- tapOn:
+    index: 0
+    id: 'product-card'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Toggle wishlist
+- tapOn:
+    accessibilityLabel: 'Add to wishlist'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Wishlist'
+    optional: true
+- waitForAnimationToEnd
+
+# Increase quantity
+- tapOn:
+    accessibilityLabel: 'Increase quantity'
+    optional: true
+- waitForAnimationToEnd
+
+# Add to cart
+- tapOn:
+    text: 'Buy Now'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 5. CART — ADJUST & PROCEED
+# ═══════════════════════════════════════════════════════════════════════════════
+- assertVisible:
+    text: 'Cart'
+    optional: true
+
+# Decrease quantity back to 1
+- tapOn:
+    accessibilityLabel: 'Decrease quantity'
+    optional: true
+- waitForAnimationToEnd
+
+# Proceed to Checkout
+- assertVisible:
+    text: 'Proceed to Checkout'
+- tapOn:
+    text: 'Proceed to Checkout'
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 6. CHECKOUT — ADDRESS → PAYMENT → REVIEW → PLACE ORDER
+# ═══════════════════════════════════════════════════════════════════════════════
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Checkout'
+
+# Step 1: Delivery Address
+- tapOn:
+    text: 'e.g. John Doe'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+- tapOn:
+    text: 'e.g. 12 Oak Lane, Flat 3'
+    optional: true
+- clearText
+- inputText: '42 Testing Street'
+- hideKeyboard
+
+- tapOn:
+    text: 'London'
+    optional: true
+- clearText
+- inputText: 'Manchester'
+- hideKeyboard
+
+- tapOn:
+    text: 'Greater London'
+    optional: true
+- clearText
+- inputText: 'Greater Manchester'
+- hideKeyboard
+
+- tapOn:
+    text: 'EC1A 1BB'
+    optional: true
+- clearText
+- inputText: 'M1 1AE'
+- hideKeyboard
+
+- tapOn:
+    text: 'Continue to Payment'
+
+# Step 2: Payment Method
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Pay on Delivery'
+    optional: true
+
+- tapOn:
+    text: 'Review Order'
+
+# Step 3: Order Review
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Place Order'
+
+- tapOn:
+    text: 'Place Order'
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 7. ORDER CONFIRMATION
+# ═══════════════════════════════════════════════════════════════════════════════
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Order Placed!'
+
+- assertVisible:
+    text: 'Confirmed'
+    optional: true
+
+# Go to View My Orders (navigates to Profile)
+- tapOn:
+    text: 'View My Orders'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Close orders modal if open
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 8. SUPPORT CHAT
+# ═══════════════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: 'Support'
+    optional: true
+- tapOn:
+    id: 'support-tab'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Send a message
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'Hello, I need help with my recent order.'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Send message'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Send a second message
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'My order has not arrived yet.'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Send message'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 9. PROFILE — EDIT, ORDERS, ADDRESSES, WISHLIST
+# ═══════════════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: 'Profile'
+    optional: true
+- tapOn:
+    id: 'profile-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Profile'
+
+# Edit Profile
+- tapOn:
+    text: 'Edit Profile'
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Save Changes'
+    optional: true
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+- waitForAnimationToEnd
+
+# My Orders
+- tapOn:
+    text: 'My Orders'
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'My Orders'
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+- waitForAnimationToEnd
+
+# Saved Addresses
+- tapOn:
+    text: 'Saved Addresses'
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Saved Addresses'
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+- waitForAnimationToEnd
+
+# Wishlist
+- tapOn:
+    text: 'Wishlist'
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Wishlist'
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 10. SUPPORT TICKETS — CREATE & REPLY
+# ═══════════════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: 'Support Tickets'
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Support Tickets'
+
+# Create new ticket
+- tapOn:
+    text: 'New'
+    optional: true
+- tapOn:
+    id: 'new-ticket-button'
+    optional: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Brief summary of your issue'
+    optional: true
+- inputText: 'Missing item in delivery'
+- hideKeyboard
+
+- tapOn:
+    text: 'Describe your issue in detail'
+    optional: true
+- inputText: 'I ordered 3 items but only received 2. Order #12345. Please investigate.'
+- hideKeyboard
+
+- tapOn:
+    text: 'Submit Ticket'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Missing item in delivery'
+    optional: true
+
+# Close modal
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+    optional: true
+- waitForAnimationToEnd
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 11. LOGOUT
+# ═══════════════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: 'Logout'
+
+- waitForAnimationToEnd
+
+# Confirm logout alert
+- tapOn:
+    text: 'Logout'
+    optional: true
+- tapOn:
+    text: 'Sign Out'
+    optional: true
+- tapOn:
+    text: 'Confirm'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Transform Your Space with Style'
