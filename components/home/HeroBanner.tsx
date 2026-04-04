@@ -21,7 +21,7 @@ export default function HeroBanner({ onShopPress }: HeroBannerProps) {
         source={{
           uri: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=60',
         }}
-        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
         contentFit="cover"
       />
       <View className="absolute inset-0 justify-end p-5 bg-black/35">

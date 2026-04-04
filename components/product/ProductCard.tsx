@@ -41,6 +41,8 @@ export default function ProductCard({ product, onPress, onAddToCart, index = 0 }
             backgroundColor: colors.surface,
             borderRadius: 20,
             overflow: 'hidden',
+            borderWidth: 1,
+            borderColor: colors.border,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.07,

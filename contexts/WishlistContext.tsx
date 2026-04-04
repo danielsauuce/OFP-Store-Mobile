@@ -8,6 +8,8 @@ import {
   clearWishlistService,
 } from '@/services/wishlistService';
 
+type CloudinaryImage = { secure_url?: string; secureUrl?: string; url?: string };
+
 export interface WishlistProduct {
   _id: string;
   name: string;
@@ -52,8 +54,25 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     queryKey: wishlistKeys.list,
     queryFn: async () => {
       const res = await getWishlistService();
-      const list = res.wishlist?.items ?? res.items ?? res ?? [];
-      return Array.isArray(list) ? list : [];
+      // Backend may return: {wishlist:{items:[...]}} | {items:[...]} | [{product:{...}}] | {data:{items:[...]}}
+      const list: WishlistItem[] =
+        res.wishlist?.items ?? res.data?.items ?? res.items ?? (Array.isArray(res) ? res : []);
+      if (!Array.isArray(list)) return [];
+      // Normalize product images — Cloudinary may return objects instead of strings
+      return list.map((item) => {
+        const p = item.product as WishlistProduct & { primaryImage?: CloudinaryImage };
+        const images: string[] = (p.images ?? [])
+          .map((img: string | CloudinaryImage) => {
+            if (typeof img === 'string') return img;
+            return img.secure_url ?? img.secureUrl ?? img.url ?? '';
+          })
+          .filter(Boolean);
+        const fallback = p.primaryImage?.secure_url ?? p.primaryImage?.secureUrl ?? p.primaryImage?.url;
+        return {
+          ...item,
+          product: { ...p, images: images.length > 0 ? images : fallback ? [fallback] : [] },
+        };
+      });
     },
     enabled: !!user,
     staleTime: 2 * 60 * 1000,

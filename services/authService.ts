@@ -6,8 +6,9 @@ import axiosInstance from './axiosInstance';
 function normalisePicture(pic: unknown): string | undefined {
   if (typeof pic === 'string') return pic || undefined;
   if (pic && typeof pic === 'object') {
-    const p = pic as { secureUrl?: string; url?: string };
-    return p.secureUrl ?? p.url ?? undefined;
+    // Cloudinary returns snake_case (secure_url / url); some backends camelCase it (secureUrl)
+    const p = pic as { secure_url?: string; secureUrl?: string; url?: string };
+    return p.secure_url ?? p.secureUrl ?? p.url ?? undefined;
   }
   return undefined;
 }

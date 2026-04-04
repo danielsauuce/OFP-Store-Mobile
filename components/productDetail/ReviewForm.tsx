@@ -52,7 +52,12 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
           comment: comment.trim(),
         });
       }
-      return createReviewService({ productId, rating, title: title.trim(), comment: comment.trim() });
+      return createReviewService({
+        product: productId,
+        rating,
+        title: title.trim(),
+        comment: comment.trim(),
+      });
     },
     onSuccess: () => {
       setRating(0);
@@ -61,7 +66,8 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
       onSubmitted();
     },
     onError: (e: unknown) => {
-      const message = e instanceof Error ? e.message : 'Could not submit review';
+      const axiosMsg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = axiosMsg ?? (e instanceof Error ? e.message : 'Could not submit review');
       Alert.alert('Error', message);
     },
   });

@@ -34,13 +34,14 @@ export default function SupportScreen() {
   const [connected, setConnected] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'ready'>('idle');
+  // 'idle' before any socket attempt, 'connecting' while socket is establishing, 'ready' once connected
+  const [status, setStatus] = useState<'idle' | 'connecting' | 'ready'>('idle');
 
   // ── Socket lifecycle — mirrors ChatWidget.jsx useEffect ─────────────────
   useEffect(() => {
     if (!user) return;
 
-    setStatus('loading');
+    setStatus('connecting');
 
     createChatSocket().then((socket) => {
       socketRef.current = socket;
@@ -125,6 +126,7 @@ export default function SupportScreen() {
       convIdRef.current = null;
       setConnected(false);
       setStatus('idle');
+      setMessages([WELCOME]);
     };
   }, [user]);
 
@@ -154,7 +156,7 @@ export default function SupportScreen() {
     socketRef.current?.emit('chat:init');
   }, []);
 
-  const isReady = status === 'ready';
+  const isReady = status === 'ready' || (status === 'connecting' && connected);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -168,35 +170,35 @@ export default function SupportScreen() {
           onNewChat={isReady ? handleNewConversation : undefined}
         />
 
-        {status === 'loading' ? (
-          <View className="flex-1 items-center justify-center gap-3">
-            <ActivityIndicator color={colors.primary} size="large" />
-            <Text className="text-sm" style={{ color: colors.textSecondary }}>
-              Connecting to support…
+        {/* Connection status banner — shown while connecting or after connect */}
+        {status !== 'idle' && (
+          <View
+            className="mx-4 mt-3 mb-1 px-3 py-2 rounded-xl flex-row items-center gap-2"
+            style={{
+              backgroundColor: (connected ? colors.success : colors.textTertiary) + '18',
+            }}
+          >
+            {status === 'connecting' && !connected ? (
+              <ActivityIndicator size={12} color={colors.textTertiary} />
+            ) : (
+              <View
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: connected ? colors.success : colors.textTertiary }}
+              />
+            )}
+            <Text
+              className="text-xs font-semibold"
+              style={{ color: connected ? colors.success : colors.textSecondary }}
+            >
+              {connected
+                ? 'Connected — our team can see your messages'
+                : status === 'connecting'
+                  ? 'Connecting to support…'
+                  : 'Reconnecting…'}
             </Text>
           </View>
-        ) : (
-          <>
-            {isReady && (
-              <View
-                className="mx-4 mt-3 mb-1 px-3 py-2 rounded-xl flex-row items-center gap-2"
-                style={{ backgroundColor: (connected ? colors.success : colors.textTertiary) + '18' }}
-              >
-                <View
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: connected ? colors.success : colors.textTertiary }}
-                />
-                <Text
-                  className="text-xs font-semibold"
-                  style={{ color: connected ? colors.success : colors.textSecondary }}
-                >
-                  {connected ? 'Connected — our team can see your messages' : 'Reconnecting…'}
-                </Text>
-              </View>
-            )}
-            <ChatMessageList messages={messages} loading={isSending} />
-          </>
         )}
+        <ChatMessageList messages={messages} loading={isSending} />
 
         <ChatInput value={input} onChange={setInput} onSend={handleSend} />
       </KeyboardAvoidingView>

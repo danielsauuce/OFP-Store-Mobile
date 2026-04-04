@@ -41,8 +41,9 @@ export default function ProfileAvatar({
         typeof raw === 'string'
           ? raw || undefined
           : raw && typeof raw === 'object'
-            ? ((raw as { secureUrl?: string; url?: string }).secureUrl ??
-              (raw as { secureUrl?: string; url?: string }).url ??
+            ? ((raw as { secure_url?: string; secureUrl?: string; url?: string }).secure_url ??
+              (raw as { secure_url?: string; secureUrl?: string; url?: string }).secureUrl ??
+              (raw as { secure_url?: string; secureUrl?: string; url?: string }).url ??
               undefined)
             : undefined;
       onUploadSuccess?.(newUrl);
