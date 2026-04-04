@@ -33,6 +33,9 @@ export default function ChatInput({ value, onChange, onSend }: Props) {
       />
 
       <TouchableOpacity
+        testID="send-button"
+        accessibilityRole="button"
+        accessibilityLabel="Send message"
         onPress={isEmpty ? undefined : onSend}
         disabled={isEmpty}
         className="w-11 h-11 rounded-full items-center justify-center"

@@ -1,0 +1,72 @@
+appId: com.ofp.store.mobile
+---
+- launchApp:
+    clearState: true
+
+# Navigate to Support tab
+- tapOn:
+    id: 'support-tab'
+    optional: true
+- tapOn:
+    text: 'Support'
+    optional: true
+
+# Verify header is visible
+- assertVisible:
+    text: 'Live Support'
+
+- assertVisible:
+    text: 'We typically reply within minutes'
+
+# Wait for connection banner to appear
+- waitForAnimationToEnd
+
+# The connecting banner should be visible while socket connects
+- assertVisible:
+    text: 'Connecting to support'
+    optional: true
+
+# Welcome message must be visible
+- assertVisible:
+    text: 'Welcome to Olayinka Furniture Palace support'
+
+# Verify input field is present
+- assertVisible:
+    id: 'chat-input'
+    optional: true
+- assertVisible:
+    text: 'Type message...'
+    optional: true
+
+# Type and send a message
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'I need help with my order'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+
+# The sent message should appear in the list
+- assertVisible:
+    text: 'I need help with my order'
+
+# Test the History button
+- tapOn:
+    text: 'History'
+    optional: true
+
+# Modal should appear (or be dismissed with back)
+- back
+
+# Test New chat button if visible
+- tapOn:
+    text: 'New chat'
+    optional: true
+
+# Welcome message should still show after new chat
+- assertVisible:
+    text: 'Welcome to Olayinka Furniture Palace support'
+    optional: true

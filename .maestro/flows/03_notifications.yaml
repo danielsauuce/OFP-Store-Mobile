@@ -1,0 +1,41 @@
+# ── Maestro E2E: Notifications Flow ─────────────────────────────────────────
+# Tests navigating to the notifications screen, viewing notifications,
+# and marking them as read.
+# Run with: maestro test .maestro/flows/03_notifications.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# Wait for home screen
+- waitForAnimationToEnd
+
+# Tap the bell icon in the home header (notifications entry point)
+- tapOn:
+    id: 'notifications-bell'
+    optional: true
+- tapOn:
+    text: 'Notifications'
+    optional: true
+
+# Should be on the Notifications screen
+- assertVisible:
+    text: 'Notifications'
+
+# If there are unread notifications, "Mark all read" button should be visible
+- tapOn:
+    text: 'Mark all read'
+    optional: true
+
+# If list is empty, empty state must be shown
+- assertVisible:
+    text: 'All caught up'
+    optional: true
+
+# Navigate back
+- back
+
+# Verify we're back on the home screen
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true

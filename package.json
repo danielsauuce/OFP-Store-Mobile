@@ -12,7 +12,33 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch --forceExit",
+    "test:coverage": "jest --coverage --forceExit"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/__tests__/setup.ts"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1",
+      "^expo/src/winter$": "<rootDir>/__mocks__/expo-runtime.js",
+      "^expo/src/winter/(.*)$": "<rootDir>/__mocks__/expo-runtime.js"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.test.(ts|tsx)"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|moti|@motify/.*|lucide-react-native|nativewind|@tanstack/.*)"
+    ],
+    "collectCoverageFrom": [
+      "components/chat/**/*.{ts,tsx}",
+      "components/support/**/*.{ts,tsx}",
+      "services/chatService.ts",
+      "hooks/useChatScroll.ts"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -55,6 +81,9 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -66,7 +95,10 @@
     "eslint-plugin-react": "^7.37.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-native": "^4.1.0",
+    "jest": "^30.3.0",
+    "jest-expo": "^55.0.13",
     "prettier": "^3.3.3",
+    "react-test-renderer": "^19.1.0",
     "typescript": "~5.5.4"
   },
   "private": true

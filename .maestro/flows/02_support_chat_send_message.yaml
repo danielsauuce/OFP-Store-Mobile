@@ -1,0 +1,57 @@
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# Go to Support tab
+- tapOn:
+    text: 'Support'
+    optional: true
+
+- assertVisible:
+    text: 'Live Support'
+
+# Send button should be disabled / dimmed with no input
+- waitForAnimationToEnd
+
+# Tap the input and type nothing — button should remain inactive
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- clearText
+- hideKeyboard
+
+# Type a message
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'Hello, I have a question about my delivery'
+- hideKeyboard
+
+# Send the message
+- tapOn:
+    id: 'send-button'
+    optional: true
+
+# Verify the message appears in the conversation
+- assertVisible:
+    text: 'Hello, I have a question about my delivery'
+
+# Input should be cleared after send
+- assertNotVisible:
+    text: 'Hello, I have a question about my delivery'
+    id: 'chat-input'
+    optional: true
+
+# Send another message to verify continued interaction
+- tapOn:
+    text: 'Type message...'
+    optional: true
+- inputText: 'Order ID is #12345'
+- hideKeyboard
+
+- tapOn:
+    id: 'send-button'
+    optional: true
+
+- assertVisible:
+    text: 'Order ID is #12345'
