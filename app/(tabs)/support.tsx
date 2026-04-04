@@ -34,6 +34,7 @@ export default function SupportScreen() {
   const [connected, setConnected] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [convReady, setConvReady] = useState(false);
   // 'idle' before any socket attempt, 'connecting' while socket is establishing, 'ready' once connected
   const [status, setStatus] = useState<'idle' | 'connecting' | 'ready'>('idle');
 
@@ -58,6 +59,7 @@ export default function SupportScreen() {
 
       socket.on('chat:initialized', (data: { conversationId: string; messages: ChatMessage[] }) => {
         convIdRef.current = data.conversationId;
+        setConvReady(true);
         if (data.messages?.length > 0) {
           const mapped: LocalMessage[] = data.messages.map((m) => ({
             id: m._id,
@@ -106,6 +108,7 @@ export default function SupportScreen() {
           },
         ]);
         convIdRef.current = null;
+        setConvReady(false);
       });
 
       socket.on('chat:error', (err: { message?: string }) => {
@@ -125,6 +128,7 @@ export default function SupportScreen() {
       socketRef.current = null;
       convIdRef.current = null;
       setConnected(false);
+      setConvReady(false);
       setStatus('idle');
       setMessages([WELCOME]);
     };
@@ -156,6 +160,7 @@ export default function SupportScreen() {
   // ── New conversation ─────────────────────────────────────────────────────
   const handleNewConversation = useCallback(() => {
     convIdRef.current = null;
+    setConvReady(false);
     setMessages([WELCOME]);
     socketRef.current?.emit('chat:init');
   }, []);
@@ -204,7 +209,7 @@ export default function SupportScreen() {
         )}
         <ChatMessageList messages={messages} loading={isSending} />
 
-        <ChatInput value={input} onChange={setInput} onSend={handleSend} disabled={!convIdRef.current} />
+        <ChatInput value={input} onChange={setInput} onSend={handleSend} disabled={!convReady} />
       </KeyboardAvoidingView>
 
       <TicketHistoryModal visible={showHistory} onClose={() => setShowHistory(false)} />
