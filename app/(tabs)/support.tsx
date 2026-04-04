@@ -134,6 +134,10 @@ export default function SupportScreen() {
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || isSending || !socketRef.current) return;
+    if (!convIdRef.current) {
+      console.warn('[Chat] handleSend called before chat:initialized — convId is null');
+      return;
+    }
 
     setInput('');
     setIsSending(true);
@@ -200,7 +204,7 @@ export default function SupportScreen() {
         )}
         <ChatMessageList messages={messages} loading={isSending} />
 
-        <ChatInput value={input} onChange={setInput} onSend={handleSend} />
+        <ChatInput value={input} onChange={setInput} onSend={handleSend} disabled={!convIdRef.current} />
       </KeyboardAvoidingView>
 
       <TicketHistoryModal visible={showHistory} onClose={() => setShowHistory(false)} />

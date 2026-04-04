@@ -7,9 +7,10 @@ interface Props {
   value: string;
   onChange: (text: string) => void;
   onSend: () => void;
+  disabled?: boolean;
 }
 
-export default function ChatInput({ value, onChange, onSend }: Props) {
+export default function ChatInput({ value, onChange, onSend, disabled = false }: Props) {
   const { colors } = useTheme();
   const isEmpty = !value || value.trim().length === 0;
 
@@ -30,16 +31,17 @@ export default function ChatInput({ value, onChange, onSend }: Props) {
           color: colors.text,
         }}
         multiline
+        editable={!disabled}
       />
 
       <TouchableOpacity
         testID="send-button"
         accessibilityRole="button"
         accessibilityLabel="Send message"
-        onPress={isEmpty ? undefined : onSend}
-        disabled={isEmpty}
+        onPress={isEmpty || disabled ? undefined : onSend}
+        disabled={isEmpty || disabled}
         className="w-11 h-11 rounded-full items-center justify-center"
-        style={{ backgroundColor: colors.primary, opacity: isEmpty ? 0.4 : 1 }}
+        style={{ backgroundColor: colors.primary, opacity: isEmpty || disabled ? 0.4 : 1 }}
       >
         <Send size={18} color="#fff" />
       </TouchableOpacity>
