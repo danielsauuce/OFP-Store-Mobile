@@ -44,6 +44,7 @@ export interface AuthResponse {
     profilePicture?: string;
   };
   accessToken: string;
+  refreshToken?: string;
 }
 
 export interface ApiError {
@@ -114,6 +115,16 @@ export const forgotPasswordService = async (email: string): Promise<{ message: s
     const err = error as AxiosError<ApiError>;
     console.error('API ERROR:', err?.response?.data?.message || err.message);
     throw new Error(err?.response?.data?.message || 'Something went wrong');
+  }
+};
+
+export const refreshTokenService = async (refreshToken: string): Promise<{ accessToken: string }> => {
+  try {
+    const { data } = await axiosInstance.post('/api/auth/refresh-token', { refreshToken });
+    return data;
+  } catch (error) {
+    const err = error as AxiosError<ApiError>;
+    throw new Error(err?.response?.data?.message || 'Session expired');
   }
 };
 

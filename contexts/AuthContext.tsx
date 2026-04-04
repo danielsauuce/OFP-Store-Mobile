@@ -72,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loginService({ email, password }),
     onSuccess: async (res) => {
       await SecureStore.setItemAsync('accessToken', res.accessToken);
+      if (res.refreshToken) await SecureStore.setItemAsync('refreshToken', res.refreshToken);
       setHasToken(true);
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
     },
@@ -87,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       registerService({ fullName: name, email, password }),
     onSuccess: async (res) => {
       await SecureStore.setItemAsync('accessToken', res.accessToken);
+      if (res.refreshToken) await SecureStore.setItemAsync('refreshToken', res.refreshToken);
       setHasToken(true);
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
     },
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     mutationFn: () => logoutService().catch(() => {}),
     onSettled: async () => {
       await SecureStore.deleteItemAsync('accessToken');
+      await SecureStore.deleteItemAsync('refreshToken');
       setHasToken(false);
       queryClient.setQueryData(authKeys.me, null);
       queryClient.clear();
