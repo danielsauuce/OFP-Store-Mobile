@@ -11,3 +11,11 @@ export const createPaymentIntentService = async (orderId: string): Promise<Payme
   const { data } = await axiosInstance.post('/api/payments/create-payment-intent', { orderId });
   return data;
 };
+
+export const confirmPaymentSuccessService = async (stripePaymentIntentId: string): Promise<void> => {
+  try {
+    await axiosInstance.post('/api/payments/confirm-success', { stripePaymentIntentId });
+  } catch {
+    // Non-critical — the Stripe webhook handles this as a fallback
+  }
+};

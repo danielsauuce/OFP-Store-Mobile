@@ -63,7 +63,7 @@ export async function replyToTicketService(
   message: string,
 ): Promise<{ ticket: SupportTicket }> {
   try {
-    const { data } = await axiosInstance.post(`/api/support/${ticketId}/reply`, { message });
+    const { data } = await axiosInstance.post(`/api/support/${ticketId}/reply`, { text: message });
     return data;
   } catch (error) {
     const err = error as AxiosError<{ message?: string }>;

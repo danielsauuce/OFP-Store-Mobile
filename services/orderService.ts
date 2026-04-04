@@ -10,11 +10,12 @@ interface OrderParams {
 export interface OrderCreateItem {
   product: string;
   quantity: number;
-  price: number;
 }
 
 export interface OrderCreateAddress {
   fullName: string;
+  email: string;
+  phone: string;
   street: string;
   city: string;
   state: string;
