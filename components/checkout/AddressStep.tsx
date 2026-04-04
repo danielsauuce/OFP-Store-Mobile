@@ -3,6 +3,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 export interface ShippingAddress {
   fullName: string;
+  email: string;
+  phone: string;
   street: string;
   city: string;
   state: string;
@@ -65,6 +67,20 @@ export default function AddressStep({ address, onChange }: Props) {
         value={address.fullName}
         onChange={(v) => onChange('fullName', v)}
         placeholder="e.g. John Doe"
+      />
+
+      <Field
+        label="Email Address"
+        value={address.email}
+        onChange={(v) => onChange('email', v)}
+        placeholder="e.g. john@example.com"
+      />
+
+      <Field
+        label="Phone Number"
+        value={address.phone}
+        onChange={(v) => onChange('phone', v)}
+        placeholder="e.g. +44 7700 900000"
       />
 
       <Field
