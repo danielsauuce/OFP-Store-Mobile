@@ -3,11 +3,13 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useOrders } from '@/contexts/OrderContext';
 import { OrderCreatePayload } from '@/services/orderService';
+import { createPaymentIntentService, confirmPaymentSuccessService } from '@/services/paymentService';
 import CheckoutStepper from '@/components/checkout/CheckoutStepper';
 import AddressStep, { ShippingAddress } from '@/components/checkout/AddressStep';
 import PaymentStep, { PaymentMethod } from '@/components/checkout/PaymentStep';
@@ -26,6 +28,7 @@ export default function CheckoutScreen() {
   const { user } = useAuth();
   const { cart, clearCart } = useCart();
   const { createOrder } = useOrders();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const router = useRouter();
 
   const [step, setStep] = useState(1);
@@ -73,6 +76,49 @@ export default function CheckoutScreen() {
     return true;
   };
 
+  const handleCardPayment = async (orderId: string): Promise<boolean> => {
+    // 1. Create payment intent on server
+    const { clientSecret, paymentIntentId } = await createPaymentIntentService(orderId);
+
+    // 2. Initialise Stripe payment sheet
+    const { error: initError } = await initPaymentSheet({
+      paymentIntentClientSecret: clientSecret,
+      merchantDisplayName: 'Olayinka Furniture Palace',
+      defaultBillingDetails: {
+        name: address.fullName,
+        email: address.email,
+        phone: address.phone,
+        address: {
+          line1: address.street,
+          city: address.city,
+          state: address.state,
+          postalCode: address.postalCode,
+          country: 'GB',
+        },
+      },
+      appearance: { colors: { primary: '#6366f1' } },
+    });
+
+    if (initError) {
+      Alert.alert('Payment Error', initError.message);
+      return false;
+    }
+
+    // 3. Present the Stripe payment sheet to the user
+    const { error: presentError } = await presentPaymentSheet();
+
+    if (presentError) {
+      if (presentError.code !== 'Canceled') {
+        Alert.alert('Payment Failed', presentError.message);
+      }
+      return false;
+    }
+
+    // 4. Notify server that payment succeeded (webhook is fallback)
+    await confirmPaymentSuccessService(paymentIntentId);
+    return true;
+  };
+
   const handleNext = async () => {
     if (step === 1 && !validateAddress()) return;
 
@@ -102,7 +148,19 @@ export default function CheckoutScreen() {
         },
         paymentMethod,
       };
+
       const order = await createOrder(payload);
+
+      // Card payment — open Stripe sheet before navigating away
+      if (paymentMethod === 'card') {
+        const paid = await handleCardPayment(order._id);
+        if (!paid) {
+          // Payment was cancelled or failed — order exists but not paid.
+          // Stay on review screen so the user can retry or change method.
+          setPlacing(false);
+          return;
+        }
+      }
 
       await clearCart();
       router.replace(`/order-confirmation?orderId=${order._id}`);
@@ -168,7 +226,9 @@ export default function CheckoutScreen() {
           {placing ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white font-bold text-base">{STEP_LABELS[step]}</Text>
+            <Text className="text-white font-bold text-base">
+              {step === TOTAL_STEPS && paymentMethod === 'card' ? 'Pay with Card' : STEP_LABELS[step]}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
