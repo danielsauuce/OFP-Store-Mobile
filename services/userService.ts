@@ -7,7 +7,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export async function getUserProfileService() {
   try {
-    const { data } = await axiosInstance.get('/api/users/profile');
+    const { data } = await axiosInstance.get('/api/user/profile');
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -18,7 +18,7 @@ export async function getUserProfileService() {
 
 export async function updateUserProfileService(profileData: Record<string, unknown>) {
   try {
-    const { data } = await axiosInstance.put('/api/users/profile', profileData);
+    const { data } = await axiosInstance.put('/api/user/profile', profileData);
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -36,7 +36,7 @@ export async function uploadProfilePictureService(file: RNFile) {
 
     // Use fetch directly so React Native sets Content-Type with the correct boundary.
     // Axios overrides the header and strips the boundary, causing a 500 on the server.
-    const response = await fetch(`${API_URL}/api/users/profile-picture`, {
+    const response = await fetch(`${API_URL}/api/user/profile-picture`, {
       method: 'PATCH',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
@@ -53,7 +53,7 @@ export async function uploadProfilePictureService(file: RNFile) {
 
 export async function deleteProfilePictureService() {
   try {
-    const { data } = await axiosInstance.delete('/api/users/profile-picture');
+    const { data } = await axiosInstance.delete('/api/user/profile-picture');
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -67,7 +67,7 @@ export async function deleteProfilePictureService() {
 
 export async function getAddressesService() {
   try {
-    const { data } = await axiosInstance.get('/api/users/addresses');
+    const { data } = await axiosInstance.get('/api/user/addresses');
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -78,7 +78,7 @@ export async function getAddressesService() {
 
 export async function addAddressService(addressData: Record<string, unknown>) {
   try {
-    const { data } = await axiosInstance.post('/api/users/addresses', addressData);
+    const { data } = await axiosInstance.post('/api/user/addresses', addressData);
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -89,7 +89,7 @@ export async function addAddressService(addressData: Record<string, unknown>) {
 
 export async function updateAddressService(addressId: string, addressData: Record<string, unknown>) {
   try {
-    const { data } = await axiosInstance.put(`/api/users/addresses/${addressId}`, addressData);
+    const { data } = await axiosInstance.put(`/api/user/addresses/${addressId}`, addressData);
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -100,7 +100,7 @@ export async function updateAddressService(addressId: string, addressData: Recor
 
 export async function deleteAddressService(addressId: string) {
   try {
-    const { data } = await axiosInstance.delete(`/api/users/addresses/${addressId}`);
+    const { data } = await axiosInstance.delete(`/api/user/addresses/${addressId}`);
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -111,7 +111,7 @@ export async function deleteAddressService(addressId: string) {
 
 export async function setDefaultAddressService(addressId: string) {
   try {
-    const { data } = await axiosInstance.patch(`/api/users/addresses/${addressId}/default`);
+    const { data } = await axiosInstance.patch(`/api/user/addresses/${addressId}/default`);
     return data;
   } catch (error) {
     const err = error as AxiosError;
@@ -122,7 +122,7 @@ export async function setDefaultAddressService(addressId: string) {
 
 export async function deactivateAccountService() {
   try {
-    const { data } = await axiosInstance.delete('/api/users/account');
+    const { data } = await axiosInstance.delete('/api/user/account');
     return data;
   } catch (error) {
     const err = error as AxiosError;
