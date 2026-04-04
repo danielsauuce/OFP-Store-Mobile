@@ -18,7 +18,7 @@ export async function getProductReviewsService(productId: string, params: Record
 export interface CreateReviewData {
   product: string; // product _id — matches Mongoose schema field name
   rating: number;
-  comment: string;
+  content: string;
   title?: string;
 }
 

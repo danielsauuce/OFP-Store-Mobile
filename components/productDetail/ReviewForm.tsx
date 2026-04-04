@@ -10,7 +10,7 @@ interface EditingReview {
   _id: string;
   rating: number;
   title?: string;
-  comment: string;
+  content: string;
 }
 
 interface ReviewFormProps {
@@ -27,19 +27,19 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
-  const [commentFocused, setCommentFocused] = useState(false);
+  const [content, setContent] = useState('');
+  const [contentFocused, setContentFocused] = useState(false);
   const [titleFocused, setTitleFocused] = useState(false);
 
   useEffect(() => {
     if (editingReview) {
       setRating(editingReview.rating);
       setTitle(editingReview.title ?? '');
-      setComment(editingReview.comment);
+      setContent(editingReview.content);
     } else {
       setRating(0);
       setTitle('');
-      setComment('');
+      setContent('');
     }
   }, [editingReview]);
 
@@ -49,20 +49,20 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
         return updateReviewService(editingReview._id, {
           rating,
           title: title.trim(),
-          comment: comment.trim(),
+          content: content.trim(),
         });
       }
       return createReviewService({
         product: productId,
         rating,
         title: title.trim(),
-        comment: comment.trim(),
+        content: content.trim(),
       });
     },
     onSuccess: () => {
       setRating(0);
       setTitle('');
-      setComment('');
+      setContent('');
       onSubmitted();
     },
     onError: (e: unknown) => {
@@ -77,7 +77,7 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
       Alert.alert('Rating required', 'Please select a star rating.');
       return;
     }
-    if (!comment.trim()) {
+    if (!content.trim()) {
       Alert.alert('Review required', 'Please write your experience.');
       return;
     }
@@ -182,19 +182,19 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
         />
       </View>
 
-      {/* Comment input */}
+      {/* Content input */}
       <View style={{ gap: 6 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>Review</Text>
-          <Text style={{ fontSize: 11, color: comment.length > 450 ? colors.error : colors.textSecondary }}>
-            {comment.length}/500
+          <Text style={{ fontSize: 11, color: content.length > 450 ? colors.error : colors.textSecondary }}>
+            {content.length}/500
           </Text>
         </View>
         <TextInput
-          value={comment}
-          onChangeText={(t) => setComment(t.slice(0, 500))}
-          onFocus={() => setCommentFocused(true)}
-          onBlur={() => setCommentFocused(false)}
+          value={content}
+          onChangeText={(t) => setContent(t.slice(0, 500))}
+          onFocus={() => setContentFocused(true)}
+          onBlur={() => setContentFocused(false)}
           placeholder="What did you like or dislike? How was the quality?"
           placeholderTextColor={colors.textTertiary}
           multiline
@@ -207,7 +207,7 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
             fontSize: 14,
             backgroundColor: colors.background,
             borderWidth: 1.5,
-            borderColor: commentFocused ? colors.primary : colors.border,
+            borderColor: contentFocused ? colors.primary : colors.border,
             color: colors.text,
             minHeight: 100,
           }}

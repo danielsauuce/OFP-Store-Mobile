@@ -13,7 +13,7 @@ interface Review {
   _id: string;
   rating: number;
   title?: string;
-  comment: string;
+  content: string;
   user: { _id?: string; fullName: string };
   createdAt: string;
 }
@@ -133,7 +133,7 @@ function ReviewCard({
 }) {
   const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
-  const isLong = review.comment.length > 120;
+  const isLong = review.content.length > 120;
 
   return (
     <MotiView
@@ -186,9 +186,9 @@ function ReviewCard({
         </Text>
       ) : null}
 
-      {/* Comment */}
+      {/* Content */}
       <Text className="text-[13px] leading-5" style={{ color: colors.textSecondary }}>
-        {isLong && !expanded ? `${review.comment.slice(0, 120)}…` : review.comment}
+        {isLong && !expanded ? `${review.content.slice(0, 120)}…` : review.content}
       </Text>
 
       {isLong && (
