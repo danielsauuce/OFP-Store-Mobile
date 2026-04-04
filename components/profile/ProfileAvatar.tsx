@@ -36,8 +36,15 @@ export default function ProfileAvatar({
     mutationFn: (imageData: { uri: string; name: string; type: string }) =>
       uploadProfilePictureService(imageData),
     onSuccess: (res) => {
+      const raw = res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
       const newUrl: string | undefined =
-        res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
+        typeof raw === 'string'
+          ? raw || undefined
+          : raw && typeof raw === 'object'
+            ? ((raw as { secureUrl?: string; url?: string }).secureUrl ??
+              (raw as { secureUrl?: string; url?: string }).url ??
+              undefined)
+            : undefined;
       onUploadSuccess?.(newUrl);
     },
     onError: () => {

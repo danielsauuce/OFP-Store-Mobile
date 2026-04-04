@@ -97,7 +97,8 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
           ) : (
             <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }} showsVerticalScrollIndicator={false}>
               {messages.map((msg) => {
-                const isMe = user && msg.sender._id === user.id;
+                const senderId = msg.sender.userId ?? msg.sender._id;
+                const isMe = user && senderId === user.id;
                 return (
                   <View key={msg._id} style={{ alignItems: isMe ? 'flex-end' : 'flex-start' }}>
                     <Text
@@ -130,7 +131,7 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
                           color: isMe ? '#fff' : colors.text,
                         }}
                       >
-                        {msg.content}
+                        {msg.message}
                       </Text>
                     </View>
                   </View>
@@ -205,7 +206,7 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
                     numberOfLines={1}
                     style={{ fontSize: 13, color: colors.textSecondary, marginLeft: 44 }}
                   >
-                    {item.lastMessage.content}
+                    {item.lastMessage.message}
                   </Text>
                 )}
               </TouchableOpacity>

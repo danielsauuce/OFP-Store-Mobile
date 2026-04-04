@@ -1,6 +1,24 @@
 import { AxiosError } from 'axios';
 import axiosInstance from './axiosInstance';
 
+// Backend may return profilePicture as a Cloudinary object {secureUrl, url} or a plain string.
+// Always normalise to a plain string before storing in context.
+function normalisePicture(pic: unknown): string | undefined {
+  if (typeof pic === 'string') return pic || undefined;
+  if (pic && typeof pic === 'object') {
+    const p = pic as { secureUrl?: string; url?: string };
+    return p.secureUrl ?? p.url ?? undefined;
+  }
+  return undefined;
+}
+
+function normaliseAuthResponse(data: AuthResponse): AuthResponse {
+  return {
+    ...data,
+    user: { ...data.user, profilePicture: normalisePicture(data.user.profilePicture) },
+  };
+}
+
 export interface RegisterPayload {
   fullName: string;
   email: string;
@@ -34,7 +52,7 @@ export interface ApiError {
 export const registerService = async (payload: RegisterPayload): Promise<AuthResponse> => {
   try {
     const { data } = await axiosInstance.post<AuthResponse>('/api/auth/register', payload);
-    return data;
+    return normaliseAuthResponse(data);
   } catch (error) {
     const err = error as AxiosError<ApiError>;
     console.error('API ERROR:', err?.response?.data?.message || err.message);
@@ -45,7 +63,7 @@ export const registerService = async (payload: RegisterPayload): Promise<AuthRes
 export const loginService = async (payload: LoginPayload): Promise<AuthResponse> => {
   try {
     const { data } = await axiosInstance.post<AuthResponse>('/api/auth/login', payload);
-    return data;
+    return normaliseAuthResponse(data);
   } catch (error) {
     const err = error as AxiosError<ApiError>;
     console.error('API ERROR:', err?.response?.data?.message || err.message);
@@ -66,7 +84,7 @@ export const logoutService = async (): Promise<void> => {
 export const checkAuthService = async (): Promise<AuthResponse | null> => {
   try {
     const { data } = await axiosInstance.get<AuthResponse>('/api/auth/me');
-    return data;
+    return normaliseAuthResponse(data);
   } catch (error) {
     const err = error as AxiosError<ApiError>;
     // 401 = expired/invalid token, network errors = treat as unauthenticated

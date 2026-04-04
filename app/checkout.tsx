@@ -76,7 +76,7 @@ export default function CheckoutScreen() {
         items: items.map((i) => ({
           product: i.product._id,
           quantity: i.quantity,
-          price: i.product.price,
+          price: i.price ?? i.product.price,
         })),
         shippingAddress: {
           fullName: address.fullName,

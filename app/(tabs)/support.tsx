@@ -48,6 +48,7 @@ export default function SupportScreen() {
       socket.on('connect', () => {
         setConnected(true);
         setStatus('ready');
+        socket.emit('chat:init');
       });
 
       socket.on('disconnect', () => {
