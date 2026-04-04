@@ -34,15 +34,12 @@ function Field({ label, value, onChange, placeholder }: FieldProps) {
         onChangeText={onChange}
         placeholder={placeholder}
         placeholderTextColor={colors.textTertiary}
+        className="px-4 py-[13px] rounded-xl text-[15px]"
         style={{
           backgroundColor: colors.surface,
           borderColor: colors.border,
           color: colors.text,
           borderWidth: 1,
-          borderRadius: 12,
-          paddingHorizontal: 16,
-          paddingVertical: 13,
-          fontSize: 15,
         }}
       />
     </View>
@@ -129,16 +126,12 @@ export default function AddressStep({ address, onChange }: Props) {
           placeholderTextColor={colors.textTertiary}
           multiline
           numberOfLines={3}
+          className="px-4 py-[13px] rounded-xl text-[15px] min-h-20"
           style={{
             backgroundColor: colors.surface,
             borderColor: colors.border,
             color: colors.text,
             borderWidth: 1,
-            borderRadius: 12,
-            paddingHorizontal: 16,
-            paddingVertical: 13,
-            fontSize: 15,
-            minHeight: 80,
             textAlignVertical: 'top',
           }}
         />

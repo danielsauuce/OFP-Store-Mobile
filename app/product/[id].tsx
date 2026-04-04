@@ -61,7 +61,6 @@ export default function ProductDetailScreen() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Average rating from reviews
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews', id, 'summary'],
     queryFn: async () => {
@@ -116,14 +115,7 @@ export default function ProductDetailScreen() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.background,
-        }}
-      >
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
         <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
@@ -132,15 +124,11 @@ export default function ProductDetailScreen() {
   if (!product) {
     return (
       <SafeAreaView
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.background,
-        }}
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: colors.background }}
       >
         <Text style={{ color: colors.text }}>Product not found</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+        <TouchableOpacity onPress={() => router.back()} className="mt-4">
           <Text style={{ color: colors.primary }}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -150,15 +138,15 @@ export default function ProductDetailScreen() {
   const images = product.images.length > 0 ? product.images : [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Full-bleed image */}
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
+      {/* Full-bleed image — height is dynamic so must stay inline */}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: IMAGE_HEIGHT }}>
         <MotiView
           key={activeImage}
           from={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'timing', duration: 280 }}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           <Image
             source={{ uri: images[activeImage] ?? images[0] }}
@@ -170,24 +158,12 @@ export default function ProductDetailScreen() {
 
       {/* Floating back + wishlist buttons */}
       <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-            paddingTop: 8,
-          }}
-        >
+        <View className="flex-row justify-between items-center px-5 pt-2">
           <TouchableOpacity
             onPress={() => router.back()}
+            className="w-[42px] h-[42px] rounded-full items-center justify-center"
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
               backgroundColor: 'rgba(255,255,255,0.92)',
-              alignItems: 'center',
-              justifyContent: 'center',
               shadowColor: '#000',
               shadowOpacity: 0.1,
               shadowRadius: 8,
@@ -200,13 +176,9 @@ export default function ProductDetailScreen() {
           <TouchableOpacity
             onPress={handleWishlist}
             disabled={wishlistLoading}
+            className="w-[42px] h-[42px] rounded-full items-center justify-center"
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
               backgroundColor: 'rgba(255,255,255,0.92)',
-              alignItems: 'center',
-              justifyContent: 'center',
               shadowColor: '#000',
               shadowOpacity: 0.1,
               shadowRadius: 8,
@@ -225,7 +197,7 @@ export default function ProductDetailScreen() {
       {/* Scrollable white card that overlaps the image */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ paddingTop: IMAGE_HEIGHT - 28 }}
       >
         <View
@@ -238,15 +210,7 @@ export default function ProductDetailScreen() {
         >
           {/* Dot indicators */}
           {images.length > 1 && (
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                gap: 6,
-                paddingTop: 14,
-                paddingBottom: 4,
-              }}
-            >
+            <View className="flex-row justify-center gap-1.5 pt-3.5 pb-1">
               {images.map((_, i) => (
                 <TouchableOpacity key={i} onPress={() => setActiveImage(i)}>
                   <MotiView
@@ -263,54 +227,54 @@ export default function ProductDetailScreen() {
           )}
 
           {/* Drag handle */}
-          <View style={{ alignItems: 'center', paddingTop: images.length > 1 ? 0 : 14 }}>
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
+          <View className="items-center" style={{ paddingTop: images.length > 1 ? 0 : 14 }}>
+            <View className="w-9 h-1 rounded-full" style={{ backgroundColor: colors.border }} />
           </View>
 
           {/* Product info */}
-          <View style={{ paddingHorizontal: 24, paddingTop: 20, gap: 14 }}>
+          <View className="px-6 pt-5 gap-3.5">
             {/* Name + price */}
             <MotiView
               from={{ opacity: 0, translateY: 10 }}
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'timing', duration: 350 }}
-              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}
+              className="flex-row justify-between items-start"
             >
-              <View style={{ flex: 1, marginRight: 16 }}>
+              <View className="flex-1 mr-4">
                 <Text
-                  style={{
-                    color: colors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.8,
-                    marginBottom: 4,
-                  }}
+                  className="text-xs font-semibold uppercase tracking-[0.8px] mb-1"
+                  style={{ color: colors.textSecondary }}
                 >
                   {product.category}
                 </Text>
-                <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800', lineHeight: 30 }}>
+                <Text className="font-extrabold" style={{ color: colors.text, fontSize: 24, lineHeight: 30 }}>
                   {product.name}
                 </Text>
               </View>
-              <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>
+              <Text className="font-extrabold text-2xl" style={{ color: colors.text }}>
                 {formatCurrency(product.price)}
               </Text>
             </MotiView>
 
             {/* Short description */}
             {product.description && (
-              <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 22 }} numberOfLines={2}>
+              <Text
+                className="text-sm leading-[22px]"
+                style={{ color: colors.textSecondary }}
+                numberOfLines={2}
+              >
                 {product.description}
               </Text>
             )}
 
             {/* Rating row */}
             {avgRating && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ color: colors.text, fontSize: 15, fontWeight: '700' }}>{avgRating}</Text>
-                  <View style={{ flexDirection: 'row', gap: 2 }}>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="text-[15px] font-bold" style={{ color: colors.text }}>
+                    {avgRating}
+                  </Text>
+                  <View className="flex-row gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
@@ -320,72 +284,51 @@ export default function ProductDetailScreen() {
                       />
                     ))}
                   </View>
-                  <Text style={{ color: colors.textSecondary, fontSize: 13 }}>({reviews.length})</Text>
+                  <Text className="text-[13px]" style={{ color: colors.textSecondary }}>
+                    ({reviews.length})
+                  </Text>
                 </View>
-                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>
+                <Text className="text-[13px] font-semibold" style={{ color: colors.primary }}>
                   See All reviews
                 </Text>
               </View>
             )}
 
             {/* Stock + quantity */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View className="flex-row items-center justify-between">
               <View
+                className="px-3 py-[5px] rounded-full"
                 style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 5,
-                  borderRadius: 100,
                   backgroundColor: product.inStock ? colors.success + '18' : colors.error + '18',
                 }}
               >
                 <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color: product.inStock ? colors.success : colors.error,
-                  }}
+                  className="text-xs font-semibold"
+                  style={{ color: product.inStock ? colors.success : colors.error }}
                 >
                   {product.inStock ? `In Stock · ${product.stockQuantity} left` : 'Out of Stock'}
                 </Text>
               </View>
 
               {product.inStock && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View className="flex-row items-center gap-3">
                   <TouchableOpacity
                     onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    className="w-8 h-8 rounded-[10px] border items-center justify-center"
+                    style={{ borderColor: colors.border }}
                   >
                     <Minus size={14} color={colors.text} />
                   </TouchableOpacity>
                   <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: '700',
-                      color: colors.text,
-                      minWidth: 20,
-                      textAlign: 'center',
-                    }}
+                    className="text-[15px] font-bold text-center min-w-[20px]"
+                    style={{ color: colors.text }}
                   >
                     {quantity}
                   </Text>
                   <TouchableOpacity
                     onPress={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 10,
-                      backgroundColor: colors.primary,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    className="w-8 h-8 rounded-[10px] items-center justify-center"
+                    style={{ backgroundColor: colors.primary }}
                   >
                     <Plus size={14} color="#fff" />
                   </TouchableOpacity>
@@ -395,21 +338,25 @@ export default function ProductDetailScreen() {
 
             {/* Material / Dimensions */}
             {(product.material || product.dimensions) && (
-              <View style={{ gap: 6, padding: 16, borderRadius: 16, backgroundColor: colors.surfaceVariant }}>
+              <View className="gap-1.5 p-4 rounded-2xl" style={{ backgroundColor: colors.surfaceVariant }}>
                 {product.material && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '500' }}>
+                  <View className="flex-row justify-between">
+                    <Text className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
                       Material
                     </Text>
-                    <Text style={{ fontSize: 13, color: colors.text }}>{product.material}</Text>
+                    <Text className="text-[13px]" style={{ color: colors.text }}>
+                      {product.material}
+                    </Text>
                   </View>
                 )}
                 {product.dimensions && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '500' }}>
+                  <View className="flex-row justify-between">
+                    <Text className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
                       Dimensions
                     </Text>
-                    <Text style={{ fontSize: 13, color: colors.text }}>{product.dimensions}</Text>
+                    <Text className="text-[13px]" style={{ color: colors.text }}>
+                      {product.dimensions}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -417,9 +364,11 @@ export default function ProductDetailScreen() {
 
             {/* Full description */}
             {product.description && (
-              <View style={{ gap: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>Description</Text>
-                <Text style={{ fontSize: 14, lineHeight: 22, color: colors.textSecondary }}>
+              <View className="gap-2">
+                <Text className="text-base font-bold" style={{ color: colors.text }}>
+                  Description
+                </Text>
+                <Text className="text-sm leading-[22px]" style={{ color: colors.textSecondary }}>
                   {product.description}
                 </Text>
               </View>
@@ -434,7 +383,7 @@ export default function ProductDetailScreen() {
             <RelatedProducts products={related} onPress={(relId) => router.push(`/product/${relId}`)} />
           )}
 
-          <View style={{ height: 120 }} />
+          <View className="h-[120px]" />
         </View>
       </ScrollView>
 
@@ -451,28 +400,15 @@ export default function ProductDetailScreen() {
           borderTopColor: colors.border,
         }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12,
-            paddingHorizontal: 24,
-            paddingTop: 12,
-            paddingBottom: 8,
-          }}
-        >
+        <View className="flex-row items-center gap-3 px-6 pt-3 pb-2">
           {/* Cart icon button */}
           <TouchableOpacity
             onPress={handleAddToCart}
             disabled={!product.inStock || adding}
+            className="w-[52px] h-[52px] rounded-[14px] items-center justify-center"
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
               borderWidth: 1.5,
               borderColor: product.inStock ? colors.border : colors.border + '60',
-              alignItems: 'center',
-              justifyContent: 'center',
               backgroundColor: colors.surface,
               opacity: product.inStock ? 1 : 0.4,
             }}
@@ -484,16 +420,12 @@ export default function ProductDetailScreen() {
           <TouchableOpacity
             onPress={handleAddToCart}
             disabled={!product.inStock || adding}
+            className="flex-1 h-[52px] rounded-[14px] items-center justify-center"
             style={{
-              flex: 1,
-              height: 52,
-              borderRadius: 14,
               backgroundColor: product.inStock ? (isDark ? colors.primary : '#111') : colors.border,
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
+            <Text className="text-white text-base font-bold">
               {adding ? 'Adding…' : product.inStock ? 'Buy Now' : 'Out of Stock'}
             </Text>
           </TouchableOpacity>

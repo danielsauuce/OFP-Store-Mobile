@@ -117,7 +117,7 @@ export default function ProfileAvatar({
             style={{ backgroundColor: colors.primary }}
           >
             {imageUri ? (
-              <Image source={{ uri: imageUri }} style={{ width: 96, height: 96 }} contentFit="cover" />
+              <Image source={{ uri: imageUri }} className="w-24 h-24" contentFit="cover" />
             ) : (
               <Text className="text-3xl font-bold text-white">{initials}</Text>
             )}

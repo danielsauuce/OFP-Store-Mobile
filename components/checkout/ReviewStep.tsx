@@ -17,6 +17,7 @@ interface CartItem {
     primaryImage?: { secureUrl?: string; url?: string };
   };
   quantity: number;
+  price?: number; // locked price at time of adding to cart
 }
 
 interface Props {
@@ -117,9 +118,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
                   className="w-14 h-14 rounded-xl overflow-hidden"
                   style={{ backgroundColor: colors.border }}
                 >
-                  {imageUri && (
-                    <Image source={{ uri: imageUri }} style={{ width: 56, height: 56 }} contentFit="cover" />
-                  )}
+                  {imageUri && <Image source={{ uri: imageUri }} className="w-14 h-14" contentFit="cover" />}
                 </View>
                 <View className="flex-1">
                   <Text className="text-sm font-semibold" numberOfLines={1} style={{ color: colors.text }}>
@@ -130,7 +129,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
                   </Text>
                 </View>
                 <Text className="font-bold text-sm" style={{ color: colors.primary }}>
-                  {formatCurrency(item.product.price * item.quantity)}
+                  {formatCurrency((item.price ?? item.product.price) * item.quantity)}
                 </Text>
               </View>
             );

@@ -43,10 +43,8 @@ export default function CategoryChips({ categories, selected, onSelect }: Props)
                 backgroundColor: active ? colors.primary : colors.surface,
               }}
               transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              className="px-[18px] py-2 rounded-full"
               style={{
-                paddingHorizontal: 18,
-                paddingVertical: 8,
-                borderRadius: 100,
                 borderWidth: active ? 0 : 1,
                 borderColor: colors.border,
                 shadowColor: active ? colors.primary : 'transparent',

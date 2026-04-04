@@ -26,38 +26,36 @@ export default function WelcomeScreen() {
   if (user) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#111' }}>
-      {/* Full-bleed hero image */}
+    <View className="flex-1 bg-[#111]">
+      {/* Full-bleed hero image — must stay inline: dynamic width/height from useWindowDimensions */}
       <Image source={heroImage} style={{ position: 'absolute', width, height }} contentFit="cover" />
 
-      {/* Dark gradient overlay — heavier at bottom where text sits */}
+      {/* Dark gradient overlay */}
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.18)', 'rgba(0,0,0,0.72)', 'rgba(0,0,0,0.94)']}
         locations={[0, 0.35, 0.65, 1]}
         style={{ position: 'absolute', width, height }}
       />
 
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1">
         {/* Top area — branding badge */}
         <MotiView
           from={{ opacity: 0, translateY: -12 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'timing', duration: 500, delay: 100 }}
-          style={{ paddingHorizontal: 24, paddingTop: 8 }}
+          className="px-6 pt-2"
         >
           <View
+            className="self-start rounded-full px-3.5 py-1.5"
             style={{
-              alignSelf: 'flex-start',
               backgroundColor: 'rgba(255,255,255,0.12)',
-              borderRadius: 100,
-              paddingHorizontal: 14,
-              paddingVertical: 6,
               borderWidth: 1,
               borderColor: 'rgba(255,255,255,0.2)',
             }}
           >
             <Text
-              style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600', letterSpacing: 1 }}
+              className="text-xs font-semibold tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.9)' }}
             >
               OLAYINKA FURNITURE PALACE
             </Text>
@@ -65,35 +63,24 @@ export default function WelcomeScreen() {
         </MotiView>
 
         {/* Spacer */}
-        <View style={{ flex: 1 }} />
+        <View className="flex-1" />
 
         {/* Bottom content */}
-        <View style={{ paddingHorizontal: 24, paddingBottom: 16, gap: 20 }}>
+        <View className="px-6 pb-4 gap-5">
           {/* Headline */}
           <MotiView
             from={{ opacity: 0, translateY: 24 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'timing', duration: 550, delay: 200 }}
-            style={{ gap: 10 }}
+            className="gap-2.5"
           >
             <Text
-              style={{
-                color: '#fff',
-                fontSize: 42,
-                fontWeight: '800',
-                lineHeight: 48,
-                letterSpacing: -0.5,
-              }}
+              className="text-white font-extrabold"
+              style={{ fontSize: 42, lineHeight: 48, letterSpacing: -0.5 }}
             >
               Transform Your Space with Style
             </Text>
-            <Text
-              style={{
-                color: 'rgba(255,255,255,0.72)',
-                fontSize: 15,
-                lineHeight: 23,
-              }}
-            >
+            <Text className="text-[15px] leading-6" style={{ color: 'rgba(255,255,255,0.72)' }}>
               Discover premium furniture designed to make your home feel cozy, modern, and uniquely yours.
             </Text>
           </MotiView>
@@ -103,42 +90,32 @@ export default function WelcomeScreen() {
             from={{ opacity: 0, translateY: 20 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'spring', damping: 18, stiffness: 160, delay: 420 }}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+            className="flex-row items-center gap-3"
           >
             {/* Main button */}
             <Pressable
               onPress={() => router.push('/auth')}
               onPressIn={() => setPressed(true)}
               onPressOut={() => setPressed(false)}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               <MotiView
                 animate={{ scale: pressed ? 0.97 : 1 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-                style={{
-                  height: 54,
-                  backgroundColor: '#111',
-                  borderRadius: 100,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="h-[54px] rounded-full items-center justify-center bg-[#111]"
               >
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>Start Shopping</Text>
+                <Text className="text-white text-base font-bold">Start Shopping</Text>
               </MotiView>
             </Pressable>
 
             {/* Arrow icon button */}
             <TouchableOpacity
               onPress={() => router.push('/auth')}
+              className="w-[54px] h-[54px] rounded-full items-center justify-center"
               style={{
-                width: 54,
-                height: 54,
-                borderRadius: 100,
                 backgroundColor: 'rgba(255,255,255,0.15)',
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.3)',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
             >
               <ArrowUpRight size={22} color="#fff" />
@@ -150,14 +127,17 @@ export default function WelcomeScreen() {
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ type: 'timing', duration: 500, delay: 600 }}
-            style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}
+            className="flex-row gap-4 flex-wrap"
           >
             {['Handcrafted', 'Fast Delivery', 'Lifetime Support'].map((f) => (
-              <View key={f} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View key={f} className="flex-row items-center gap-[5px]">
                 <View
-                  style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.6)' }}
+                  className="w-[5px] h-[5px] rounded-full"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                 />
-                <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '500' }}>{f}</Text>
+                <Text className="text-[13px] font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                  {f}
+                </Text>
               </View>
             ))}
           </MotiView>

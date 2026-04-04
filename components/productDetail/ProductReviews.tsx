@@ -28,7 +28,7 @@ export const reviewKeys = {
 
 function StarRow({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
-    <View style={{ flexDirection: 'row', gap: 2 }}>
+    <View className="flex-row gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
         <Star
           key={s}
@@ -51,16 +51,12 @@ function Avatar({ name }: { name: string }) {
     .toUpperCase();
   return (
     <View
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.primary + '22',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="w-9 h-9 rounded-full items-center justify-center"
+      style={{ backgroundColor: colors.primary + '22' }}
     >
-      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>{initials}</Text>
+      <Text className="text-[13px] font-bold" style={{ color: colors.primary }}>
+        {initials}
+      </Text>
     </View>
   );
 }
@@ -69,18 +65,12 @@ function RatingBar({ count, total, star }: { count: number; total: number; star:
   const { colors } = useTheme();
   const pct = total > 0 ? count / total : 0;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-      <Text style={{ fontSize: 11, color: colors.textSecondary, width: 10 }}>{star}</Text>
+    <View className="flex-row items-center gap-2 mb-1">
+      <Text className="text-[11px] w-2.5" style={{ color: colors.textSecondary }}>
+        {star}
+      </Text>
       <Star size={10} color="#F59E0B" fill="#F59E0B" />
-      <View
-        style={{
-          flex: 1,
-          height: 6,
-          borderRadius: 3,
-          backgroundColor: colors.border,
-          overflow: 'hidden',
-        }}
-      >
+      <View className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: colors.border }}>
         <MotiView
           from={{ width: '0%' }}
           animate={{ width: `${pct * 100}%` }}
@@ -88,7 +78,9 @@ function RatingBar({ count, total, star }: { count: number; total: number; star:
           style={{ height: 6, borderRadius: 3, backgroundColor: '#F59E0B' }}
         />
       </View>
-      <Text style={{ fontSize: 11, color: colors.textSecondary, width: 18 }}>{count}</Text>
+      <Text className="text-[11px] w-[18px]" style={{ color: colors.textSecondary }}>
+        {count}
+      </Text>
     </View>
   );
 }
@@ -106,20 +98,12 @@ function timeAgo(dateStr: string) {
 function ReviewSkeleton() {
   const { colors } = useTheme();
   return (
-    <View style={{ gap: 12 }}>
+    <View className="gap-3">
       {[0, 1, 2].map((i) => (
-        <View
-          key={i}
-          style={{
-            padding: 16,
-            borderRadius: 16,
-            backgroundColor: colors.surface,
-            gap: 10,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View key={i} className="p-4 rounded-2xl gap-2.5" style={{ backgroundColor: colors.surface }}>
+          <View className="flex-row items-center gap-2.5">
             <Skeleton width={36} height={36} radius={18} />
-            <View style={{ flex: 1, gap: 6 }}>
+            <View className="flex-1 gap-1.5">
               <Skeleton width="50%" height={12} radius={6} />
               <Skeleton width="30%" height={10} radius={5} />
             </View>
@@ -156,25 +140,23 @@ function ReviewCard({
       from={{ opacity: 0, translateY: 14 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 160, delay: Math.min(index * 60, 300) }}
+      className="p-4 rounded-[20px] gap-2.5"
       style={{
-        padding: 16,
-        borderRadius: 20,
         backgroundColor: colors.surface,
         borderWidth: 1,
         borderColor: colors.border,
-        gap: 10,
       }}
     >
       {/* Header row */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+      <View className="flex-row items-start gap-2.5">
         <Avatar name={review.user?.fullName ?? '?'} />
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
+        <View className="flex-1">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm font-bold" style={{ color: colors.text }}>
               {review.user?.fullName ?? 'Anonymous'}
             </Text>
             {isOwn && (
-              <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View className="flex-row gap-3">
                 <TouchableOpacity onPress={onEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Pencil size={14} color={colors.primary} />
                 </TouchableOpacity>
@@ -188,29 +170,30 @@ function ReviewCard({
               </View>
             )}
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
+          <View className="flex-row items-center gap-2 mt-[3px]">
             <StarRow rating={review.rating} size={12} />
-            <Text style={{ fontSize: 11, color: colors.textSecondary }}>{timeAgo(review.createdAt)}</Text>
+            <Text className="text-[11px]" style={{ color: colors.textSecondary }}>
+              {timeAgo(review.createdAt)}
+            </Text>
           </View>
         </View>
       </View>
 
       {/* Title */}
       {review.title ? (
-        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>{review.title}</Text>
+        <Text className="text-[13px] font-bold" style={{ color: colors.text }}>
+          {review.title}
+        </Text>
       ) : null}
 
       {/* Comment */}
-      <Text style={{ fontSize: 13, lineHeight: 20, color: colors.textSecondary }}>
+      <Text className="text-[13px] leading-5" style={{ color: colors.textSecondary }}>
         {isLong && !expanded ? `${review.comment.slice(0, 120)}…` : review.comment}
       </Text>
 
       {isLong && (
-        <TouchableOpacity
-          onPress={() => setExpanded((v) => !v)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-        >
-          <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
+        <TouchableOpacity onPress={() => setExpanded((v) => !v)} className="flex-row items-center gap-1">
+          <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
             {expanded ? 'Show less' : 'Read more'}
           </Text>
           {expanded ? (
@@ -264,39 +247,29 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const hasOwnReview = user ? reviews.some((r) => r.user?._id === user.id) : false;
 
   return (
-    <View style={{ marginTop: 24, paddingHorizontal: 20, marginBottom: 24, gap: 16 }}>
+    <View className="mt-6 px-5 mb-6 gap-4">
       {/* Section header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>Reviews</Text>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <Text className="text-lg font-extrabold" style={{ color: colors.text }}>
+            Reviews
+          </Text>
           {reviews.length > 0 && (
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 100,
-                backgroundColor: colors.primary + '18',
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>{reviews.length}</Text>
+            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.primary + '18' }}>
+              <Text className="text-xs font-bold" style={{ color: colors.primary }}>
+                {reviews.length}
+              </Text>
             </View>
           )}
         </View>
         {user && !hasOwnReview && !showForm && (
           <TouchableOpacity
             onPress={() => setShowForm(true)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-              borderRadius: 100,
-              backgroundColor: colors.primary,
-            }}
+            className="flex-row items-center gap-1.5 px-3.5 py-[7px] rounded-full"
+            style={{ backgroundColor: colors.primary }}
           >
             <MessageSquare size={13} color="#fff" />
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff' }}>Write a Review</Text>
+            <Text className="text-xs font-bold text-white">Write a Review</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -307,27 +280,23 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           from={{ opacity: 0, translateY: 8 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'timing', duration: 400 }}
+          className="flex-row p-4 rounded-[20px] gap-4 items-center"
           style={{
-            flexDirection: 'row',
-            padding: 16,
-            borderRadius: 20,
             backgroundColor: colors.surface,
             borderWidth: 1,
             borderColor: colors.border,
-            gap: 16,
-            alignItems: 'center',
           }}
         >
-          <View style={{ alignItems: 'center', gap: 4 }}>
-            <Text style={{ fontSize: 42, fontWeight: '800', color: colors.text, lineHeight: 48 }}>
+          <View className="items-center gap-1">
+            <Text className="font-extrabold" style={{ fontSize: 42, color: colors.text, lineHeight: 48 }}>
               {average.toFixed(1)}
             </Text>
             <StarRow rating={Math.round(average)} size={14} />
-            <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 2 }}>
+            <Text className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
               {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
             </Text>
           </View>
-          <View style={{ flex: 1 }}>
+          <View className="flex-1">
             {dist.map((d) => (
               <RatingBar key={d.star} star={d.star} count={d.count} total={reviews.length} />
             ))}
@@ -360,30 +329,27 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ type: 'timing', duration: 400 }}
-          style={{ alignItems: 'center', paddingVertical: 32, gap: 10 }}
+          className="items-center py-8 gap-2.5"
         >
           <Star size={40} color={colors.border} />
-          <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>No reviews yet</Text>
-          <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center' }}>
+          <Text className="text-[15px] font-bold" style={{ color: colors.text }}>
+            No reviews yet
+          </Text>
+          <Text className="text-[13px] text-center" style={{ color: colors.textSecondary }}>
             Be the first to share your experience with this product.
           </Text>
           {user && !showForm && (
             <TouchableOpacity
               onPress={() => setShowForm(true)}
-              style={{
-                marginTop: 4,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 100,
-                backgroundColor: colors.primary,
-              }}
+              className="mt-1 px-5 py-2.5 rounded-full"
+              style={{ backgroundColor: colors.primary }}
             >
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#fff' }}>Write a Review</Text>
+              <Text className="text-[13px] font-bold text-white">Write a Review</Text>
             </TouchableOpacity>
           )}
         </MotiView>
       ) : (
-        <View style={{ gap: 12 }}>
+        <View className="gap-3">
           {reviews.map((review, index) => (
             <ReviewCard
               key={review._id}

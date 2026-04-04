@@ -74,11 +74,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
                     style={{ backgroundColor: colors.border }}
                   >
                     {imageUri && (
-                      <Image
-                        source={{ uri: imageUri }}
-                        style={{ width: 64, height: 64 }}
-                        contentFit="cover"
-                      />
+                      <Image source={{ uri: imageUri }} className="w-16 h-16" contentFit="cover" />
                     )}
                   </View>
 

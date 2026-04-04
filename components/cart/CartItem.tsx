@@ -46,7 +46,7 @@ export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props)
             item.product.primaryImage?.secureUrl ??
             item.product.primaryImage?.url,
         }}
-        style={{ width: 96, height: 96, borderRadius: 12 }}
+        className="w-24 h-24 rounded-xl"
         contentFit="cover"
       />
 

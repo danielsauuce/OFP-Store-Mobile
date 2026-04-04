@@ -101,21 +101,13 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
                 const isMe = user && senderId === user.id;
                 return (
                   <View key={msg._id} style={{ alignItems: isMe ? 'flex-end' : 'flex-start' }}>
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        color: colors.textSecondary,
-                        marginBottom: 3,
-                        marginHorizontal: 4,
-                      }}
-                    >
+                    <Text className="text-[11px] mb-[3px] mx-1" style={{ color: colors.textSecondary }}>
                       {isMe ? 'You' : msg.sender.fullName} · {timeAgo(msg.createdAt)}
                     </Text>
                     <View
+                      className="px-3.5 py-2.5"
                       style={{
                         maxWidth: '78%',
-                        paddingHorizontal: 14,
-                        paddingVertical: 10,
                         borderRadius: 18,
                         borderBottomRightRadius: isMe ? 4 : 18,
                         borderBottomLeftRadius: isMe ? 18 : 4,
@@ -124,13 +116,7 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
                         borderColor: colors.border,
                       }}
                     >
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          lineHeight: 20,
-                          color: isMe ? '#fff' : colors.text,
-                        }}
-                      >
+                      <Text className="text-sm leading-5" style={{ color: isMe ? '#fff' : colors.text }}>
                         {msg.message}
                       </Text>
                     </View>
@@ -163,36 +149,28 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
               <TouchableOpacity
                 onPress={() => setSelectedId(item._id)}
                 activeOpacity={0.7}
+                className="p-4 rounded-2xl gap-1.5"
                 style={{
-                  padding: 16,
-                  borderRadius: 16,
                   backgroundColor: colors.surface,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  gap: 6,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-2">
                     <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 18,
-                        backgroundColor: colors.primary + '18',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
+                      className="w-9 h-9 rounded-full items-center justify-center"
+                      style={{ backgroundColor: colors.primary + '18' }}
                     >
                       <MessageSquare size={16} color={colors.primary} />
                     </View>
                     <View>
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
+                      <Text className="text-sm font-bold" style={{ color: colors.text }}>
                         Support Chat
                       </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <View className="flex-row items-center gap-1 mt-0.5">
                         <Clock size={11} color={colors.textSecondary} />
-                        <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                        <Text className="text-[11px]" style={{ color: colors.textSecondary }}>
                           {timeAgo(item.updatedAt ?? item.createdAt)}
                         </Text>
                       </View>
@@ -204,7 +182,8 @@ export default function TicketHistoryModal({ visible, onClose }: Props) {
                 {item.lastMessage && (
                   <Text
                     numberOfLines={1}
-                    style={{ fontSize: 13, color: colors.textSecondary, marginLeft: 44 }}
+                    className="text-[13px] ml-11"
+                    style={{ color: colors.textSecondary }}
                   >
                     {item.lastMessage.message}
                   </Text>

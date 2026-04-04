@@ -21,10 +21,10 @@ export default function HeroBanner({ onShopPress }: HeroBannerProps) {
         source={{
           uri: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=60',
         }}
-        style={{ width: '100%', height: '100%' }}
+        className="w-full h-full"
         contentFit="cover"
       />
-      <View className="absolute inset-0 justify-end p-5" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+      <View className="absolute inset-0 justify-end p-5 bg-black/35">
         <MotiView
           from={{ opacity: 0, translateX: -12 }}
           animate={{ opacity: 1, translateX: 0 }}
