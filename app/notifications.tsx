@@ -3,16 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  ChevronLeft,
-  Bell,
-  ShoppingBag,
-  CreditCard,
-  Star,
-  MessageCircle,
-  Info,
-  CheckCheck,
-} from 'lucide-react-native';
+import { ChevronLeft, Bell, ShoppingBag, MessageCircle, Info, CheckCheck } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -26,10 +17,10 @@ const TYPE_CONFIG: Record<
   AppNotification['type'],
   { Icon: React.ComponentType<{ size: number; color: string }>; color: string }
 > = {
-  order: { Icon: ShoppingBag, color: '#3B82F6' },
-  payment: { Icon: CreditCard, color: '#10B981' },
-  review: { Icon: Star, color: '#F59E0B' },
-  chat: { Icon: MessageCircle, color: '#8B5CF6' },
+  order_placed: { Icon: ShoppingBag, color: '#3B82F6' },
+  order_status_updated: { Icon: ShoppingBag, color: '#10B981' },
+  order_cancelled: { Icon: ShoppingBag, color: '#EF4444' },
+  chat_message: { Icon: MessageCircle, color: '#8B5CF6' },
   system: { Icon: Info, color: '#6B7280' },
 };
 

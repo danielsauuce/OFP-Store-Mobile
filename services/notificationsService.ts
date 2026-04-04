@@ -4,7 +4,7 @@ export interface AppNotification {
   _id: string;
   title: string;
   message: string;
-  type: 'order' | 'payment' | 'review' | 'system' | 'chat';
+  type: 'order_placed' | 'order_status_updated' | 'order_cancelled' | 'chat_message' | 'system';
   isRead: boolean;
   data?: Record<string, unknown>;
   createdAt: string;
