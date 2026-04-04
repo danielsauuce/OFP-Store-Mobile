@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import { MapPin, Banknote, Building2 } from 'lucide-react-native';
+import { MapPin, Banknote, Building2, CreditCard } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 import type { ShippingAddress } from './AddressStep';
@@ -26,9 +26,10 @@ interface Props {
   paymentMethod: PaymentMethod;
 }
 
-const PAYMENT_LABELS: Record<PaymentMethod, { label: string; icon: React.ReactNode }> = {
-  pay_on_delivery: { label: 'Pay on Delivery', icon: null },
-  bank: { label: 'Bank Transfer', icon: null },
+const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+  pay_on_delivery: 'Pay on Delivery',
+  bank: 'Bank Transfer',
+  card: 'Credit / Debit Card',
 };
 
 export default function ReviewStep({ items, subtotal, address, paymentMethod }: Props) {
@@ -37,6 +38,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
 
   const getPaymentIcon = () => {
     if (paymentMethod === 'pay_on_delivery') return <Banknote size={16} color={colors.primary} />;
+    if (paymentMethod === 'card') return <CreditCard size={16} color={colors.primary} />;
     return <Building2 size={16} color={colors.primary} />;
   };
 
@@ -92,7 +94,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
             Payment
           </Text>
           <Text className="font-semibold text-sm mt-0.5" style={{ color: colors.text }}>
-            {PAYMENT_LABELS[paymentMethod].label}
+            {PAYMENT_LABELS[paymentMethod]}
           </Text>
         </View>
       </View>
