@@ -33,6 +33,8 @@ export default function CheckoutScreen() {
 
   const [address, setAddress] = useState<ShippingAddress>({
     fullName: user?.fullName ?? '',
+    email: user?.email ?? '',
+    phone: '',
     street: '',
     city: '',
     state: '',
@@ -50,10 +52,22 @@ export default function CheckoutScreen() {
   };
 
   const validateAddress = (): boolean => {
-    const required: (keyof ShippingAddress)[] = ['fullName', 'street', 'city', 'postalCode', 'country'];
+    const required: (keyof ShippingAddress)[] = [
+      'fullName',
+      'email',
+      'phone',
+      'street',
+      'city',
+      'postalCode',
+      'country',
+    ];
     const missing = required.filter((f) => !address[f].trim());
     if (missing.length > 0) {
       Alert.alert('Missing Details', 'Please fill in all required address fields.');
+      return false;
+    }
+    if (!address.email.includes('@')) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return false;
     }
     return true;
@@ -74,10 +88,11 @@ export default function CheckoutScreen() {
         items: items.map((i) => ({
           product: i.product._id,
           quantity: i.quantity,
-          price: i.priceSnapshot,
         })),
         shippingAddress: {
           fullName: address.fullName,
+          email: address.email,
+          phone: address.phone,
           street: address.street,
           city: address.city,
           state: address.state,
