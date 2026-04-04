@@ -32,6 +32,7 @@ module.exports = {
     'android/**',
     'ios/**',
     '.expo/**',
+    'expo-env.d.ts',
     'babel.config.js',
     'metro.config.js',
     'tailwind.config.js',
