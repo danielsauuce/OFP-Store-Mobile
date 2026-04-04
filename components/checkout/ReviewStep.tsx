@@ -12,12 +12,11 @@ interface CartItem {
   product: {
     _id: string;
     name: string;
-    price: number;
     images: string[];
     primaryImage?: { secureUrl?: string; url?: string };
   };
   quantity: number;
-  price?: number; // locked price at time of adding to cart
+  priceSnapshot: number;
 }
 
 interface Props {
@@ -129,7 +128,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
                   </Text>
                 </View>
                 <Text className="font-bold text-sm" style={{ color: colors.primary }}>
-                  {formatCurrency((item.price ?? item.product.price) * item.quantity)}
+                  {formatCurrency(item.priceSnapshot * item.quantity)}
                 </Text>
               </View>
             );

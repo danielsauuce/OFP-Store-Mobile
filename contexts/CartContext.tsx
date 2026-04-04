@@ -20,12 +20,12 @@ export interface CartItem {
   _id: string;
   product: CartProduct;
   quantity: number;
-  price?: number; // price locked at time of adding to cart (may live here, not on product)
+  priceSnapshot: number; // price locked at time of adding to cart
 }
 
 export interface Cart {
   items: CartItem[];
-  subtotal: number;
+  total: number;
 }
 
 interface CartContextType {
@@ -59,35 +59,40 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     queryKey: cartKeys.cart,
     queryFn: async () => {
       const res = await getCartService();
-      const raw: Cart | null = res.cart ?? res ?? null;
+      const raw = res.cart ?? res ?? null;
       if (!raw) return null;
 
-      // Normalize each product — backend may return images as objects or use primaryImage
-      const items = (raw.items ?? []).map((item) => {
-        const p = item.product as CartProduct & {
-          primaryImage?: { secureUrl?: string; url?: string };
-        };
+      type RawItem = {
+        _id: string;
+        product: CartProduct & { primaryImage?: { secure_url?: string; secureUrl?: string; url?: string } };
+        quantity: number;
+        priceSnapshot?: number;
+        price?: number;
+        imageSnapshot?: string;
+      };
+
+      // Normalize each item — backend returns priceSnapshot as locked price
+      const items: CartItem[] = (raw.items ?? []).map((item: RawItem) => {
+        const p = item.product;
         let images: string[] = [];
         if (Array.isArray(p.images) && p.images.length > 0) {
-          images = p.images.map((img) =>
-            typeof img === 'string'
-              ? img
-              : ((img as { secureUrl?: string; url?: string }).secureUrl ??
-                (img as { secureUrl?: string; url?: string }).url ??
-                ''),
+          images = p.images.map((img: string | { secure_url?: string; secureUrl?: string; url?: string }) =>
+            typeof img === 'string' ? img : (img.secure_url ?? img.secureUrl ?? img.url ?? ''),
           );
+        } else if (item.imageSnapshot) {
+          images = [item.imageSnapshot];
+        } else if (p.primaryImage?.secure_url) {
+          images = [p.primaryImage.secure_url];
         } else if (p.primaryImage?.secureUrl) {
           images = [p.primaryImage.secureUrl];
         } else if (p.primaryImage?.url) {
           images = [p.primaryImage.url];
         }
-        // Resolve price: item-level price takes priority over product.price (backend may lock price on item)
-        const rawItem = item as CartItem & { price?: number };
-        const resolvedPrice = rawItem.price ?? p.price ?? 0;
-        return { ...item, product: { ...p, images, price: resolvedPrice }, price: resolvedPrice };
+        const priceSnapshot = item.priceSnapshot ?? item.price ?? p.price ?? 0;
+        return { _id: item._id, product: { ...p, images }, quantity: item.quantity, priceSnapshot };
       });
 
-      return { ...raw, items };
+      return { items, total: raw.total ?? raw.subtotal ?? 0 };
     },
     enabled: !!user,
     staleTime: 2 * 60 * 1000,

@@ -45,7 +45,7 @@ export default function CheckoutScreen() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_on_delivery');
 
   const items = cart?.items ?? [];
-  const subtotal = cart?.subtotal ?? 0;
+  const subtotal = cart?.total ?? 0;
 
   const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
     setAddress((prev) => ({ ...prev, [field]: value }));
@@ -76,7 +76,7 @@ export default function CheckoutScreen() {
         items: items.map((i) => ({
           product: i.product._id,
           quantity: i.quantity,
-          price: i.price ?? i.product.price,
+          price: i.priceSnapshot,
         })),
         shippingAddress: {
           fullName: address.fullName,

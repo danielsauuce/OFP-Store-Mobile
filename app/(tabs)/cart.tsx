@@ -81,8 +81,7 @@ export default function CartScreen() {
 
   const items = cart?.items ?? [];
   const isEmpty = items.length === 0;
-  const subtotal =
-    cart?.subtotal ?? items.reduce((sum, i) => sum + (i.price ?? i.product.price) * i.quantity, 0);
+  const subtotal = cart?.total ?? items.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
