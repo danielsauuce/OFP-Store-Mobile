@@ -14,6 +14,7 @@ import ChangePasswordModal from '@/components/profile/ChangePasswordModal';
 import OrdersModal from '@/components/profile/OrdersModal';
 import WishlistModal from '@/components/profile/WishlistModal';
 import AddressesModal from '@/components/profile/AddressesModal';
+import SupportTicketsModal from '@/components/profile/SupportTicketsModal';
 
 export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const [showOrders, setShowOrders] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [showAddresses, setShowAddresses] = useState(false);
+  const [showSupportTickets, setShowSupportTickets] = useState(false);
 
   if (!user) {
     return <ProfileGuestView onSignIn={() => router.push('/auth')} />;
@@ -105,6 +107,7 @@ export default function ProfileScreen() {
           onChangePassword={() => setShowChangePassword(true)}
           onWishlist={() => setShowWishlist(true)}
           onAddresses={() => setShowAddresses(true)}
+          onSupportTickets={() => setShowSupportTickets(true)}
           onLogout={handleLogout}
           onDeleteAccount={handleDeleteAccount}
           deleting={deleting}
@@ -126,6 +129,8 @@ export default function ProfileScreen() {
       <WishlistModal visible={showWishlist} onClose={() => setShowWishlist(false)} />
 
       <AddressesModal visible={showAddresses} onClose={() => setShowAddresses(false)} />
+
+      <SupportTicketsModal visible={showSupportTickets} onClose={() => setShowSupportTickets(false)} />
     </SafeAreaView>
   );
 }

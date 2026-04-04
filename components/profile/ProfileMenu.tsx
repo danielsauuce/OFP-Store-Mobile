@@ -9,6 +9,7 @@ import {
   UserPen,
   Lock,
   MapPin,
+  Ticket,
 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import ProfileMenuItem from './ProfileMenuItem';
@@ -21,6 +22,7 @@ interface ProfileMenuProps {
   onChangePassword: () => void;
   onWishlist: () => void;
   onAddresses: () => void;
+  onSupportTickets: () => void;
   onLogout: () => void;
   onDeleteAccount: () => void;
   deleting: boolean;
@@ -34,6 +36,7 @@ export default function ProfileMenu({
   onChangePassword,
   onWishlist,
   onAddresses,
+  onSupportTickets,
   onLogout,
   onDeleteAccount,
   deleting,
@@ -84,6 +87,15 @@ export default function ProfileMenu({
         iconBg={colors.error + '20'}
         label="Wishlist"
         onPress={onWishlist}
+        right={<ChevronRight size={18} color={colors.textTertiary} />}
+      />
+
+      <ProfileMenuItem
+        Icon={Ticket}
+        iconColor={colors.primary}
+        iconBg={colors.primary + '20'}
+        label="Support Tickets"
+        onPress={onSupportTickets}
         right={<ChevronRight size={18} color={colors.textTertiary} />}
       />
 
