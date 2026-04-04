@@ -27,7 +27,7 @@ appId: com.ofp.store.mobile
 
 # Switch to Sign Up
 - tapOn:
-    text: "Sign Up"
+    text: 'Sign Up'
     optional: true
 
 - waitForAnimationToEnd

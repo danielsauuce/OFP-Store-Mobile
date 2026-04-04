@@ -87,6 +87,5 @@ appId: com.ofp.store.mobile
     id: 'close-modal'
     optional: true
 - back
-    optional: true
 
 - waitForAnimationToEnd

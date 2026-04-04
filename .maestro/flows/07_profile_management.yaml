@@ -53,7 +53,6 @@ appId: com.ofp.store.mobile
     id: 'close-modal'
     optional: true
 - back
-    optional: true
 
 # ── My Orders ─────────────────────────────────────────────────────────────────
 - tapOn:
@@ -76,7 +75,6 @@ appId: com.ofp.store.mobile
     id: 'close-modal'
     optional: true
 - back
-    optional: true
 
 - waitForAnimationToEnd
 
@@ -152,7 +150,6 @@ appId: com.ofp.store.mobile
     id: 'close-modal'
     optional: true
 - back
-    optional: true
 
 - waitForAnimationToEnd
 
@@ -174,7 +171,6 @@ appId: com.ofp.store.mobile
     id: 'close-modal'
     optional: true
 - back
-    optional: true
 
 - waitForAnimationToEnd
 
