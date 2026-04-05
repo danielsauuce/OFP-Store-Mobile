@@ -1,5 +1,3 @@
-// Types — all live chat communication goes through the socket (see socketService.ts).
-// REST endpoints are used only for conversation history in TicketHistoryModal.
 import { AxiosError } from 'axios';
 import axiosInstance from './axiosInstance';
 
@@ -27,20 +25,6 @@ export interface Conversation {
   lastMessage?: ChatMessage;
   updatedAt: string;
   createdAt: string;
-}
-
-// ── REST helpers for chat history ────────────────────────────────────────────
-
-export async function getConversationsService() {
-  // NOTE: This endpoint is admin-only on the backend. For regular users it returns 403.
-  try {
-    const { data } = await axiosInstance.get('/api/chat/conversations');
-    return data;
-  } catch (error) {
-    const err = error as AxiosError;
-    console.error('getConversations error:', (err.response?.data as Record<string, unknown>) ?? err.message);
-    return [];
-  }
 }
 
 export async function createConversationService(): Promise<Conversation> {
