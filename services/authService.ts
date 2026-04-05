@@ -37,14 +37,18 @@ export interface ChangePasswordPayload {
 }
 
 export interface AuthResponse {
+  success: boolean;
+  message: string;
   user: {
     id: string;
     fullName: string;
     email: string;
+    role?: string;
+    phone?: string;
     profilePicture?: string;
   };
   accessToken: string;
-  refreshToken?: string;
+  refreshToken: string;
 }
 
 export interface ApiError {
