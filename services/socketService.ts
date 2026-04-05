@@ -6,8 +6,12 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 export async function createChatSocket(): Promise<Socket> {
   const token = await SecureStore.getItemAsync('accessToken');
 
+  if (!token) {
+    throw new Error('No access token available — user must be logged in to use chat');
+  }
+
   const socket = io(`${BACKEND_URL}/chat`, {
-    auth: token ? { token } : undefined,
+    auth: { token },
     transports: ['websocket', 'polling'],
     autoConnect: false,
   });
@@ -19,8 +23,12 @@ export async function createChatSocket(): Promise<Socket> {
 export async function createNotificationsSocket(): Promise<Socket> {
   const token = await SecureStore.getItemAsync('accessToken');
 
+  if (!token) {
+    throw new Error('No access token available — user must be logged in for notifications');
+  }
+
   const socket = io(`${BACKEND_URL}/notifications`, {
-    auth: token ? { token } : undefined,
+    auth: { token },
     transports: ['websocket', 'polling'],
     autoConnect: false,
   });
