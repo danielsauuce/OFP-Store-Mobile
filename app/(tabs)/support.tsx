@@ -1,15 +1,15 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { Socket } from 'socket.io-client';
-import { useTheme } from '@/contexts/ThemeContext';
+import ChatInput from '@/components/chat/ChatInput';
+import ChatMessageList from '@/components/support/ChatMessageList';
+import SupportHeader from '@/components/support/SupportHeader';
+import TicketHistoryModal from '@/components/support/TicketHistoryModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import type { ChatMessage } from '@/services/chatService';
 import { createChatSocket } from '@/services/socketService';
-import ChatInput from '@/components/chat/ChatInput';
-import SupportHeader from '@/components/support/SupportHeader';
-import ChatMessageList from '@/components/support/ChatMessageList';
-import TicketHistoryModal from '@/components/support/TicketHistoryModal';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { Socket } from 'socket.io-client';
 
 type LocalMessage = { id: string; role: 'user' | 'assistant'; content: string };
 
@@ -21,6 +21,15 @@ const WELCOME: LocalMessage = {
   content:
     'Hi! Welcome to Olayinka Furniture Palace support. How can we help you today? A member of our team will be with you shortly.',
 };
+
+// Server populates sender.userId as a full object — extract the string _id safely.
+function resolveSenderId(sender: ChatMessage['sender']): string | undefined {
+  const uid = sender.userId;
+  if (typeof uid === 'object' && uid !== null) {
+    return (uid as { _id?: string })._id;
+  }
+  return uid as string | undefined;
+}
 
 export default function SupportScreen() {
   const { colors } = useTheme();
@@ -38,92 +47,114 @@ export default function SupportScreen() {
   // 'idle' before any socket attempt, 'connecting' while socket is establishing, 'ready' once connected
   const [status, setStatus] = useState<'idle' | 'connecting' | 'ready'>('idle');
 
-  // ── Socket lifecycle — mirrors ChatWidget.jsx useEffect ─────────────────
+  // Socket lifecycle
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
 
     setStatus('connecting');
 
-    createChatSocket().then((socket) => {
-      socketRef.current = socket;
+    createChatSocket()
+      .then((socket) => {
+        if (cancelled) {
+          socket.disconnect();
+          return;
+        }
+        socketRef.current = socket;
 
-      socket.on('connect', () => {
-        setConnected(true);
-        setStatus('ready');
-        socket.emit('chat:init');
-      });
+        socket.on('connect', () => {
+          setConnected(true);
+          setStatus('ready');
+          socket.emit('chat:init');
+        });
 
-      socket.on('disconnect', () => {
+        socket.on('disconnect', () => {
+          setConnected(false);
+        });
+
+        socket.on('connect_error', (err) => {
+          console.error('Chat connect_error:', err.message);
+          setConnected(false);
+          setStatus('idle');
+        });
+
+        socket.on('chat:initialized', (data: { conversationId: string; messages: ChatMessage[] }) => {
+          convIdRef.current = data.conversationId;
+          setConvReady(true);
+          if (data.messages?.length > 0) {
+            const mapped: LocalMessage[] = data.messages.map((m) => {
+              const senderId = resolveSenderId(m.sender);
+              return {
+                id: m._id,
+                role: (senderId ?? m.sender._id) === user.id ? 'user' : 'assistant',
+                content: m.message,
+              };
+            });
+            setMessages([WELCOME, ...mapped]);
+          }
+          setStatus('ready');
+        });
+
+        socket.on('chat:message', (msg: ChatMessage & { tempId?: string }) => {
+          const senderId = resolveSenderId(msg.sender);
+          const isOwn = senderId === user.id || msg.sender?.role === 'customer';
+
+          setMessages((prev) => {
+            // Replace optimistic bubble by tempId
+            if (msg.tempId) {
+              const idx = prev.findIndex((m) => m.id === msg.tempId);
+              if (idx !== -1) {
+                const next = [...prev];
+                next[idx] = { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message };
+                return next;
+              }
+            }
+            // Deduplicate by _id
+            if (prev.some((m) => m.id === msg._id)) return prev;
+            return [...prev, { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message }];
+          });
+        });
+
+        socket.on('chat:admin-joined', () => {
+          setMessages((prev) => [
+            ...prev,
+            { id: uid(), role: 'assistant', content: 'A support agent has joined the conversation.' },
+          ]);
+        });
+
+        socket.on('chat:closed', () => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              role: 'assistant',
+              content: 'This conversation has been closed. Start a new chat if you need further help.',
+            },
+          ]);
+          convIdRef.current = null;
+          setConvReady(false);
+        });
+
+        socket.on('chat:error', (err: { message?: string }) => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              role: 'assistant',
+              content: err?.message ?? 'Something went wrong. Please try again.',
+            },
+          ]);
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('Failed to create chat socket:', err.message);
+        setStatus('idle');
         setConnected(false);
       });
 
-      socket.on('chat:initialized', (data: { conversationId: string; messages: ChatMessage[] }) => {
-        convIdRef.current = data.conversationId;
-        setConvReady(true);
-        if (data.messages?.length > 0) {
-          const mapped: LocalMessage[] = data.messages.map((m) => ({
-            id: m._id,
-            role: (m.sender.userId ?? m.sender._id) === user.id ? 'user' : 'assistant',
-            content: m.message,
-          }));
-          setMessages([WELCOME, ...mapped]);
-        }
-        setStatus('ready');
-      });
-
-      socket.on('chat:message', (msg: ChatMessage & { tempId?: string }) => {
-        const senderId = msg.sender.userId ?? msg.sender._id;
-        const isOwn = senderId === user.id;
-
-        setMessages((prev) => {
-          // Replace optimistic bubble by tempId
-          if (msg.tempId) {
-            const idx = prev.findIndex((m) => m.id === msg.tempId);
-            if (idx !== -1) {
-              const next = [...prev];
-              next[idx] = { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message };
-              return next;
-            }
-          }
-          // Deduplicate by _id
-          if (prev.some((m) => m.id === msg._id)) return prev;
-          return [...prev, { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message }];
-        });
-      });
-
-      socket.on('chat:admin-joined', () => {
-        setMessages((prev) => [
-          ...prev,
-          { id: uid(), role: 'assistant', content: 'A support agent has joined the conversation.' },
-        ]);
-      });
-
-      socket.on('chat:closed', () => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: uid(),
-            role: 'assistant',
-            content: 'This conversation has been closed. Start a new chat if you need further help.',
-          },
-        ]);
-        convIdRef.current = null;
-        setConvReady(false);
-      });
-
-      socket.on('chat:error', (err: { message?: string }) => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: uid(),
-            role: 'assistant',
-            content: err?.message ?? 'Something went wrong. Please try again.',
-          },
-        ]);
-      });
-    });
-
     return () => {
+      cancelled = true;
       socketRef.current?.disconnect();
       socketRef.current = null;
       convIdRef.current = null;
@@ -134,7 +165,7 @@ export default function SupportScreen() {
     };
   }, [user]);
 
-  // ── Send — mirrors ChatWidget.jsx handleSend ─────────────────────────────
+  // send
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || isSending || !socketRef.current) return;
@@ -157,7 +188,7 @@ export default function SupportScreen() {
     setTimeout(() => setIsSending(false), 5000);
   }, [input, isSending]);
 
-  // ── New conversation ─────────────────────────────────────────────────────
+  // New conversation
   const handleNewConversation = useCallback(() => {
     convIdRef.current = null;
     setConvReady(false);
