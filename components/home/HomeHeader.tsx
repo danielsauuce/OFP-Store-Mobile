@@ -28,7 +28,7 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
     staleTime: 30_000,
   });
 
-  const unreadCount = Math.max(socketUnread, unreadData?.unreadCount ?? 0);
+  const unreadCount = Math.max(socketUnread, unreadData?.count ?? 0);
 
   return (
     <MotiView

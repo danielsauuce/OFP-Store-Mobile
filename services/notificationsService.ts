@@ -6,16 +6,21 @@ export interface AppNotification {
   message: string;
   type: 'order_placed' | 'order_status_updated' | 'order_cancelled' | 'chat_message' | 'system';
   isRead: boolean;
-  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
-export interface NotificationsResponse {
-  notifications: AppNotification[];
+export interface NotificationsPagination {
   total: number;
   page: number;
-  totalPages: number;
-  unreadCount: number;
+  pages: number;
+  limit: number;
+}
+
+export interface NotificationsResponse {
+  success: boolean;
+  notifications: AppNotification[];
+  pagination: NotificationsPagination;
 }
 
 export const getNotificationsService = async (page = 1, limit = 20): Promise<NotificationsResponse> => {
@@ -23,7 +28,7 @@ export const getNotificationsService = async (page = 1, limit = 20): Promise<Not
   return data;
 };
 
-export const getUnreadCountService = async (): Promise<{ unreadCount: number }> => {
+export const getUnreadCountService = async (): Promise<{ count: number }> => {
   const { data } = await axiosInstance.get('/api/notifications/unread-count');
   return data;
 };
