@@ -4,28 +4,26 @@ import axiosInstance from './axiosInstance';
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high';
 
-export interface TicketMessage {
+export interface TicketReply {
   _id: string;
-  sender: string;
-  senderModel: 'User' | 'Admin';
-  message: string;
+  text: string;
+  author: string;
   createdAt: string;
 }
 
 export interface SupportTicket {
   _id: string;
   subject: string;
-  description: string;
   status: TicketStatus;
   priority: TicketPriority;
-  messages: TicketMessage[];
+  replies: TicketReply[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateTicketPayload {
   subject: string;
-  description: string;
+  message: string;
 }
 
 export async function createTicketService(payload: CreateTicketPayload): Promise<{ ticket: SupportTicket }> {

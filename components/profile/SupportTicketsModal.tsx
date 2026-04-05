@@ -72,10 +72,10 @@ function CreateTicketForm({ onCreated, onCancel }: { onCreated: () => void; onCa
   const { colors } = useTheme();
   const qc = useQueryClient();
   const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
+  const [message, setMessage] = useState('');
 
   const create = useMutation({
-    mutationFn: () => createTicketService({ subject: subject.trim(), description: description.trim() }),
+    mutationFn: () => createTicketService({ subject: subject.trim(), message: message.trim() }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['support', 'tickets'] });
       onCreated();
@@ -85,7 +85,7 @@ function CreateTicketForm({ onCreated, onCancel }: { onCreated: () => void; onCa
     },
   });
 
-  const canSubmit = subject.trim().length > 0 && description.trim().length > 0;
+  const canSubmit = subject.trim().length > 0 && message.trim().length > 0;
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
@@ -119,8 +119,8 @@ function CreateTicketForm({ onCreated, onCancel }: { onCreated: () => void; onCa
           Description
         </Text>
         <TextInput
-          value={description}
-          onChangeText={setDescription}
+          value={message}
+          onChangeText={setMessage}
           placeholder="Describe your issue in detail…"
           placeholderTextColor={colors.textTertiary}
           multiline
@@ -208,12 +208,12 @@ function TicketDetail({ ticketId, userId }: { ticketId: string; userId: string }
 
       {/* Messages */}
       <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }} showsVerticalScrollIndicator={false}>
-        {ticket.messages.map((msg) => {
-          const isMe = msg.senderModel === 'User';
+        {ticket.replies.map((reply) => {
+          const isMe = reply.author === userId;
           return (
-            <View key={msg._id} style={{ alignItems: isMe ? 'flex-end' : 'flex-start' }}>
+            <View key={reply._id} style={{ alignItems: isMe ? 'flex-end' : 'flex-start' }}>
               <Text className="text-[11px] mb-[3px] mx-1" style={{ color: colors.textSecondary }}>
-                {isMe ? 'You' : 'Support'} · {timeAgo(msg.createdAt)}
+                {isMe ? 'You' : 'Support'} · {timeAgo(reply.createdAt)}
               </Text>
               <View
                 className="px-3.5 py-2.5"
@@ -228,7 +228,7 @@ function TicketDetail({ ticketId, userId }: { ticketId: string; userId: string }
                 }}
               >
                 <Text className="text-sm leading-5" style={{ color: isMe ? '#fff' : colors.text }}>
-                  {msg.message}
+                  {reply.text}
                 </Text>
               </View>
             </View>
@@ -409,13 +409,10 @@ export default function SupportTicketsModal({ visible, onClose }: Props) {
                   </Text>
                   <StatusBadge status={item.status} />
                 </View>
-                <Text className="text-[13px] mb-2" numberOfLines={2} style={{ color: colors.textSecondary }}>
-                  {item.description}
-                </Text>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[11px]" style={{ color: colors.textTertiary }}>
-                    {timeAgo(item.updatedAt ?? item.createdAt)} · {item.messages.length} message
-                    {item.messages.length !== 1 ? 's' : ''}
+                    {timeAgo(item.updatedAt ?? item.createdAt)} · {item.replies.length} repl
+                    {item.replies.length !== 1 ? 'ies' : 'y'}
                   </Text>
                   <ChevronRight size={15} color={colors.textTertiary} />
                 </View>
