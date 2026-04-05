@@ -33,8 +33,18 @@ export interface Conversation {
 
 export async function getConversationsService() {
   // NOTE: This endpoint is admin-only on the backend. For regular users it returns 403.
-  // Callers must handle the error gracefully (return [] on failure).
-  const { data } = await axiosInstance.get('/api/chat/conversations');
+  try {
+    const { data } = await axiosInstance.get('/api/chat/conversations');
+    return data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('getConversations error:', (err.response?.data as Record<string, unknown>) ?? err.message);
+    return [];
+  }
+}
+
+export async function createConversationService(): Promise<Conversation> {
+  const { data } = await axiosInstance.post('/api/chat/conversations');
   return data;
 }
 
