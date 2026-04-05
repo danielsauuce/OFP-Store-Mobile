@@ -68,7 +68,7 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 }
 
 // ── Create Ticket Form ────────────────────────────────────────────────────────
-function CreateTicketForm({ onCreated, onCancel }: { onCreated: () => void; onCancel: () => void }) {
+function CreateTicketForm({ onCreated }: { onCreated: () => void }) {
   const { colors } = useTheme();
   const qc = useQueryClient();
   const [subject, setSubject] = useState('');
@@ -285,12 +285,12 @@ function TicketDetail({ ticketId, userId }: { ticketId: string; userId: string }
 }
 
 // ── Main Modal ────────────────────────────────────────────────────────────────
-type View = 'list' | 'create' | 'detail';
+type ScreenView = 'list' | 'create' | 'detail';
 
 export default function SupportTicketsModal({ visible, onClose }: Props) {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const [view, setView] = useState<View>('list');
+  const [view, setView] = useState<ScreenView>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -359,7 +359,7 @@ export default function SupportTicketsModal({ visible, onClose }: Props) {
 
         {/* Content */}
         {view === 'create' ? (
-          <CreateTicketForm onCreated={() => setView('list')} onCancel={() => setView('list')} />
+          <CreateTicketForm onCreated={() => setView('list')} />
         ) : view === 'detail' && selectedId ? (
           <TicketDetail ticketId={selectedId} userId={user?.id ?? ''} />
         ) : isLoading ? (

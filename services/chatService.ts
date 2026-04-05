@@ -7,7 +7,7 @@ export interface ChatParticipant {
   fullName: string;
   email: string;
   profilePicture?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'customer';
 }
 
 export interface ChatMessage {

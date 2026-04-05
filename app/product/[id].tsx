@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { MotiView } from 'moti';
-import { ChevronLeft, Heart, Star, ShoppingBag, Minus, Plus } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import FloatButton from '@/components/productDetail/FloatButton';
+import ImageDots from '@/components/productDetail/ImageDots';
+import ProductReviews from '@/components/productDetail/ProductReviews';
+import QuantityControl from '@/components/productDetail/QuantityControl';
+import RelatedProducts from '@/components/productDetail/RelatedProducts';
+import SpecRow from '@/components/productDetail/SpecRow';
+import StarRating from '@/components/productDetail/StarRating';
+import StockBadge from '@/components/productDetail/StockBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { useWishlist } from '@/contexts/WishlistContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/contexts/ToastContext';
-import { getProductByIdService, getAllProductsService } from '@/services/productService';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { getAllProductsService, getProductByIdService } from '@/services/productService';
 import { getProductReviewsService } from '@/services/reviewService';
-import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
 import { formatCurrency } from '@/utils/formatCurrency';
-import RelatedProducts from '@/components/productDetail/RelatedProducts';
-import ProductReviews from '@/components/productDetail/ProductReviews';
+import { normalizeProduct, NormalizedProduct } from '@/utils/normalizeProduct';
+import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, Heart, ShoppingBag } from 'lucide-react-native';
+import { MotiView } from 'moti';
+import React, { useState } from 'react';
+import { ActivityIndicator, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const IMAGE_HEIGHT = height * 0.58;
@@ -73,7 +79,7 @@ export default function ProductDetailScreen() {
 
   const avgRating =
     reviews.length > 0
-      ? (reviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0) / reviews.length).toFixed(1)
+      ? reviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0) / reviews.length
       : null;
 
   const inWishlist = product ? isInWishlist(product._id) : false;
@@ -137,9 +143,14 @@ export default function ProductDetailScreen() {
 
   const images = product.images.length > 0 ? product.images : [];
 
+  const specs = [
+    product.material ? { label: 'Material', value: product.material } : null,
+    product.dimensions ? { label: 'Dimensions', value: product.dimensions } : null,
+  ].filter(Boolean) as { label: string; value: string }[];
+
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      {/* Full-bleed image — height is dynamic so must stay inline */}
+      {/* Full-bleed image */}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: IMAGE_HEIGHT }}>
         <MotiView
           key={activeImage}
@@ -159,42 +170,21 @@ export default function ProductDetailScreen() {
       {/* Floating back + wishlist buttons */}
       <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
         <View className="flex-row justify-between items-center px-5 pt-2">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-[42px] h-[42px] rounded-full items-center justify-center"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.92)',
-              shadowColor: '#000',
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
+          <FloatButton onPress={() => router.back()}>
             <ChevronLeft size={22} color="#111" />
-          </TouchableOpacity>
+          </FloatButton>
 
-          <TouchableOpacity
-            onPress={handleWishlist}
-            disabled={wishlistLoading}
-            className="w-[42px] h-[42px] rounded-full items-center justify-center"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.92)',
-              shadowColor: '#000',
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
+          <FloatButton onPress={handleWishlist} disabled={wishlistLoading}>
             <Heart
               size={20}
               color={inWishlist ? colors.error : '#111'}
               fill={inWishlist ? colors.error : 'transparent'}
             />
-          </TouchableOpacity>
+          </FloatButton>
         </View>
       </SafeAreaView>
 
-      {/* Scrollable white card that overlaps the image */}
+      {/* Scrollable card overlapping image */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1"
@@ -208,23 +198,7 @@ export default function ProductDetailScreen() {
             minHeight: height - IMAGE_HEIGHT + 28,
           }}
         >
-          {/* Dot indicators */}
-          {images.length > 1 && (
-            <View className="flex-row justify-center gap-1.5 pt-3.5 pb-1">
-              {images.map((_, i) => (
-                <TouchableOpacity key={i} onPress={() => setActiveImage(i)}>
-                  <MotiView
-                    animate={{
-                      width: i === activeImage ? 20 : 7,
-                      backgroundColor: i === activeImage ? colors.primary : colors.border,
-                    }}
-                    transition={{ type: 'spring', damping: 20, stiffness: 260 }}
-                    style={{ height: 7, borderRadius: 4 }}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <ImageDots count={images.length} active={activeImage} onPress={setActiveImage} />
 
           {/* Drag handle */}
           <View className="items-center" style={{ paddingTop: images.length > 1 ? 0 : 14 }}>
@@ -268,26 +242,9 @@ export default function ProductDetailScreen() {
             )}
 
             {/* Rating row */}
-            {avgRating && (
+            {avgRating !== null && (
               <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-1.5">
-                  <Text className="text-[15px] font-bold" style={{ color: colors.text }}>
-                    {avgRating}
-                  </Text>
-                  <View className="flex-row gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star
-                        key={s}
-                        size={14}
-                        color={s <= Math.round(Number(avgRating)) ? '#F59E0B' : colors.border}
-                        fill={s <= Math.round(Number(avgRating)) ? '#F59E0B' : 'transparent'}
-                      />
-                    ))}
-                  </View>
-                  <Text className="text-[13px]" style={{ color: colors.textSecondary }}>
-                    ({reviews.length})
-                  </Text>
-                </View>
+                <StarRating rating={avgRating} count={reviews.length} />
                 <Text className="text-[13px] font-semibold" style={{ color: colors.primary }}>
                   See All reviews
                 </Text>
@@ -296,69 +253,23 @@ export default function ProductDetailScreen() {
 
             {/* Stock + quantity */}
             <View className="flex-row items-center justify-between">
-              <View
-                className="px-3 py-[5px] rounded-full"
-                style={{
-                  backgroundColor: product.inStock ? colors.success + '18' : colors.error + '18',
-                }}
-              >
-                <Text
-                  className="text-xs font-semibold"
-                  style={{ color: product.inStock ? colors.success : colors.error }}
-                >
-                  {product.inStock ? `In Stock · ${product.stockQuantity} left` : 'Out of Stock'}
-                </Text>
-              </View>
-
+              <StockBadge inStock={product.inStock} stockQuantity={product.stockQuantity} />
               {product.inStock && (
-                <View className="flex-row items-center gap-3">
-                  <TouchableOpacity
-                    onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-8 h-8 rounded-[10px] border items-center justify-center"
-                    style={{ borderColor: colors.border }}
-                  >
-                    <Minus size={14} color={colors.text} />
-                  </TouchableOpacity>
-                  <Text
-                    className="text-[15px] font-bold text-center min-w-[20px]"
-                    style={{ color: colors.text }}
-                  >
-                    {quantity}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
-                    className="w-8 h-8 rounded-[10px] items-center justify-center"
-                    style={{ backgroundColor: colors.primary }}
-                  >
-                    <Plus size={14} color="#fff" />
-                  </TouchableOpacity>
-                </View>
+                <QuantityControl
+                  quantity={quantity}
+                  max={product.stockQuantity}
+                  onDecrement={() => setQuantity((q) => Math.max(1, q - 1))}
+                  onIncrement={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
+                />
               )}
             </View>
 
-            {/* Material / Dimensions */}
-            {(product.material || product.dimensions) && (
+            {/* Specs (Material / Dimensions) */}
+            {specs.length > 0 && (
               <View className="gap-1.5 p-4 rounded-2xl" style={{ backgroundColor: colors.surfaceVariant }}>
-                {product.material && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
-                      Material
-                    </Text>
-                    <Text className="text-[13px]" style={{ color: colors.text }}>
-                      {product.material}
-                    </Text>
-                  </View>
-                )}
-                {product.dimensions && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
-                      Dimensions
-                    </Text>
-                    <Text className="text-[13px]" style={{ color: colors.text }}>
-                      {product.dimensions}
-                    </Text>
-                  </View>
-                )}
+                {specs.map((spec) => (
+                  <SpecRow key={spec.label} label={spec.label} value={spec.value} />
+                ))}
               </View>
             )}
 
@@ -375,10 +286,8 @@ export default function ProductDetailScreen() {
             )}
           </View>
 
-          {/* Reviews */}
           <ProductReviews productId={id} />
 
-          {/* Related Products */}
           {related.length > 0 && (
             <RelatedProducts products={related} onPress={(relId) => router.push(`/product/${relId}`)} />
           )}
@@ -401,7 +310,6 @@ export default function ProductDetailScreen() {
         }}
       >
         <View className="flex-row items-center gap-3 px-6 pt-3 pb-2">
-          {/* Cart icon button */}
           <TouchableOpacity
             onPress={handleAddToCart}
             disabled={!product.inStock || adding}
@@ -416,7 +324,6 @@ export default function ProductDetailScreen() {
             <ShoppingBag size={22} color={colors.text} />
           </TouchableOpacity>
 
-          {/* Buy Now */}
           <TouchableOpacity
             onPress={handleAddToCart}
             disabled={!product.inStock || adding}
