@@ -7,8 +7,7 @@ import {
   removeFromWishlistService,
   clearWishlistService,
 } from '@/services/wishlistService';
-
-type CloudinaryImage = { secure_url?: string; secureUrl?: string; url?: string };
+import { normalizeProduct } from '@/utils/normalizeProduct';
 
 export interface WishlistProduct {
   _id: string;
@@ -54,29 +53,17 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     queryKey: wishlistKeys.list,
     queryFn: async () => {
       const res = await getWishlistService();
-      // API spec: { wishlist: { products: [...] } } — products are direct product objects
-      // Fallback handles legacy shapes just in case
-      const rawProducts: (WishlistProduct & { primaryImage?: CloudinaryImage })[] =
+      // API: { wishlist: { products: [...] } } — products are direct product objects
+      const rawProducts: unknown[] =
         res.wishlist?.products ??
-        res.wishlist?.items?.map((i: { product: WishlistProduct }) => i.product) ??
+        res.wishlist?.items?.map((i: { product: unknown }) => i.product) ??
         res.products ??
         (Array.isArray(res) ? res : []);
       if (!Array.isArray(rawProducts)) return [];
-      // Normalize product images — Cloudinary may return objects instead of strings
+      // normalizeProduct handles all Cloudinary image shapes (object or string, camelCase or snake_case)
       return rawProducts.map((p) => {
-        const images: string[] = (p.images ?? [])
-          .map((img: string | CloudinaryImage) => {
-            if (typeof img === 'string') return img;
-            return img.secure_url ?? img.secureUrl ?? img.url ?? '';
-          })
-          .filter(Boolean);
-        const fallback = p.primaryImage?.secure_url ?? p.primaryImage?.secureUrl ?? p.primaryImage?.url;
-        const normalizedProduct: WishlistProduct = {
-          ...p,
-          images: images.length > 0 ? images : fallback ? [fallback] : [],
-        };
-        // Wrap as WishlistItem using product._id as the item key
-        return { _id: p._id, product: normalizedProduct };
+        const normalized = normalizeProduct(p as Parameters<typeof normalizeProduct>[0]);
+        return { _id: normalized._id, product: normalized as WishlistProduct };
       });
     },
     enabled: !!user,
