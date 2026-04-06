@@ -13,6 +13,7 @@ The official mobile client for **Olayinka Furniture Palace (OFP)** — a full-fe
 > **Related repositories**
 >
 > - Web + API: [danielsauuce/OFP-Store](https://github.com/danielsauuce/OFP-Store)
+> - API Reference: [API_SPECIFICATION.md](API_SPECIFICATION.md)
 
 ---
 
