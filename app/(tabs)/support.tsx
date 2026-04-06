@@ -11,7 +11,13 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Socket } from 'socket.io-client';
 
-type LocalMessage = { id: string; role: 'user' | 'assistant'; content: string };
+type LocalMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: string;
+  senderName?: string;
+};
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -84,10 +90,13 @@ export default function SupportScreen() {
           if (data.messages?.length > 0) {
             const mapped: LocalMessage[] = data.messages.map((m) => {
               const senderId = resolveSenderId(m.sender);
+              const isMe = (senderId ?? m.sender._id) === user.id;
               return {
                 id: m._id,
-                role: (senderId ?? m.sender._id) === user.id ? 'user' : 'assistant',
+                role: isMe ? 'user' : 'assistant',
                 content: m.message,
+                timestamp: m.createdAt,
+                senderName: isMe ? undefined : (m.sender.senderName ?? m.sender.fullName ?? 'Support'),
               };
             });
             setMessages([WELCOME, ...mapped]);
@@ -99,19 +108,27 @@ export default function SupportScreen() {
           const senderId = resolveSenderId(msg.sender);
           const isOwn = senderId === user.id || msg.sender?.role === 'customer';
 
+          const mapped: LocalMessage = {
+            id: msg._id,
+            role: isOwn ? 'user' : 'assistant',
+            content: msg.message,
+            timestamp: msg.createdAt,
+            senderName: isOwn ? undefined : (msg.sender.senderName ?? msg.sender.fullName ?? 'Support'),
+          };
+
           setMessages((prev) => {
             // Replace optimistic bubble by tempId
             if (msg.tempId) {
               const idx = prev.findIndex((m) => m.id === msg.tempId);
               if (idx !== -1) {
                 const next = [...prev];
-                next[idx] = { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message };
+                next[idx] = mapped;
                 return next;
               }
             }
             // Deduplicate by _id
             if (prev.some((m) => m.id === msg._id)) return prev;
-            return [...prev, { id: msg._id, role: isOwn ? 'user' : 'assistant', content: msg.message }];
+            return [...prev, mapped];
           });
         });
 
@@ -179,7 +196,10 @@ export default function SupportScreen() {
     setIsSending(true);
 
     const tempId = uid();
-    setMessages((prev) => [...prev, { id: tempId, role: 'user', content: text }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: tempId, role: 'user', content: text, timestamp: new Date().toISOString() },
+    ]);
 
     socketRef.current.emit('chat:send', { conversationId: convIdRef.current, message: text, tempId }, () =>
       setIsSending(false),
@@ -209,36 +229,9 @@ export default function SupportScreen() {
         <SupportHeader
           onViewHistory={() => setShowHistory(true)}
           onNewChat={isReady ? handleNewConversation : undefined}
+          connected={connected}
         />
 
-        {/* Connection status banner — shown while connecting or after connect */}
-        {status !== 'idle' && (
-          <View
-            className="mx-4 mt-3 mb-1 px-3 py-2 rounded-xl flex-row items-center gap-2"
-            style={{
-              backgroundColor: (connected ? colors.success : colors.textTertiary) + '18',
-            }}
-          >
-            {status === 'connecting' && !connected ? (
-              <ActivityIndicator size={12} color={colors.textTertiary} />
-            ) : (
-              <View
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: connected ? colors.success : colors.textTertiary }}
-              />
-            )}
-            <Text
-              className="text-xs font-semibold"
-              style={{ color: connected ? colors.success : colors.textSecondary }}
-            >
-              {connected
-                ? 'Connected — our team can see your messages'
-                : status === 'connecting'
-                  ? 'Connecting to support…'
-                  : 'Reconnecting…'}
-            </Text>
-          </View>
-        )}
         <ChatMessageList messages={messages} loading={isSending} />
 
         <ChatInput value={input} onChange={setInput} onSend={handleSend} disabled={!connected} />
