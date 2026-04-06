@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { ChevronDown, ChevronUp, Tag, Star } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, Tag } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -17,7 +17,6 @@ export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) 
   const total = subtotal + SHIPPING_FEE;
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [loyaltyExpanded, setLoyaltyExpanded] = useState(false);
 
   return (
     <View
@@ -95,52 +94,6 @@ export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) 
           >
             <Text style={{ fontSize: 13, fontWeight: '700', color: '#fff' }}>Apply</Text>
           </TouchableOpacity>
-        </MotiView>
-      )}
-
-      {/* Loyalty Points Section */}
-      <TouchableOpacity
-        onPress={() => setLoyaltyExpanded(!loyaltyExpanded)}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingVertical: 10,
-          paddingHorizontal: 14,
-          borderRadius: 14,
-          backgroundColor: colors.background,
-          borderWidth: 1,
-          borderColor: colors.border,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Star size={16} color={colors.primary} />
-          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>Loyalty Points</Text>
-        </View>
-        {loyaltyExpanded ? (
-          <ChevronUp size={18} color={colors.textSecondary} />
-        ) : (
-          <ChevronDown size={18} color={colors.textSecondary} />
-        )}
-      </TouchableOpacity>
-
-      {loyaltyExpanded && (
-        <MotiView
-          from={{ opacity: 0, translateY: -8 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 200 }}
-          style={{
-            padding: 12,
-            borderRadius: 12,
-            backgroundColor: colors.background,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Text style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>
-            Earn rewards with every purchase! Loyalty points will be applied automatically at checkout when
-            available.
-          </Text>
         </MotiView>
       )}
 
