@@ -12,11 +12,19 @@ interface EditingReview {
   content: string;
 }
 
+export interface SubmittedReview {
+  _id: string;
+  rating: number;
+  content: string;
+  user: { _id?: string; fullName: string };
+  createdAt: string;
+}
+
 interface ReviewFormProps {
   productId: string;
   editingReview?: EditingReview | null;
   onCancelEdit?: () => void;
-  onSubmitted: () => void;
+  onSubmitted: (newReview?: SubmittedReview) => void;
 }
 
 const LABELS = ['', 'Terrible', 'Poor', 'Fair', 'Good', 'Excellent'];
@@ -52,10 +60,11 @@ export default function ReviewForm({ productId, editingReview, onCancelEdit, onS
         content: content.trim(),
       });
     },
-    onSuccess: () => {
+    onSuccess: (responseData: { review?: SubmittedReview }) => {
       setRating(0);
       setContent('');
-      onSubmitted();
+      const newReview = !editingReview ? (responseData?.review ?? undefined) : undefined;
+      onSubmitted(newReview);
     },
     onError: (e: unknown) => {
       const axiosMsg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;

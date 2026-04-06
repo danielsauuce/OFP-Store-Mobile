@@ -7,7 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getProductReviewsService, deleteReviewService } from '@/services/reviewService';
 import Skeleton from '@/components/ui/Skeleton';
-import ReviewForm from './ReviewForm';
+import ReviewForm, { type SubmittedReview } from './ReviewForm';
 
 interface Review {
   _id: string;
@@ -305,10 +305,17 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             setEditingReview(null);
             setShowForm(false);
           }}
-          onSubmitted={() => {
+          onSubmitted={(newReview?: SubmittedReview) => {
             setEditingReview(null);
             setShowForm(false);
-            queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(productId) });
+            if (newReview) {
+              queryClient.setQueryData<Review[]>(reviewKeys.byProduct(productId), (prev = []) => [
+                newReview,
+                ...prev,
+              ]);
+            } else {
+              queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(productId) });
+            }
           }}
         />
       )}
