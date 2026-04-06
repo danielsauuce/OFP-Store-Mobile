@@ -47,7 +47,7 @@ export default function ProductDetailScreen() {
       return normalizeProduct(res.product ?? res);
     },
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const { data: related = [] } = useQuery<Product[]>({
@@ -61,7 +61,7 @@ export default function ProductDetailScreen() {
         .slice(0, 4);
     },
     enabled: !!product?.category,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
@@ -71,7 +71,7 @@ export default function ProductDetailScreen() {
       return res?.reviews ?? res?.data ?? res ?? [];
     },
     enabled: !!id,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const avgRating =

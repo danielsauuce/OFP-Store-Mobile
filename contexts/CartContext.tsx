@@ -95,7 +95,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       return { items, total: raw.total ?? raw.subtotal ?? 0 };
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const fetchCart = async () => {

@@ -213,7 +213,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       const list: Review[] = res?.reviews ?? res?.data ?? res ?? [];
       return Array.isArray(list) ? list : [];
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const deleteMutation = useMutation({

@@ -31,7 +31,7 @@ export default function HomeScreen() {
       const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
       return Array.isArray(list) ? list.map(normalizeProduct) : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   return (

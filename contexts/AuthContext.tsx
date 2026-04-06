@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     queryKey: authKeys.me,
     queryFn: checkAuthService,
     retry: false,
-    staleTime: 10 * 60 * 1000, // 10 min
+    staleTime: 3 * 60 * 1000, // 10 min
     enabled: tokenChecked && hasToken,
   });
 

@@ -25,7 +25,7 @@ export default function HomeHeader({ firstName, onCartPress }: HomeHeaderProps) 
     queryFn: getUnreadCountService,
     enabled: !!user,
     refetchInterval: 60_000,
-    staleTime: 30_000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const unreadCount = Math.max(socketUnread, unreadData?.count ?? 0);

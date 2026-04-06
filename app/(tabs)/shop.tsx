@@ -46,7 +46,7 @@ export default function ShopScreen() {
       const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
       return Array.isArray(list) ? list.map(normalizeProduct) : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const { data: categories = [ALL_CATEGORY] } = useQuery<Category[]>({
@@ -63,7 +63,7 @@ export default function ShopScreen() {
       );
       return [ALL_CATEGORY, ...cats];
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
