@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useOrders } from '@/contexts/OrderContext';
@@ -7,10 +8,20 @@ import { formatCurrency } from '@/utils/formatCurrency';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#F59E0B',
+  processing: '#3B82F6',
   confirmed: '#3B82F6',
   shipped: '#8B5CF6',
   delivered: '#10B981',
   cancelled: '#EF4444',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  confirmed: 'Confirmed',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
 };
 
 interface OrdersModalProps {
@@ -61,37 +72,79 @@ export default function OrdersModal({ visible, onClose }: OrdersModalProps) {
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
               const statusColor = STATUS_COLORS[item.status] ?? colors.textSecondary;
-              const canCancel = item.status === 'pending' || item.status === 'confirmed';
+              const statusLabel = STATUS_LABELS[item.status] ?? item.status;
+              const canCancel = item.status === 'pending' || item.status === 'processing';
+              // Collect up to 4 product images (prefer product image, fallback to imageSnapshot)
+              const thumbs = item.items
+                .map((i) => i.product.images?.[0] ?? i.imageSnapshot)
+                .filter(Boolean)
+                .slice(0, 4) as string[];
+
               return (
-                <View className="p-4 rounded-2xl gap-2" style={{ backgroundColor: colors.surface }}>
+                <View className="p-4 rounded-2xl gap-3" style={{ backgroundColor: colors.surface }}>
+                  {/* Header row — order ref + status */}
                   <View className="flex-row justify-between items-center">
                     <Text className="font-bold text-sm" style={{ color: colors.text }}>
-                      #{item._id.slice(-8).toUpperCase()}
+                      {item.orderNumber ? `#${item.orderNumber}` : `#${item._id.slice(-8).toUpperCase()}`}
                     </Text>
                     <View className="px-3 py-1 rounded-full" style={{ backgroundColor: statusColor + '20' }}>
                       <Text className="text-xs font-semibold capitalize" style={{ color: statusColor }}>
-                        {item.status}
+                        {statusLabel}
                       </Text>
                     </View>
                   </View>
 
-                  <Text className="text-xs" style={{ color: colors.textSecondary }}>
-                    {new Date(item.createdAt).toLocaleDateString()} · {item.items.length}{' '}
-                    {item.items.length === 1 ? 'item' : 'items'}
+                  {/* Product thumbnails */}
+                  {thumbs.length > 0 && (
+                    <View className="flex-row gap-2">
+                      {thumbs.map((uri, idx) => (
+                        <View
+                          key={idx}
+                          className="w-14 h-14 rounded-xl overflow-hidden"
+                          style={{ backgroundColor: colors.surfaceVariant }}
+                        >
+                          <Image source={{ uri }} className="w-14 h-14" contentFit="cover" />
+                        </View>
+                      ))}
+                      {item.items.length > 4 && (
+                        <View
+                          className="w-14 h-14 rounded-xl items-center justify-center"
+                          style={{ backgroundColor: colors.surfaceVariant }}
+                        >
+                          <Text className="text-xs font-bold" style={{ color: colors.textSecondary }}>
+                            +{item.items.length - 4}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Item names */}
+                  <Text className="text-xs" numberOfLines={2} style={{ color: colors.textSecondary }}>
+                    {item.items
+                      .map((i) => i.nameSnapshot ?? i.product.name)
+                      .filter(Boolean)
+                      .join(', ')}
                   </Text>
 
+                  {/* Date · items · total */}
                   <View className="flex-row justify-between items-center">
+                    <Text className="text-xs" style={{ color: colors.textTertiary }}>
+                      {new Date(item.createdAt).toLocaleDateString()} · {item.items.length}{' '}
+                      {item.items.length === 1 ? 'item' : 'items'}
+                    </Text>
                     <Text className="font-bold" style={{ color: colors.primary }}>
                       {formatCurrency(item.total)}
                     </Text>
-                    {canCancel && (
-                      <TouchableOpacity onPress={() => cancelOrder(item._id)}>
-                        <Text className="text-xs font-semibold" style={{ color: colors.error }}>
-                          Cancel
-                        </Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
+
+                  {canCancel && (
+                    <TouchableOpacity onPress={() => cancelOrder(item._id)} className="self-end">
+                      <Text className="text-xs font-semibold" style={{ color: colors.error }}>
+                        Cancel Order
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               );
             }}

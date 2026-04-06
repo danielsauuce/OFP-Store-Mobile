@@ -9,6 +9,17 @@ import {
   OrderCreatePayload,
 } from '@/services/orderService';
 
+type CloudinaryImage = { secure_url?: string; secureUrl?: string; url?: string };
+
+function resolveImageUrl(img: unknown): string {
+  if (typeof img === 'string') return img;
+  if (img && typeof img === 'object') {
+    const o = img as CloudinaryImage;
+    return o.secure_url ?? o.secureUrl ?? o.url ?? '';
+  }
+  return '';
+}
+
 export interface OrderProduct {
   _id: string;
   name: string;
@@ -19,12 +30,15 @@ export interface OrderItem {
   product: OrderProduct;
   quantity: number;
   price: number;
+  nameSnapshot?: string;
+  imageSnapshot?: string;
 }
 
 export interface Order {
   _id: string;
+  orderNumber?: string;
   items: OrderItem[];
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   subtotal: number;
   shippingFee: number;
   total: number;
@@ -60,6 +74,49 @@ export const orderKeys = {
   list: (page: number, limit: number, status?: string) => ['orders', 'list', page, limit, status] as const,
 };
 
+// Normalise a raw order from the server into our Order shape.
+// Server returns orderStatus (not status) and product images as Cloudinary objects.
+function normalizeOrder(raw: Record<string, unknown>): Order {
+  const rawItems = (raw.items as Record<string, unknown>[] | undefined) ?? [];
+  const items: OrderItem[] = rawItems.map((item) => {
+    const rawProduct = (item.product ?? {}) as Record<string, unknown>;
+    // Extract images from product.images or product.primaryImage
+    const rawImages = (rawProduct.images as unknown[]) ?? [];
+    let images: string[] = rawImages.map(resolveImageUrl).filter(Boolean);
+    if (images.length === 0 && rawProduct.primaryImage) {
+      const url = resolveImageUrl(rawProduct.primaryImage);
+      if (url) images = [url];
+    }
+    // imageSnapshot is a string fallback stored on the order item itself
+    const imageSnapshot = typeof item.imageSnapshot === 'string' ? item.imageSnapshot : undefined;
+    if (images.length === 0 && imageSnapshot) images = [imageSnapshot];
+
+    return {
+      product: { _id: String(rawProduct._id ?? ''), name: String(rawProduct.name ?? ''), images },
+      quantity: Number(item.quantity ?? 1),
+      price: Number(item.price ?? 0),
+      nameSnapshot: typeof item.nameSnapshot === 'string' ? item.nameSnapshot : undefined,
+      imageSnapshot,
+    };
+  });
+
+  const pagination = raw.pagination as Record<string, unknown> | undefined;
+
+  return {
+    _id: String(raw._id ?? ''),
+    orderNumber: raw.orderNumber ? String(raw.orderNumber) : undefined,
+    items,
+    // Server field is orderStatus; fall back to status for compatibility
+    status: (raw.orderStatus ?? raw.status) as Order['status'],
+    subtotal: Number(raw.subtotal ?? 0),
+    shippingFee: Number(raw.shippingFee ?? 0),
+    total: Number(raw.total ?? 0),
+    createdAt: String(raw.createdAt ?? ''),
+    note: raw.note ? String(raw.note) : undefined,
+  };
+  void pagination; // pagination lives at the response level, not per-order
+}
+
 const OrderContext = createContext<OrderContextType | null>(null);
 
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
@@ -77,16 +134,26 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
     queryKey: orderKeys.list(queryParams.page, queryParams.limit, queryParams.status),
     queryFn: async () => {
       const res = await getUserOrdersService(queryParams.page, queryParams.limit, queryParams.status);
-      const fetched: Order[] = res.orders ?? res ?? [];
-      return {
-        orders: [...fetched].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        ),
-        pagination: res.pagination ?? null,
-      };
+      const rawOrders: Record<string, unknown>[] = res.orders ?? res ?? [];
+      const orders = rawOrders
+        .map(normalizeOrder)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      // Pagination — server returns { total, page, pages, limit } or { totalPages, ... }
+      const pg = res.pagination ?? null;
+      const pagination: OrdersPagination | null = pg
+        ? {
+            page: Number(pg.page ?? pg.currentPage ?? 1),
+            limit: Number(pg.limit ?? queryParams.limit),
+            total: Number(pg.total ?? 0),
+            totalPages: Number(pg.pages ?? pg.totalPages ?? 1),
+          }
+        : null;
+
+      return { orders, pagination };
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
   const fetchOrders = async (page: number = 1, limit: number = 10, status?: string) => {
@@ -96,7 +163,8 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getOrder = async (orderId: string): Promise<Order> => {
     const res = await getOrderByIdService(orderId);
-    return res.order ?? res;
+    const raw = res.order ?? res;
+    return normalizeOrder(raw as Record<string, unknown>);
   };
 
   const createMutation = useMutation({
@@ -111,7 +179,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 
   const createOrder = async (orderData: OrderCreatePayload): Promise<Order> => {
     const res = await createMutation.mutateAsync(orderData);
-    return res.order ?? res;
+    return normalizeOrder((res.order ?? res) as Record<string, unknown>);
   };
 
   const cancelOrder = async (orderId: string) => {
