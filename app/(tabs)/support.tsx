@@ -2,225 +2,50 @@ import ChatInput from '@/components/chat/ChatInput';
 import ChatMessageList from '@/components/support/ChatMessageList';
 import SupportHeader from '@/components/support/SupportHeader';
 import TicketHistoryModal from '@/components/support/TicketHistoryModal';
+import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import type { ChatMessage } from '@/services/chatService';
-import { createChatSocket } from '@/services/socketService';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { Socket } from 'socket.io-client';
-
-type LocalMessage = {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp?: string;
-  senderName?: string;
-};
-
-const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-const WELCOME: LocalMessage = {
-  id: '__welcome__',
-  role: 'assistant',
-  content:
-    'Hi! Welcome to Olayinka Furniture Palace support. How can we help you today? A member of our team will be with you shortly.',
-};
-
-// Server populates sender.userId as a full object — extract the string _id safely.
-function resolveSenderId(sender: ChatMessage['sender']): string | undefined {
-  const uid = sender.userId;
-  if (typeof uid === 'object' && uid !== null) {
-    return (uid as { _id?: string })._id;
-  }
-  return uid as string | undefined;
-}
 
 export default function SupportScreen() {
-  const { colors } = useTheme();
   const { user } = useAuth();
-
-  const socketRef = useRef<Socket | null>(null);
-  const convIdRef = useRef<string | null>(null);
+  const {
+    messages,
+    connected,
+    socketStatus,
+    convReady,
+    isSending,
+    clearUnread,
+    sendMessage,
+    startNewConversation,
+  } = useChat();
 
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<LocalMessage[]>([WELCOME]);
-  const [connected, setConnected] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [convReady, setConvReady] = useState(false);
-  // 'idle' before any socket attempt, 'connecting' while socket is establishing, 'ready' once connected
-  const [status, setStatus] = useState<'idle' | 'connecting' | 'ready'>('idle');
 
-  // Socket lifecycle
+  // Mark support tab as open so unread count doesn't increment while visible
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-
-    setStatus('connecting');
-
-    createChatSocket()
-      .then((socket) => {
-        if (cancelled) {
-          socket.disconnect();
-          return;
-        }
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
-          setConnected(true);
-          setStatus('ready');
-          socket.emit('chat:init');
-        });
-
-        socket.on('disconnect', () => {
-          setConnected(false);
-        });
-
-        socket.on('connect_error', (err) => {
-          console.error('Chat connect_error:', err.message);
-          setConnected(false);
-          setStatus('idle');
-        });
-
-        socket.on('chat:initialized', (data: { conversationId: string; messages: ChatMessage[] }) => {
-          convIdRef.current = data.conversationId;
-          setConvReady(true);
-          if (data.messages?.length > 0) {
-            const mapped: LocalMessage[] = data.messages.map((m) => {
-              const senderId = resolveSenderId(m.sender);
-              const isMe = (senderId ?? m.sender._id) === user.id;
-              return {
-                id: m._id,
-                role: isMe ? 'user' : 'assistant',
-                content: m.message,
-                timestamp: m.createdAt,
-                senderName: isMe ? undefined : (m.sender.senderName ?? m.sender.fullName ?? 'Support'),
-              };
-            });
-            setMessages([WELCOME, ...mapped]);
-          }
-          setStatus('ready');
-        });
-
-        socket.on('chat:message', (msg: ChatMessage & { tempId?: string }) => {
-          const senderId = resolveSenderId(msg.sender);
-          const isOwn = senderId === user.id || msg.sender?.role === 'customer';
-
-          const mapped: LocalMessage = {
-            id: msg._id,
-            role: isOwn ? 'user' : 'assistant',
-            content: msg.message,
-            timestamp: msg.createdAt,
-            senderName: isOwn ? undefined : (msg.sender.senderName ?? msg.sender.fullName ?? 'Support'),
-          };
-
-          setMessages((prev) => {
-            // Replace optimistic bubble by tempId
-            if (msg.tempId) {
-              const idx = prev.findIndex((m) => m.id === msg.tempId);
-              if (idx !== -1) {
-                const next = [...prev];
-                next[idx] = mapped;
-                return next;
-              }
-            }
-            // Deduplicate by _id
-            if (prev.some((m) => m.id === msg._id)) return prev;
-            return [...prev, mapped];
-          });
-        });
-
-        socket.on('chat:admin-joined', () => {
-          setMessages((prev) => [
-            ...prev,
-            { id: uid(), role: 'assistant', content: 'A support agent has joined the conversation.' },
-          ]);
-        });
-
-        socket.on('chat:closed', () => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: uid(),
-              role: 'assistant',
-              content: 'This conversation has been closed. Start a new chat if you need further help.',
-            },
-          ]);
-          convIdRef.current = null;
-          setConvReady(false);
-        });
-
-        socket.on('chat:error', (err: { message?: string }) => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: uid(),
-              role: 'assistant',
-              content: err?.message ?? 'Something went wrong. Please try again.',
-            },
-          ]);
-        });
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error('Failed to create chat socket:', err.message);
-        setStatus('idle');
-        setConnected(false);
-      });
-
+    clearUnread();
     return () => {
-      cancelled = true;
-      socketRef.current?.disconnect();
-      socketRef.current = null;
-      convIdRef.current = null;
-      setConnected(false);
-      setConvReady(false);
-      setStatus('idle');
-      setMessages([WELCOME]);
+      // When unmounting (tab switched away) — context tracks via supportOpenRef
     };
-  }, [user]);
+  }, [clearUnread]);
 
-  // send
   const handleSend = useCallback(() => {
     const text = input.trim();
-    if (!text || isSending || !socketRef.current || !connected) return;
-    if (!convIdRef.current) {
-      // Conversation not initialized yet — re-emit init and queue will pick up
-      socketRef.current.emit('chat:init');
-      return;
-    }
-
+    if (!text || !connected || !convReady) return;
+    sendMessage(text);
     setInput('');
-    setIsSending(true);
+  }, [input, connected, convReady, sendMessage]);
 
-    const tempId = uid();
-    setMessages((prev) => [
-      ...prev,
-      { id: tempId, role: 'user', content: text, timestamp: new Date().toISOString() },
-    ]);
+  const isReady = socketStatus === 'ready' || (socketStatus === 'connecting' && connected);
 
-    socketRef.current.emit('chat:send', { conversationId: convIdRef.current, message: text, tempId }, () =>
-      setIsSending(false),
-    );
-
-    // Fallback timeout in case ack never fires
-    setTimeout(() => setIsSending(false), 5000);
-  }, [input, isSending]);
-
-  // New conversation
-  const handleNewConversation = useCallback(() => {
-    convIdRef.current = null;
-    setConvReady(false);
-    setMessages([WELCOME]);
-    socketRef.current?.emit('chat:init');
-  }, []);
-
-  const isReady = status === 'ready' || (status === 'connecting' && connected);
+  // Don't render socket-dependent UI until user is authenticated
+  if (!user) return null;
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView className="flex-1" style={{ flex: 1 }}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -228,13 +53,18 @@ export default function SupportScreen() {
       >
         <SupportHeader
           onViewHistory={() => setShowHistory(true)}
-          onNewChat={isReady ? handleNewConversation : undefined}
+          onNewChat={isReady ? startNewConversation : undefined}
           connected={connected}
         />
 
         <ChatMessageList messages={messages} loading={isSending} />
 
-        <ChatInput value={input} onChange={setInput} onSend={handleSend} disabled={!connected} />
+        <ChatInput
+          value={input}
+          onChange={setInput}
+          onSend={handleSend}
+          disabled={!connected || !convReady}
+        />
       </KeyboardAvoidingView>
 
       <TicketHistoryModal visible={showHistory} onClose={() => setShowHistory(false)} />
