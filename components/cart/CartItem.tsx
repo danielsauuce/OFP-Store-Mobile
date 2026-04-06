@@ -19,6 +19,8 @@ interface CartItemData {
   product: CartProduct;
   quantity: number;
   priceSnapshot: number;
+  variantSku?: string;
+  nameSnapshot?: string;
 }
 
 interface Props {
@@ -28,67 +30,141 @@ interface Props {
   onRemove: () => void;
 }
 
+function parseVariant(sku?: string): { color?: string; size?: string } {
+  if (!sku) return {};
+  // Variant SKU might be like "black-xl" or "Black / XL"
+  const parts = sku.split(/[-/]/).map((s) => s.trim());
+  if (parts.length >= 2) return { color: parts[0], size: parts[1] };
+  return {};
+}
+
 export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props) {
   const { colors } = useTheme();
+  const variant = parseVariant(item.variantSku);
+  const imageUri =
+    item.product.images?.[0] ?? item.product.primaryImage?.secureUrl ?? item.product.primaryImage?.url;
 
   return (
     <MotiView
       from={{ opacity: 0, translateX: 30 }}
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 180, delay: index * 60 }}
-      className="flex-row p-3 mx-5 mb-3 rounded-2xl border"
-      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+      style={{
+        flexDirection: 'row',
+        padding: 12,
+        marginHorizontal: 16,
+        marginBottom: 10,
+        borderRadius: 20,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        gap: 12,
+      }}
     >
-      <Image
-        source={{
-          uri:
-            item.product.images?.[0] ??
-            item.product.primaryImage?.secureUrl ??
-            item.product.primaryImage?.url,
+      {/* Product image — larger like reference */}
+      <View
+        style={{
+          width: 110,
+          height: 110,
+          borderRadius: 16,
+          overflow: 'hidden',
+          backgroundColor: colors.border,
         }}
-        className="w-24 h-24 rounded-xl"
-        contentFit="cover"
-      />
+      >
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={{ width: 110, height: 110 }} contentFit="cover" />
+        ) : null}
+      </View>
 
-      <View className="flex-1 ml-3 justify-between">
-        <View className="flex-row justify-between">
-          <Text className="font-semibold flex-1 mr-2" numberOfLines={2} style={{ color: colors.text }}>
-            {item.product.name}
+      {/* Details */}
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+        {/* Name + delete */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Text
+            style={{ fontSize: 15, fontWeight: '700', color: colors.text, flex: 1, marginRight: 8 }}
+            numberOfLines={2}
+          >
+            {item.nameSnapshot ?? item.product.name}
           </Text>
-
-          <TouchableOpacity onPress={onRemove} accessibilityRole="button" accessibilityLabel="Remove item">
-            <Trash2 size={18} color={colors.error} />
+          <TouchableOpacity
+            onPress={onRemove}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: colors.error + '12',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Trash2 size={15} color={colors.error} />
           </TouchableOpacity>
         </View>
 
-        <Text style={{ color: colors.primary }} className="font-bold">
-          {formatCurrency(item.priceSnapshot || 0)}
-        </Text>
+        {/* Variant info */}
+        {(variant.color || variant.size) && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            {variant.color && (
+              <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                Color: <Text style={{ fontWeight: '600', color: colors.text }}>{variant.color}</Text>
+              </Text>
+            )}
+            {variant.color && variant.size && <Text style={{ color: colors.border }}>|</Text>}
+            {variant.size && (
+              <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                Size:{' '}
+                <Text style={{ fontWeight: '600', color: colors.text }}>{variant.size.toUpperCase()}</Text>
+              </Text>
+            )}
+          </View>
+        )}
 
-        <View className="flex-row items-center gap-3">
-          <TouchableOpacity
-            onPress={() => onUpdate(Math.max(1, item.quantity - 1))}
-            className="w-8 h-8 rounded border items-center justify-center"
-            style={{ borderColor: colors.border }}
-            accessibilityRole="button"
-            accessibilityLabel="Decrease quantity"
-          >
-            <Minus size={14} color={colors.text} />
-          </TouchableOpacity>
-
-          <Text className="font-semibold" style={{ color: colors.text }}>
-            {item.quantity}
+        {/* Price + quantity */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 8,
+          }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+            {formatCurrency(item.priceSnapshot || 0)}
           </Text>
 
-          <TouchableOpacity
-            onPress={() => onUpdate(item.quantity + 1)}
-            className="w-8 h-8 rounded items-center justify-center"
-            style={{ backgroundColor: colors.primary }}
-            accessibilityRole="button"
-            accessibilityLabel="Increase quantity"
+          {/* Quantity controls */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+            }}
           >
-            <Plus size={14} color="#fff" />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => onUpdate(Math.max(1, item.quantity - 1))} style={{ padding: 4 }}>
+              <Minus size={14} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: '700',
+                color: colors.text,
+                minWidth: 16,
+                textAlign: 'center',
+              }}
+            >
+              {item.quantity}
+            </Text>
+
+            <TouchableOpacity onPress={() => onUpdate(item.quantity + 1)} style={{ padding: 4 }}>
+              <Plus size={14} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </MotiView>

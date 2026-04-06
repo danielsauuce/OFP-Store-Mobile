@@ -1,4 +1,7 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ChevronDown, ChevronUp, Tag, Star } from 'lucide-react-native';
+import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -12,39 +15,181 @@ interface CartSummaryProps {
 export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) {
   const { colors } = useTheme();
   const total = subtotal + SHIPPING_FEE;
+  const [promoExpanded, setPromoExpanded] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [loyaltyExpanded, setLoyaltyExpanded] = useState(false);
 
   return (
     <View
-      className="px-5 pt-4 pb-6 gap-3 rounded-t-3xl border-t"
-      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+      style={{
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 28,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        backgroundColor: colors.surface,
+        borderTopWidth: 1,
+        borderColor: colors.border,
+        gap: 12,
+      }}
     >
-      <View className="flex-row justify-between">
-        <Text style={{ color: colors.textSecondary }}>Subtotal</Text>
-        <Text className="font-semibold" style={{ color: colors.text }}>
+      {/* Promo Code Section */}
+      <TouchableOpacity
+        onPress={() => setPromoExpanded(!promoExpanded)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 10,
+          paddingHorizontal: 14,
+          borderRadius: 14,
+          backgroundColor: colors.background,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Tag size={16} color={colors.primary} />
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>Promo Code</Text>
+        </View>
+        {promoExpanded ? (
+          <ChevronUp size={18} color={colors.textSecondary} />
+        ) : (
+          <ChevronDown size={18} color={colors.textSecondary} />
+        )}
+      </TouchableOpacity>
+
+      {promoExpanded && (
+        <MotiView
+          from={{ opacity: 0, translateY: -8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 200 }}
+          style={{ flexDirection: 'row', gap: 8 }}
+        >
+          <TextInput
+            value={promoCode}
+            onChangeText={setPromoCode}
+            placeholder="Enter promo code"
+            placeholderTextColor={colors.textTertiary}
+            style={{
+              flex: 1,
+              height: 42,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+              paddingHorizontal: 12,
+              fontSize: 13,
+              color: colors.text,
+              backgroundColor: colors.background,
+            }}
+          />
+          <TouchableOpacity
+            style={{
+              height: 42,
+              paddingHorizontal: 18,
+              borderRadius: 12,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '700', color: '#fff' }}>Apply</Text>
+          </TouchableOpacity>
+        </MotiView>
+      )}
+
+      {/* Loyalty Points Section */}
+      <TouchableOpacity
+        onPress={() => setLoyaltyExpanded(!loyaltyExpanded)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 10,
+          paddingHorizontal: 14,
+          borderRadius: 14,
+          backgroundColor: colors.background,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Star size={16} color={colors.primary} />
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>Loyalty Points</Text>
+        </View>
+        {loyaltyExpanded ? (
+          <ChevronUp size={18} color={colors.textSecondary} />
+        ) : (
+          <ChevronDown size={18} color={colors.textSecondary} />
+        )}
+      </TouchableOpacity>
+
+      {loyaltyExpanded && (
+        <MotiView
+          from={{ opacity: 0, translateY: -8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 200 }}
+          style={{
+            padding: 12,
+            borderRadius: 12,
+            backgroundColor: colors.background,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>
+            Earn rewards with every purchase! Loyalty points will be applied automatically at checkout when
+            available.
+          </Text>
+        </MotiView>
+      )}
+
+      {/* Divider */}
+      <View style={{ height: 1, backgroundColor: colors.border }} />
+
+      {/* Order Total */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>Order Total</Text>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
           {formatCurrency(subtotal)}
         </Text>
       </View>
-      <View className="flex-row justify-between">
-        <Text style={{ color: colors.textSecondary }}>Shipping</Text>
-        <Text className="font-semibold" style={{ color: colors.text }}>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>Shipping</Text>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
           {formatCurrency(SHIPPING_FEE)}
         </Text>
       </View>
-      <View className="h-px" style={{ backgroundColor: colors.border }} />
-      <View className="flex-row justify-between">
-        <Text className="font-bold text-base" style={{ color: colors.text }}>
-          Total
-        </Text>
-        <Text className="font-bold text-base" style={{ color: colors.primary }}>
+
+      {/* Total Amount */}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: 4,
+        }}
+      >
+        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>Total Amount</Text>
+        <Text style={{ fontSize: 18, fontWeight: '800', color: colors.primary }}>
           {formatCurrency(total)}
         </Text>
       </View>
+
+      {/* Proceed to Payment */}
       <TouchableOpacity
-        className="h-14 rounded-2xl items-center justify-center mt-1"
-        style={{ backgroundColor: colors.primary }}
         onPress={onCheckout}
+        style={{
+          height: 54,
+          borderRadius: 16,
+          backgroundColor: colors.primary,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: 4,
+        }}
       >
-        <Text className="text-white font-bold text-base">Proceed to Checkout</Text>
+        <Text style={{ fontSize: 15, fontWeight: '700', color: '#fff' }}>Proceed to Payment</Text>
       </TouchableOpacity>
     </View>
   );
