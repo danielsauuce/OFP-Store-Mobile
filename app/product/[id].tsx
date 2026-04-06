@@ -1,6 +1,6 @@
 import FloatButton from '@/components/productDetail/FloatButton';
-import ImageDots from '@/components/productDetail/ImageDots';
 import ProductReviews from '@/components/productDetail/ProductReviews';
+import ThumbnailStrip from '@/components/productDetail/ThumbnailStrip';
 import QuantityControl from '@/components/productDetail/QuantityControl';
 import RelatedProducts from '@/components/productDetail/RelatedProducts';
 import SpecRow from '@/components/productDetail/SpecRow';
@@ -195,7 +195,7 @@ export default function ProductDetailScreen() {
             minHeight: height - IMAGE_HEIGHT + 28,
           }}
         >
-          <ImageDots count={images.length} active={activeImage} onPress={setActiveImage} />
+          <ThumbnailStrip images={images} activeIndex={activeImage} onSelect={setActiveImage} />
 
           {/* Drag handle */}
           <View className="items-center" style={{ paddingTop: images.length > 1 ? 0 : 14 }}>

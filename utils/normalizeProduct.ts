@@ -36,12 +36,17 @@ function resolveImageUrl(img: string | CloudinaryImage): string {
 export function normalizeProduct(p: RawProduct): NormalizedProduct {
   const category = typeof p.category === 'string' ? p.category : (p.category?.name ?? '');
 
-  let images: string[] = [];
-  if (p.images && p.images.length > 0) {
-    images = p.images.map(resolveImageUrl).filter(Boolean);
-  } else if (p.primaryImage) {
-    const url = resolveImageUrl(p.primaryImage);
-    if (url) images = [url];
+  // primaryImage is always first; images array provides additional gallery entries
+  const primaryUrl = p.primaryImage ? resolveImageUrl(p.primaryImage) : '';
+  const extraUrls = (p.images ?? []).map(resolveImageUrl).filter(Boolean);
+
+  const seen = new Set<string>();
+  const images: string[] = [];
+  for (const url of [primaryUrl, ...extraUrls]) {
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      images.push(url);
+    }
   }
 
   return { ...p, category, images };
