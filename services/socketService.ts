@@ -12,7 +12,12 @@ export async function createChatSocket(): Promise<Socket> {
 
   const socket = io(`${BACKEND_URL}/chat`, {
     auth: { token },
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
+    upgrade: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 20000,
     autoConnect: false,
   });
 
@@ -29,7 +34,12 @@ export async function createNotificationsSocket(): Promise<Socket> {
 
   const socket = io(`${BACKEND_URL}/notifications`, {
     auth: { token },
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
+    upgrade: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 20000,
     autoConnect: false,
   });
 
