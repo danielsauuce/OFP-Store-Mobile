@@ -9,7 +9,6 @@ import StockBadge from '@/components/productDetail/StockBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useToast } from '@/contexts/ToastContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { getAllProductsService, getProductByIdService } from '@/services/productService';
 import { getProductReviewsService } from '@/services/reviewService';
@@ -21,7 +20,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Heart, ShoppingBag } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
@@ -36,8 +35,6 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { showToast } = useToast();
-
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [adding, setAdding] = useState(false);
@@ -94,13 +91,13 @@ export default function ProductDetailScreen() {
     try {
       if (inWishlist) {
         await removeFromWishlist(product._id);
-        showToast('Removed from wishlist', 'info');
+        Alert.alert('Wishlist', 'Removed from wishlist');
       } else {
         await addToWishlist(product._id);
-        showToast('Added to wishlist!', 'success');
+        Alert.alert('Wishlist', 'Added to wishlist!');
       }
     } catch {
-      showToast('Could not update wishlist. Try again.', 'error');
+      Alert.alert('Error', 'Could not update wishlist. Try again.');
     } finally {
       setWishlistLoading(false);
     }
@@ -111,9 +108,9 @@ export default function ProductDetailScreen() {
     setAdding(true);
     try {
       await addToCart(product._id, quantity);
-      showToast(`${product.name} added to cart!`, 'success');
+      Alert.alert('Cart', `${product.name} added to cart!`);
     } catch {
-      showToast('Could not add to cart. Please try again.', 'error');
+      Alert.alert('Error', 'Could not add to cart. Please try again.');
     } finally {
       setAdding(false);
     }
