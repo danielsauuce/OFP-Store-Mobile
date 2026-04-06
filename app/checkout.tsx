@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useStripe } from '@stripe/stripe-react-native';
+// import { useStripe } from '@stripe/stripe-react-native'; // requires native build
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -28,7 +28,10 @@ export default function CheckoutScreen() {
   const { user } = useAuth();
   const { cart, clearCart } = useCart();
   const { createOrder } = useOrders();
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  // const { initPaymentSheet, presentPaymentSheet } = useStripe(); // requires native build
+  type StripeError = { code: string; message: string };
+  const initPaymentSheet = async (_opts: unknown): Promise<{ error: StripeError | null }> => ({ error: null });
+  const presentPaymentSheet = async (): Promise<{ error: StripeError | null }> => ({ error: null });
   const router = useRouter();
 
   const [step, setStep] = useState(1);
