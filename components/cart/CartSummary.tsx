@@ -5,7 +5,8 @@ import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
-const SHIPPING_FEE = 15;
+const FREE_SHIPPING_THRESHOLD = 500;
+const STANDARD_SHIPPING_FEE = 15;
 
 interface CartSummaryProps {
   subtotal: number;
@@ -14,7 +15,8 @@ interface CartSummaryProps {
 
 export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) {
   const { colors } = useTheme();
-  const total = subtotal + SHIPPING_FEE;
+  const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+  const total = subtotal + shippingFee;
   const [promoExpanded, setPromoExpanded] = useState(false);
   const [promoCode, setPromoCode] = useState('');
 
@@ -111,7 +113,7 @@ export default function CartSummary({ subtotal, onCheckout }: CartSummaryProps) 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={{ fontSize: 13, color: colors.textSecondary }}>Shipping</Text>
         <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
-          {formatCurrency(SHIPPING_FEE)}
+          {shippingFee === 0 ? 'Free' : formatCurrency(shippingFee)}
         </Text>
       </View>
 

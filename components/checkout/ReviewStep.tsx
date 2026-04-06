@@ -6,7 +6,8 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import type { ShippingAddress } from './AddressStep';
 import type { PaymentMethod } from './PaymentStep';
 
-const SHIPPING_FEE = 15;
+const FREE_SHIPPING_THRESHOLD = 500;
+const STANDARD_SHIPPING_FEE = 15;
 
 interface CartItem {
   product: {
@@ -34,7 +35,8 @@ const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 
 export default function ReviewStep({ items, subtotal, address, paymentMethod }: Props) {
   const { colors } = useTheme();
-  const total = subtotal + SHIPPING_FEE;
+  const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+  const total = subtotal + shippingFee;
 
   const getPaymentIcon = () => {
     if (paymentMethod === 'pay_on_delivery') return <Banknote size={16} color={colors.primary} />;
@@ -152,7 +154,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
         <View className="flex-row justify-between">
           <Text style={{ color: colors.textSecondary }}>Shipping</Text>
           <Text className="font-semibold" style={{ color: colors.text }}>
-            {formatCurrency(SHIPPING_FEE)}
+            {shippingFee === 0 ? 'Free' : formatCurrency(shippingFee)}
           </Text>
         </View>
         <View className="h-px my-1" style={{ backgroundColor: colors.border }} />
