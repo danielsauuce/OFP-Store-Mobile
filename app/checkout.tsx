@@ -30,7 +30,9 @@ export default function CheckoutScreen() {
   const { createOrder } = useOrders();
   // const { initPaymentSheet, presentPaymentSheet } = useStripe(); // requires native build
   type StripeError = { code: string; message: string };
-  const initPaymentSheet = async (_opts: unknown): Promise<{ error: StripeError | null }> => ({ error: null });
+  const initPaymentSheet = async (_opts: unknown): Promise<{ error: StripeError | null }> => ({
+    error: null,
+  });
   const presentPaymentSheet = async (): Promise<{ error: StripeError | null }> => ({ error: null });
   const router = useRouter();
 
