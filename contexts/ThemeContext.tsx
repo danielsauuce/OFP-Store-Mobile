@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { Colors, ColorScheme } from '@/constants/color';
 
-const THEME_KEY = 'app_theme_dark';
+// null = no explicit user preference, follow system
+const THEME_KEY = 'app_theme_preference';
 
 interface ThemeContextType {
   isDark: boolean;
@@ -13,23 +15,34 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isDark, setIsDark] = useState(false);
+  const systemScheme = useColorScheme(); // 'dark' | 'light' | null
+  // null = not loaded yet, boolean = explicit user override
+  const [userPreference, setUserPreference] = useState<boolean | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   // Load persisted preference on mount
   useEffect(() => {
     SecureStore.getItemAsync(THEME_KEY).then((val) => {
-      if (val === 'true') setIsDark(true);
+      if (val === 'true') setUserPreference(true);
+      else if (val === 'false') setUserPreference(false);
+      // else null = follow system
+      setLoaded(true);
     });
   }, []);
+
+  // Derived dark state: explicit preference wins, otherwise follow system
+  const isDark = loaded
+    ? userPreference !== null
+      ? userPreference
+      : systemScheme === 'dark'
+    : systemScheme === 'dark'; // use system while loading to avoid flash
 
   const colors = isDark ? Colors.dark : Colors.light;
 
   const toggleTheme = () => {
-    setIsDark((prev) => {
-      const next = !prev;
-      SecureStore.setItemAsync(THEME_KEY, String(next));
-      return next;
-    });
+    const next = !isDark;
+    setUserPreference(next);
+    SecureStore.setItemAsync(THEME_KEY, String(next));
   };
 
   return <ThemeContext.Provider value={{ isDark, colors, toggleTheme }}>{children}</ThemeContext.Provider>;
