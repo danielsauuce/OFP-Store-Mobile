@@ -135,6 +135,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           setSocketStatus('idle');
         });
 
+        socket.on('reconnect', () => {
+          console.log('✅ Socket reconnected');
+          setConnected(true);
+          setSocketStatus('connecting');
+          // Re-initialize chat after reconnection
+          if (convIdRef.current) {
+            socket.emit('chat:init');
+          }
+        });
+
         socket.on('connect_error', (err) => {
           console.error('Chat connect_error:', err.message);
           setConnected(false);
