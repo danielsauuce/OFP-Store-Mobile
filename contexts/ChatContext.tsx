@@ -151,7 +151,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         socket.on('connect_error', (err) => {
-          console.error('❌ Chat connect_error:', err.message);
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          console.error('❌ Chat connect_error:', errorMsg, { err });
           setConnected(false);
           setSocketStatus('idle');
         });
