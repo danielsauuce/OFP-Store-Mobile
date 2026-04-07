@@ -32,6 +32,17 @@ export async function createConversationService(): Promise<Conversation> {
   return data;
 }
 
+export async function getConversationsService() {
+  try {
+    const { data } = await axiosInstance.get('/api/chat/conversations');
+    return data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('getConversations error:', (err.response?.data as Record<string, unknown>) ?? err.message);
+    throw error;
+  }
+}
+
 export async function getMessagesService(conversationId: string, page: number = 1, limit: number = 50) {
   try {
     const { data } = await axiosInstance.get(`/api/chat/conversations/${conversationId}/messages`, {
