@@ -54,10 +54,7 @@ export default function CategoryChips({ categories, selected, onSelect }: Props)
                 elevation: active ? 4 : 0,
               }}
             >
-              <Text
-                className="text-sm font-semibold"
-                style={{ color: active ? '#fff' : colors.textSecondary }}
-              >
+              <Text className="text-sm font-semibold" style={{ color: active ? '#fff' : colors.text }}>
                 {c.name}
               </Text>
             </MotiView>

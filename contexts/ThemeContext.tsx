@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import * as SplashScreen from 'expo-splash-screen';
 import { Colors, ColorScheme } from '@/constants/color';
+
+// Keep splash screen visible while loading theme
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // null = no explicit user preference, follow system
 const THEME_KEY = 'app_theme_preference';
@@ -22,12 +26,20 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Load persisted preference on mount
   useEffect(() => {
-    SecureStore.getItemAsync(THEME_KEY).then((val) => {
-      if (val === 'true') setUserPreference(true);
-      else if (val === 'false') setUserPreference(false);
-      // else null = follow system
-      setLoaded(true);
-    });
+    SecureStore.getItemAsync(THEME_KEY)
+      .then((val) => {
+        if (val === 'true') setUserPreference(true);
+        else if (val === 'false') setUserPreference(false);
+        // else null = follow system
+        setLoaded(true);
+        // Hide splash screen after theme is loaded
+        SplashScreen.hideAsync().catch(() => {});
+      })
+      .catch(() => {
+        // Even if SecureStore fails, hide splash and use system theme
+        setLoaded(true);
+        SplashScreen.hideAsync().catch(() => {});
+      });
   }, []);
 
   // Derived dark state: explicit preference wins, otherwise follow system

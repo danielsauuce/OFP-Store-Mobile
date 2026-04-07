@@ -5,6 +5,7 @@ import { MotiView } from 'moti';
 import { Bot } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeImageUrl } from '@/utils/imageUtils';
 
 export interface Message {
   id: string;
@@ -68,10 +69,12 @@ function UserAvatar() {
         .slice(0, 2)
     : 'ME';
 
-  if (user?.profilePicture) {
+  const normalizedProfilePicture = normalizeImageUrl(user?.profilePicture);
+
+  if (normalizedProfilePicture) {
     return (
       <Image
-        source={{ uri: user.profilePicture }}
+        source={{ uri: normalizedProfilePicture }}
         style={{ width: 28, height: 28, borderRadius: 14 }}
         contentFit="cover"
       />

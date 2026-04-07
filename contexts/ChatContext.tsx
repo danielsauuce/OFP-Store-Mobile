@@ -130,23 +130,28 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           socket.emit('chat:init');
         });
 
-        socket.on('disconnect', () => {
+        socket.on('disconnect', (reason) => {
+          console.log('❌ Socket disconnected. Reason:', reason);
           setConnected(false);
           setSocketStatus('idle');
         });
 
+        socket.on('reconnect_attempt', () => {
+          console.log('🔄 Socket attempting to reconnect...');
+          setSocketStatus('connecting');
+        });
+
         socket.on('reconnect', () => {
-          console.log('✅ Socket reconnected');
+          console.log('✅ Socket reconnected after disconnect');
           setConnected(true);
           setSocketStatus('connecting');
-          // Re-initialize chat after reconnection
-          if (convIdRef.current) {
-            socket.emit('chat:init');
-          }
+          // Always re-initialize chat after reconnection to ensure we're in sync
+          console.log('Re-initializing chat conversation:', convIdRef.current);
+          socket.emit('chat:init', { forceNew: false });
         });
 
         socket.on('connect_error', (err) => {
-          console.error('Chat connect_error:', err.message);
+          console.error('❌ Chat connect_error:', err.message);
           setConnected(false);
           setSocketStatus('idle');
         });
@@ -177,6 +182,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         );
 
         socket.on('chat:message', (msg: ChatMessage & { tempId?: string }) => {
+          console.log('💬 Received chat:message event:', {
+            from: msg.sender.fullName,
+            preview: msg.message.substring(0, 50),
+            conversationId: msg.conversationId,
+          });
+
           const senderId = resolveSenderId(msg.sender);
           const isOwn = senderId === user.id || msg.sender?.role === 'customer';
 

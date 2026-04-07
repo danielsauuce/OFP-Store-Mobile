@@ -6,6 +6,7 @@ import { Camera } from 'lucide-react-native';
 import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { uploadProfilePictureService, deleteProfilePictureService } from '@/services/userService';
+import { normalizeImageUrl } from '@/utils/imageUtils';
 
 interface ProfileAvatarProps {
   fullName: string;
@@ -30,22 +31,16 @@ export default function ProfileAvatar({
     .toUpperCase()
     .slice(0, 2);
 
-  const imageUri = localImage ?? profilePicture;
+  // Normalize the profile picture URL from prop (handles string or object format)
+  const normalizedProfilePicture = normalizeImageUrl(profilePicture);
+  const imageUri = localImage ?? normalizedProfilePicture;
 
   const uploadMutation = useMutation({
     mutationFn: (imageData: { uri: string; name: string; type: string }) =>
       uploadProfilePictureService(imageData),
     onSuccess: (res) => {
       const raw = res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
-      const newUrl: string | undefined =
-        typeof raw === 'string'
-          ? raw || undefined
-          : raw && typeof raw === 'object'
-            ? ((raw as { secure_url?: string; secureUrl?: string; url?: string }).secure_url ??
-              (raw as { secure_url?: string; secureUrl?: string; url?: string }).secureUrl ??
-              (raw as { secure_url?: string; secureUrl?: string; url?: string }).url ??
-              undefined)
-            : undefined;
+      const newUrl = normalizeImageUrl(raw);
       onUploadSuccess?.(newUrl);
     },
     onError: () => {

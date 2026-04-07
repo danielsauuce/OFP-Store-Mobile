@@ -5,6 +5,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { extractProductImageUrl } from '@/utils/imageUtils';
 
 interface CartProduct {
   _id: string;
@@ -41,8 +42,7 @@ function parseVariant(sku?: string): { color?: string; size?: string } {
 export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props) {
   const { colors } = useTheme();
   const variant = parseVariant(item.variantSku);
-  const imageUri =
-    item.product.images?.[0] ?? item.product.primaryImage?.secureUrl ?? item.product.primaryImage?.url;
+  const imageUri = extractProductImageUrl(item);
 
   return (
     <MotiView

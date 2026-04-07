@@ -33,7 +33,7 @@ export default function ChatInput({ value, onChange, onSend, disabled = false }:
           flex: 1,
           flexDirection: 'row',
           alignItems: 'flex-end',
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
           borderRadius: 24,
           borderWidth: 1,
           borderColor: colors.border,
@@ -51,7 +51,7 @@ export default function ChatInput({ value, onChange, onSend, disabled = false }:
           value={value}
           onChangeText={onChange}
           placeholder="Type something..."
-          placeholderTextColor={colors.textTertiary}
+          placeholderTextColor={colors.textSecondary}
           style={{
             flex: 1,
             fontSize: 14,

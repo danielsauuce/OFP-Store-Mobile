@@ -26,8 +26,7 @@ export default function EditProfileModal({
   const [emailVal, setEmailVal] = useState(email);
 
   const saveMutation = useMutation({
-    mutationFn: ({ fullName: fn, email: em }: { fullName: string; email: string }) =>
-      updateUserProfileService({ fullName: fn, email: em }),
+    mutationFn: ({ fullName: fn }: { fullName: string }) => updateUserProfileService({ fullName: fn }),
     onSuccess: () => {
       onSaved();
       onClose();
@@ -39,11 +38,11 @@ export default function EditProfileModal({
   });
 
   const handleSave = () => {
-    if (!name.trim() || !emailVal.trim()) {
+    if (!name.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    saveMutation.mutate({ fullName: name.trim(), email: emailVal.trim() });
+    saveMutation.mutate({ fullName: name.trim() });
   };
 
   return (

@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { extractProductImageUrl } from '@/utils/imageUtils';
 
 interface WishlistModalProps {
   visible: boolean;
@@ -61,7 +62,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
             contentContainerStyle={{ padding: 16, gap: 12 }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
-              const imageUri = item.product.images?.[0];
+              const imageUri = extractProductImageUrl(item);
               return (
                 <TouchableOpacity
                   className="flex-row items-center gap-3 p-3 rounded-2xl"

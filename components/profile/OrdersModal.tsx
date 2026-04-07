@@ -5,6 +5,7 @@ import { X } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useOrders } from '@/contexts/OrderContext';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { extractProductImageUrl } from '@/utils/imageUtils';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#F59E0B',
@@ -74,9 +75,9 @@ export default function OrdersModal({ visible, onClose }: OrdersModalProps) {
               const statusColor = STATUS_COLORS[item.status] ?? colors.textSecondary;
               const statusLabel = STATUS_LABELS[item.status] ?? item.status;
               const canCancel = item.status === 'pending' || item.status === 'processing';
-              // Collect up to 4 product images (prefer product image, fallback to imageSnapshot)
+              // Collect up to 4 product images with proper extraction logic
               const thumbs = item.items
-                .map((i) => i.product.images?.[0] ?? i.imageSnapshot)
+                .map((i) => extractProductImageUrl(i))
                 .filter(Boolean)
                 .slice(0, 4) as string[];
 
