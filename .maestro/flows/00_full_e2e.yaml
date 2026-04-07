@@ -68,9 +68,7 @@ appId: com.ofp.store.mobile
 
 - waitForAnimationToEnd
 
-# ═══════════════════════════════════════════════════════════════════════════════
 # 2. HOME SCREEN
-# ═══════════════════════════════════════════════════════════════════════════════
 - assertVisible:
     text: 'Furniture Palace'
     optional: true
