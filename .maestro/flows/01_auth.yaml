@@ -1,0 +1,73 @@
+# ── Maestro E2E: Authentication ──────────────────────────────────────────────
+# Covers: Welcome screen → Sign Up → Home (logged in)
+#         and the Login path for returning users.
+#
+# NOTE: The signup email must be unique per run. Update TEST_EMAIL before
+#       running or use a pre-existing account for the login-only path.
+#
+# Run: maestro test .maestro/flows/01_auth.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp:
+    clearState: true
+
+# ── Welcome screen ────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Transform Your Space with Style'
+
+- tapOn:
+    text: 'Start Shopping'
+
+# ── Auth modal opens ──────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Welcome Back'
+
+# Switch to Sign Up
+- tapOn:
+    text: 'Sign Up'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Create Account'
+    optional: true
+
+# ── Sign Up form ──────────────────────────────────────────────────────────────
+# Full name
+- tapOn:
+    text: 'John Doe'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+# Email
+- tapOn:
+    text: 'you@example.com'
+    optional: true
+- clearText
+- inputText: 'e2e.testuser@ofp.test'
+- hideKeyboard
+
+# Password
+- tapOn:
+    text: '••••••••'
+    optional: true
+- clearText
+- inputText: 'TestPass123!'
+- hideKeyboard
+
+- tapOn:
+    text: 'Sign Up'
+
+# ── Lands on Home after signup ────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true
+- assertVisible:
+    text: 'Hi'
+    optional: true

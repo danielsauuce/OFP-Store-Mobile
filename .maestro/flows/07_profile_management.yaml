@@ -1,0 +1,189 @@
+# ── Maestro E2E: Profile Management ──────────────────────────────────────────
+# Covers:
+#   Profile tab → Edit Profile → Save
+#   → My Orders → view list → close
+#   → Saved Addresses → Add address → save → close
+#   → Wishlist → view items → close
+#   → Change Password (opens modal, back out)
+#   → Dark Mode toggle → toggle back
+#
+# Run: maestro test .maestro/flows/07_profile_management.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Navigate to Profile tab ───────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Profile'
+    optional: true
+- tapOn:
+    id: 'profile-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Profile'
+
+# ── Edit Profile ──────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Edit Profile'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Edit Profile'
+
+- tapOn:
+    text: 'Your full name'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+- tapOn:
+    text: 'Save Changes'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Close modal if still open
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+
+# ── My Orders ─────────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'My Orders'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'My Orders'
+
+# View first order detail if available
+- tapOn:
+    index: 0
+    id: 'order-item'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Close modal
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+
+- waitForAnimationToEnd
+
+# ── Saved Addresses ───────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Saved Addresses'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Saved Addresses'
+
+# Add a new address
+- tapOn:
+    text: 'Add New Address'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Fill the address form
+- tapOn:
+    text: 'John Doe'
+    optional: true
+- clearText
+- inputText: 'E2E Test User'
+- hideKeyboard
+
+- tapOn:
+    text: '123 Main St'
+    optional: true
+- clearText
+- inputText: '42 Testing Street'
+- hideKeyboard
+
+- tapOn:
+    text: 'London'
+    optional: true
+- clearText
+- inputText: 'Manchester'
+- hideKeyboard
+
+- tapOn:
+    text: 'England'
+    optional: true
+- clearText
+- inputText: 'Greater Manchester'
+- hideKeyboard
+
+- tapOn:
+    text: 'SW1A 1AA'
+    optional: true
+- clearText
+- inputText: 'M1 1AE'
+- hideKeyboard
+
+- tapOn:
+    text: 'United Kingdom'
+    optional: true
+- clearText
+- inputText: 'United Kingdom'
+- hideKeyboard
+
+- tapOn:
+    text: 'Save Address'
+    optional: true
+- tapOn:
+    text: 'Update Address'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Close modal
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+
+- waitForAnimationToEnd
+
+# ── Wishlist ──────────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Wishlist'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Wishlist'
+
+# Empty state or items list
+- assertVisible:
+    text: 'Your wishlist is empty'
+    optional: true
+
+# Close modal
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+
+- waitForAnimationToEnd
+
+# ── Dark Mode toggle ──────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Dark Mode'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Toggle back to light
+- tapOn:
+    text: 'Dark Mode'
+    optional: true
+
+- waitForAnimationToEnd

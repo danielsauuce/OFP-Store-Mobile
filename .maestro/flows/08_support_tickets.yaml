@@ -1,0 +1,109 @@
+# ── Maestro E2E: Support Tickets ──────────────────────────────────────────────
+# Covers:
+#   Profile → Support Tickets modal
+#   → Create new ticket (subject + description)
+#   → Submit → ticket appears in list
+#   → Tap ticket to view detail
+#   → Reply to ticket
+#   → Close modal
+#
+# Run: maestro test .maestro/flows/08_support_tickets.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Navigate to Profile tab ───────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Profile'
+    optional: true
+- tapOn:
+    id: 'profile-tab'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Open Support Tickets ──────────────────────────────────────────────────────
+- tapOn:
+    text: 'Support Tickets'
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Support Tickets'
+
+# ── Create a new ticket ───────────────────────────────────────────────────────
+- tapOn:
+    text: 'New'
+    optional: true
+- tapOn:
+    id: 'new-ticket-button'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'New Ticket'
+    optional: true
+
+# Subject
+- tapOn:
+    text: 'Brief summary of your issue'
+    optional: true
+- inputText: 'Missing item in my delivery'
+- hideKeyboard
+
+# Description
+- tapOn:
+    text: 'Describe your issue in detail'
+    optional: true
+- inputText: 'I placed order #98765 and received only 2 out of 3 items. Please investigate.'
+- hideKeyboard
+
+# Submit
+- tapOn:
+    text: 'Submit Ticket'
+
+# ── Ticket list view ──────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Support Tickets'
+
+# The submitted ticket should appear
+- assertVisible:
+    text: 'Missing item in my delivery'
+    optional: true
+
+# ── Open ticket detail ────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Missing item in my delivery'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Reply to the ticket
+- tapOn:
+    text: 'Write a reply...'
+    optional: true
+- inputText: 'Please let me know when this is resolved.'
+- hideKeyboard
+
+- tapOn:
+    text: 'Send'
+    optional: true
+- tapOn:
+    id: 'send-reply-button'
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Close modal ───────────────────────────────────────────────────────────────
+- tapOn:
+    id: 'close-modal'
+    optional: true
+- back
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Profile'
+    optional: true

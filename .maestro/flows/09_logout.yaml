@@ -1,0 +1,44 @@
+# ── Maestro E2E: Logout ───────────────────────────────────────────────────────
+# Covers:
+#   Profile → Logout → confirm alert → Welcome screen
+#
+# Run: maestro test .maestro/flows/09_logout.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Navigate to Profile tab ───────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Profile'
+    optional: true
+- tapOn:
+    id: 'profile-tab'
+    optional: true
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Profile'
+
+# ── Logout ────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: 'Logout'
+
+# Confirm the alert dialog
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Logout'
+    optional: true
+- tapOn:
+    text: 'Sign Out'
+    optional: true
+- tapOn:
+    text: 'Confirm'
+    optional: true
+
+# ── Lands on Welcome screen ───────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Transform Your Space with Style'

@@ -1,0 +1,59 @@
+# ── Maestro E2E: Notifications ───────────────────────────────────────────────
+# Covers:
+#   Home → Bell icon → Notifications screen
+#   → Mark all as read (if unread)
+#   → Tap a notification (if any)
+#   → Navigate back
+#
+# Run: maestro test .maestro/flows/05_notifications.yaml
+
+appId: com.ofp.store.mobile
+---
+- launchApp
+
+# ── Home screen ───────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true
+
+# Tap the bell icon in the header
+- tapOn:
+    id: 'notifications-bell'
+    optional: true
+- tapOn:
+    accessibilityLabel: 'Notifications'
+    optional: true
+
+# ── Notifications screen ──────────────────────────────────────────────────────
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Notifications'
+
+# Mark all read (if button is visible)
+- tapOn:
+    text: 'Mark all read'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Either shows notifications list or empty state
+- assertVisible:
+    text: 'All caught up'
+    optional: true
+
+# Tap the first notification if any exist
+- tapOn:
+    index: 0
+    id: 'notification-item'
+    optional: true
+
+- waitForAnimationToEnd
+
+# Navigate back to Home
+- back
+
+- waitForAnimationToEnd
+- assertVisible:
+    text: 'Furniture Palace'
+    optional: true

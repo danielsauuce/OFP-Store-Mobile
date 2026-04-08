@@ -1,45 +1,76 @@
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
+import { ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import LoginFormScreen from '@/components/loginForm';
-import AuthButton from '@/components/authButton';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { forgotPasswordService } from '@/services/authService';
+import AuthHeader from '@/components/auth/AuthHeader';
+import AuthCard from '@/components/auth/AuthCard';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
+interface AuthState {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export default function AuthScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { login, signup, isLoginPending, isSignupPending } = useAuth();
+
   const [mode, setMode] = useState<AuthMode>('login');
+  const [state, setState] = useState<AuthState>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
-  const handleLogin = () => {
-    setLoading(true);
-    router.push('/');
-    setLoading(false);
+  const loading = mode === 'login' ? isLoginPending : isSignupPending;
+
+  const handleAuth = async () => {
+    const email = state.email.trim();
+    const password = state.password.trim();
+    const name = state.name.trim();
+
+    if (!email || !password || (mode === 'signup' && !name)) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (mode === 'reset') {
+      try {
+        await forgotPasswordService(email);
+        Alert.alert('Email Sent', 'A password reset link has been sent to your email.', [
+          { text: 'OK', onPress: () => setMode('login') },
+        ]);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Something went wrong';
+        Alert.alert('Error', message);
+      }
+      return;
+    }
+
+    try {
+      if (mode === 'login') {
+        await login(email, password);
+      } else {
+        await signup(name, email, password);
+      }
+      router.replace('/(tabs)');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Something went wrong';
+      Alert.alert('Error', message);
+    }
   };
-  const [loading, setLoading] = useState(false);
-
-  const headerTitle =
-    mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password';
-
-  const headerSubtitle =
-    mode === 'login'
-      ? 'Sign in to continue shopping'
-      : mode === 'signup'
-        ? 'Join us to start shopping'
-        : 'Enter your email and new password';
 
   return (
     <KeyboardAvoidingView
@@ -47,29 +78,19 @@ export default function AuthScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        className="px-5"
+        contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="flex-grow px-5 pb-10"
-        contentContainerStyle={{ paddingTop: insets.top + 40 }}
       >
-        <View className="items-center mb-10">
-          <Text className="text-[40px] font-bold tracking-[0.5px] text-light-primary">Olayinka</Text>
-          <Text className="text-[13px] tracking-[2px] uppercase mt-1 text-light-secondary">
-            Furniture Palace
-          </Text>
-        </View>
-
-        <View className="rounded-[20px] p-7 shadow-lg bg-light-surface dark:bg-dark-surface">
-          <View className="mb-8">
-            <Text className="text-[28px] font-bold mb-2 text-light-text dark:text-dark-text">
-              {headerTitle}
-            </Text>
-            <Text className="text-[15px] text-light-secondary dark:text-dark-secondary">
-              {headerSubtitle}
-            </Text>
-          </View>
-
-          <AuthButton label="Sign In" isloading={loading} onPress={handleLogin} disable={false} />
-        </View>
+        <AuthHeader />
+        <AuthCard
+          mode={mode}
+          setMode={setMode}
+          state={state}
+          setState={setState}
+          onSubmit={handleAuth}
+          loading={loading}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
