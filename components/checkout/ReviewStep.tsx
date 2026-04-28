@@ -6,8 +6,8 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import type { ShippingAddress } from './AddressStep';
 import type { PaymentMethod } from './PaymentStep';
 
-const FREE_SHIPPING_THRESHOLD = 500;
-const STANDARD_SHIPPING_FEE = 15;
+const FREE_SHIPPING_THRESHOLD = 50000;
+const STANDARD_SHIPPING_FEE = 2500;
 
 interface CartItem {
   product: {

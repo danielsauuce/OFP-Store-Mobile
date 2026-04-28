@@ -5,8 +5,8 @@ import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatCurrency } from '@/utils/formatCurrency';
 
-const FREE_SHIPPING_THRESHOLD = 500;
-const STANDARD_SHIPPING_FEE = 15;
+const FREE_SHIPPING_THRESHOLD = 50000;
+const STANDARD_SHIPPING_FEE = 2500;
 
 interface CartSummaryProps {
   subtotal: number;
