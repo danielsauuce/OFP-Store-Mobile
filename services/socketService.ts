@@ -1,7 +1,15 @@
 import { io, Socket } from 'socket.io-client';
 import * as SecureStore from 'expo-secure-store';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+function resolveSocketBaseUrl(): string {
+  const explicitSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL;
+  if (explicitSocketUrl) return explicitSocketUrl.replace(/\/$/, '');
+
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+  return apiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+}
+
+const BACKEND_URL = resolveSocketBaseUrl();
 
 export async function createChatSocket(): Promise<Socket> {
   const token = await SecureStore.getItemAsync('accessToken');

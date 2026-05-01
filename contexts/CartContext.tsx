@@ -21,6 +21,7 @@ export interface CartItem {
   product: CartProduct;
   quantity: number;
   priceSnapshot: number; // price locked at time of adding to cart
+  variantSku?: string;
 }
 
 export interface Cart {
@@ -34,8 +35,8 @@ interface CartContextType {
   itemCount: number;
   fetchCart: () => Promise<void>;
   addToCart: (productId: string, quantity?: number, variantSku?: string) => Promise<void>;
-  updateItem: (productId: string, quantity: number) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
+  updateItem: (productId: string, quantity: number, variantSku?: string) => Promise<void>;
+  removeItem: (productId: string, variantSku?: string) => Promise<void>;
   clearCart: () => Promise<void>;
 }
 
@@ -69,6 +70,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         priceSnapshot?: number;
         price?: number;
         imageSnapshot?: string;
+        variantSku?: string;
       };
 
       // Normalize each item — backend returns priceSnapshot as locked price
@@ -89,7 +91,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           images = [p.primaryImage.url];
         }
         const priceSnapshot = item.priceSnapshot ?? item.price ?? p.price ?? 0;
-        return { _id: item._id, product: { ...p, images }, quantity: item.quantity, priceSnapshot };
+        return {
+          _id: item._id,
+          product: { ...p, images },
+          quantity: item.quantity,
+          priceSnapshot,
+          variantSku: item.variantSku,
+        };
       });
 
       return { items, total: raw.total ?? raw.subtotal ?? 0 };
@@ -116,13 +124,21 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ productId, quantity }: { productId: string; quantity: number }) =>
-      updateCartItemService(productId, quantity),
+    mutationFn: ({
+      productId,
+      quantity,
+      variantSku,
+    }: {
+      productId: string;
+      quantity: number;
+      variantSku?: string;
+    }) => updateCartItemService(productId, quantity, variantSku),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
   });
 
   const removeMutation = useMutation({
-    mutationFn: (productId: string) => removeCartItemService(productId),
+    mutationFn: ({ productId, variantSku }: { productId: string; variantSku?: string }) =>
+      removeCartItemService(productId, variantSku),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
   });
 
@@ -139,19 +155,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const updateItem = async (productId: string, quantity: number) => {
+  const updateItem = async (productId: string, quantity: number, variantSku?: string) => {
     if (quantity < 1) throw new RangeError('quantity must be >= 1');
     try {
-      await updateMutation.mutateAsync({ productId, quantity });
+      await updateMutation.mutateAsync({ productId, quantity, variantSku });
     } catch (err) {
       if (err instanceof RangeError) throw err;
       throw new Error(`Failed to update cart item: ${err instanceof Error ? err.message : err}`);
     }
   };
 
-  const removeItem = async (productId: string) => {
+  const removeItem = async (productId: string, variantSku?: string) => {
     try {
-      await removeMutation.mutateAsync(productId);
+      await removeMutation.mutateAsync({ productId, variantSku });
     } catch (err) {
       throw new Error(`Failed to remove cart item: ${err instanceof Error ? err.message : err}`);
     }

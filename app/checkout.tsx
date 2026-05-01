@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-// import { useStripe } from '@stripe/stripe-react-native'; // requires native build
+import { useStripe } from '@/services/stripe';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -23,17 +23,16 @@ const STEP_LABELS: Record<number, string> = {
   3: 'Place Order',
 };
 
+function getPaymentIntentId(clientSecret: string): string | undefined {
+  return clientSecret.match(/^(pi_[^_]+)_secret_/)?.[1];
+}
+
 export default function CheckoutScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const { cart, clearCart } = useCart();
   const { createOrder } = useOrders();
-  // const { initPaymentSheet, presentPaymentSheet } = useStripe(); // requires native build
-  type StripeError = { code: string; message: string };
-  const initPaymentSheet = async (_opts: unknown): Promise<{ error: StripeError | null }> => ({
-    error: null,
-  });
-  const presentPaymentSheet = async (): Promise<{ error: StripeError | null }> => ({ error: null });
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const router = useRouter();
 
   const [step, setStep] = useState(1);
@@ -120,7 +119,10 @@ export default function CheckoutScreen() {
     }
 
     // 4. Notify server that payment succeeded (webhook is fallback)
-    await confirmPaymentSuccessService(paymentIntentId);
+    const stripePaymentIntentId = paymentIntentId ?? getPaymentIntentId(clientSecret);
+    if (stripePaymentIntentId) {
+      await confirmPaymentSuccessService(stripePaymentIntentId);
+    }
     return true;
   };
 
@@ -139,6 +141,7 @@ export default function CheckoutScreen() {
         items: items.map((i) => ({
           product: i.product._id,
           quantity: i.quantity,
+          ...(i.variantSku ? { variantSku: i.variantSku } : {}),
         })),
         shippingAddress: {
           fullName: address.fullName,
@@ -149,9 +152,9 @@ export default function CheckoutScreen() {
           state: address.state,
           postalCode: address.postalCode,
           country: address.country,
-          ...(address.note.trim() ? { note: address.note.trim() } : {}),
         },
         paymentMethod,
+        ...(address.note.trim() ? { notes: address.note.trim() } : {}),
       };
 
       const order = await createOrder(payload);

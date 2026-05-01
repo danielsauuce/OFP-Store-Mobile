@@ -1,22 +1,11 @@
 import { AxiosError } from 'axios';
 import axiosInstance from './axiosInstance';
-
-// Backend may return profilePicture as a Cloudinary object {secureUrl, url} or a plain string.
-// Always normalise to a plain string before storing in context.
-function normalisePicture(pic: unknown): string | undefined {
-  if (typeof pic === 'string') return pic || undefined;
-  if (pic && typeof pic === 'object') {
-    // Cloudinary returns snake_case (secure_url / url); some backends camelCase it (secureUrl)
-    const p = pic as { secure_url?: string; secureUrl?: string; url?: string };
-    return p.secure_url ?? p.secureUrl ?? p.url ?? undefined;
-  }
-  return undefined;
-}
+import { normalizeImageUrl } from '@/utils/imageUtils';
 
 function normaliseAuthResponse(data: AuthResponse): AuthResponse {
   return {
     ...data,
-    user: { ...data.user, profilePicture: normalisePicture(data.user.profilePicture) },
+    user: { ...data.user, profilePicture: normalizeImageUrl(data.user.profilePicture) },
   };
 }
 

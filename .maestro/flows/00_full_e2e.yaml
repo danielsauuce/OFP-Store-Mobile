@@ -53,14 +53,14 @@ appId: com.ofp.store.mobile
     text: 'you@example.com'
     optional: true
 - clearText
-- inputText: 'e2e.testuser@ofp.test'
+- inputText: 'e2e.signup.test@gmail.com'
 - hideKeyboard
 
 - tapOn:
     text: '••••••••'
     optional: true
 - clearText
-- inputText: 'TestPass123!'
+- inputText: 'Test@12345'
 - hideKeyboard
 
 - tapOn:
@@ -68,7 +68,9 @@ appId: com.ofp.store.mobile
 
 - waitForAnimationToEnd
 
+# ═══════════════════════════════════════════════════════════════════════════════
 # 2. HOME SCREEN
+# ═══════════════════════════════════════════════════════════════════════════════
 - assertVisible:
     text: 'Furniture Palace'
     optional: true
@@ -151,8 +153,11 @@ appId: com.ofp.store.mobile
 - tapOn:
     accessibilityLabel: 'Add to wishlist'
     optional: true
+- waitForAnimationToEnd
+
+# Dismiss wishlist alert
 - tapOn:
-    accessibilityLabel: 'Wishlist'
+    text: 'OK'
     optional: true
 - waitForAnimationToEnd
 
@@ -162,16 +167,30 @@ appId: com.ofp.store.mobile
     optional: true
 - waitForAnimationToEnd
 
-# Add to cart
+# Add to cart via Buy Now
 - tapOn:
     text: 'Buy Now'
     optional: true
+- waitForAnimationToEnd
 
+# Dismiss "added to cart" alert
+- tapOn:
+    text: 'OK'
+    optional: true
 - waitForAnimationToEnd
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 5. CART — ADJUST & PROCEED
 # ═══════════════════════════════════════════════════════════════════════════════
+# Navigate to Cart tab
+- tapOn:
+    text: 'Cart'
+    optional: true
+- tapOn:
+    id: 'cart-tab'
+    optional: true
+
+- waitForAnimationToEnd
 - assertVisible:
     text: 'Cart'
     optional: true
@@ -182,11 +201,11 @@ appId: com.ofp.store.mobile
     optional: true
 - waitForAnimationToEnd
 
-# Proceed to Checkout
+# Proceed to Payment
 - assertVisible:
-    text: 'Proceed to Checkout'
+    text: 'Proceed to Payment'
 - tapOn:
-    text: 'Proceed to Checkout'
+    text: 'Proceed to Payment'
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 6. CHECKOUT — ADDRESS → PAYMENT → REVIEW → PLACE ORDER
@@ -196,11 +215,20 @@ appId: com.ofp.store.mobile
     text: 'Checkout'
 
 # Step 1: Delivery Address
+# Full Name (pre-filled from user profile after signup)
 - tapOn:
     text: 'e.g. John Doe'
     optional: true
 - clearText
 - inputText: 'E2E Test User'
+- hideKeyboard
+
+# Phone Number (always empty — required for checkout validation)
+- tapOn:
+    text: 'e.g. +44 7700 900000'
+    optional: true
+- clearText
+- inputText: '+447700900000'
 - hideKeyboard
 
 - tapOn:
@@ -291,7 +319,7 @@ appId: com.ofp.store.mobile
 
 # Send a message
 - tapOn:
-    text: 'Type message...'
+    text: 'Type something...'
     optional: true
 - inputText: 'Hello, I need help with my recent order.'
 - hideKeyboard
@@ -307,7 +335,7 @@ appId: com.ofp.store.mobile
 
 # Send a second message
 - tapOn:
-    text: 'Type message...'
+    text: 'Type something...'
     optional: true
 - inputText: 'My order has not arrived yet.'
 - hideKeyboard

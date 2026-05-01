@@ -11,8 +11,8 @@ import { normalizeImageUrl } from '@/utils/imageUtils';
 interface ProfileAvatarProps {
   fullName: string;
   email: string;
-  profilePicture?: string;
-  onUploadSuccess?: (newUrl?: string) => void;
+  profilePicture?: unknown;
+  onUploadSuccess?: (newUrl?: string, user?: Record<string, unknown>) => void;
 }
 
 export default function ProfileAvatar({
@@ -41,7 +41,10 @@ export default function ProfileAvatar({
     onSuccess: (res) => {
       const raw = res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
       const newUrl = normalizeImageUrl(raw);
-      onUploadSuccess?.(newUrl);
+      if (newUrl) {
+        setLocalImage(newUrl);
+      }
+      onUploadSuccess?.(newUrl, res?.user);
     },
     onError: () => {
       Alert.alert('Error', 'Could not upload photo. Please try again.');

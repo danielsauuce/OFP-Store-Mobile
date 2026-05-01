@@ -37,7 +37,7 @@ appId: com.ofp.store.mobile
 
 # ── Send a message ────────────────────────────────────────────────────────────
 - tapOn:
-    text: 'Type message...'
+    text: 'Type something...'
     optional: true
 - inputText: 'Hello, I need help with my recent order.'
 - hideKeyboard
@@ -58,7 +58,7 @@ appId: com.ofp.store.mobile
 
 # ── Send a second message ─────────────────────────────────────────────────────
 - tapOn:
-    text: 'Type message...'
+    text: 'Type something...'
     optional: true
 - inputText: 'My order number is #12345. It has not arrived yet.'
 - hideKeyboard

@@ -100,8 +100,6 @@ function normalizeOrder(raw: Record<string, unknown>): Order {
     };
   });
 
-  const pagination = raw.pagination as Record<string, unknown> | undefined;
-
   return {
     _id: String(raw._id ?? ''),
     orderNumber: raw.orderNumber ? String(raw.orderNumber) : undefined,
@@ -114,7 +112,6 @@ function normalizeOrder(raw: Record<string, unknown>): Order {
     createdAt: String(raw.createdAt ?? ''),
     note: raw.note ? String(raw.note) : undefined,
   };
-  void pagination; // pagination lives at the response level, not per-order
 }
 
 const OrderContext = createContext<OrderContextType | null>(null);

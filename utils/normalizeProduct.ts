@@ -1,4 +1,10 @@
 type CloudinaryImage = { secure_url?: string; secureUrl?: string; url?: string };
+export interface ProductVariant {
+  sku: string;
+  price?: number;
+  stockQuantity?: number;
+  attributes?: Record<string, string | number | boolean>;
+}
 
 interface RawProduct {
   _id: string;
@@ -12,7 +18,8 @@ interface RawProduct {
   stockQuantity: number;
   description?: string;
   material?: string;
-  dimensions?: string;
+  dimensions?: string | Record<string, string | number>;
+  variants?: ProductVariant[];
 }
 
 export interface NormalizedProduct {
@@ -26,11 +33,20 @@ export interface NormalizedProduct {
   description?: string;
   material?: string;
   dimensions?: string;
+  variants: ProductVariant[];
 }
 
 function resolveImageUrl(img: string | CloudinaryImage): string {
   if (typeof img === 'string') return img;
   return img.secure_url ?? img.secureUrl ?? img.url ?? '';
+}
+
+function resolveDimensions(dimensions: RawProduct['dimensions']): string | undefined {
+  if (!dimensions) return undefined;
+  if (typeof dimensions === 'string') return dimensions;
+  return Object.entries(dimensions)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(', ');
 }
 
 export function normalizeProduct(p: RawProduct): NormalizedProduct {
@@ -49,5 +65,11 @@ export function normalizeProduct(p: RawProduct): NormalizedProduct {
     }
   }
 
-  return { ...p, category, images };
+  return {
+    ...p,
+    category,
+    images,
+    dimensions: resolveDimensions(p.dimensions),
+    variants: Array.isArray(p.variants) ? p.variants : [],
+  };
 }

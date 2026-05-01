@@ -67,6 +67,8 @@ export default function SupportHeader({ onViewHistory, onNewChat, connected = fa
         {onNewChat && (
           <TouchableOpacity
             onPress={onNewChat}
+            accessibilityRole="button"
+            accessibilityLabel="New chat"
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,
@@ -80,6 +82,8 @@ export default function SupportHeader({ onViewHistory, onNewChat, connected = fa
         {onViewHistory && (
           <TouchableOpacity
             onPress={onViewHistory}
+            accessibilityRole="button"
+            accessibilityLabel="History"
             style={{
               width: 36,
               height: 36,

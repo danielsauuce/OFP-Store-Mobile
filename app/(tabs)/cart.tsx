@@ -14,18 +14,18 @@ export default function CartScreen() {
   const router = useRouter();
   const { cart, loading, fetchCart, updateItem, removeItem, clearCart } = useCart();
 
-  const handleUpdate = async (productId: string, quantity: number) => {
+  const handleUpdate = async (productId: string, quantity: number, variantSku?: string) => {
     if (quantity < 1) return;
     try {
-      await updateItem(productId, quantity);
+      await updateItem(productId, quantity, variantSku);
     } catch {
       Alert.alert('Error', 'Could not update item');
     }
   };
 
-  const handleRemove = async (productId: string) => {
+  const handleRemove = async (productId: string, variantSku?: string) => {
     try {
-      await removeItem(productId);
+      await removeItem(productId, variantSku);
     } catch {
       Alert.alert('Error', 'Could not remove item');
     }
@@ -94,11 +94,11 @@ export default function CartScreen() {
           <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
             {items.map((item, index) => (
               <CartItem
-                key={item._id ?? item.product?._id ?? index}
+                key={item._id ?? `${item.product?._id ?? index}:${item.variantSku ?? 'default'}`}
                 item={item}
                 index={index}
-                onUpdate={(qty) => handleUpdate(item.product._id, qty)}
-                onRemove={() => handleRemove(item.product._id)}
+                onUpdate={(qty) => handleUpdate(item.product._id, qty, item.variantSku)}
+                onRemove={() => handleRemove(item.product._id, item.variantSku)}
               />
             ))}
           </ScrollView>

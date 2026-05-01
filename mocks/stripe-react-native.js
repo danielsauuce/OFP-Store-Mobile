@@ -3,8 +3,6 @@
  * Used when EXPO_GO=true (npx expo start without a dev client).
  * All payment actions are no-ops — Stripe requires a native build to work.
  */
-const React = require('react');
-
 const StripeProvider = ({ children }) => children ?? null;
 StripeProvider.displayName = 'StripeProvider (stub)';
 

@@ -4,7 +4,8 @@ import SupportHeader from '@/components/support/SupportHeader';
 import TicketHistoryModal from '@/components/support/TicketHistoryModal';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/contexts/AuthContext';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,6 +18,7 @@ export default function SupportScreen() {
     convReady,
     isSending,
     clearUnread,
+    markSupportClosed,
     sendMessage,
     startNewConversation,
   } = useChat();
@@ -25,12 +27,12 @@ export default function SupportScreen() {
   const [showHistory, setShowHistory] = useState(false);
 
   // Mark support tab as open so unread count doesn't increment while visible
-  useEffect(() => {
-    clearUnread();
-    return () => {
-      // When unmounting (tab switched away) — context tracks via supportOpenRef
-    };
-  }, [clearUnread]);
+  useFocusEffect(
+    useCallback(() => {
+      clearUnread();
+      return markSupportClosed;
+    }, [clearUnread, markSupportClosed]),
+  );
 
   const handleSend = useCallback(() => {
     const text = input.trim();

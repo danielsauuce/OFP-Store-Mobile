@@ -19,7 +19,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Heart, ShoppingBag } from 'lucide-react-native';
 import { MotiView } from 'moti';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -37,6 +37,7 @@ export default function ProductDetailScreen() {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [selectedVariantSku, setSelectedVariantSku] = useState<string | undefined>();
   const [adding, setAdding] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
@@ -80,6 +81,21 @@ export default function ProductDetailScreen() {
       : null;
 
   const inWishlist = product ? isInWishlist(product._id) : false;
+  const variants = useMemo(() => product?.variants ?? [], [product?.variants]);
+  const selectedVariant = variants.find((variant) => variant.sku === selectedVariantSku);
+  const stockQuantity = selectedVariant?.stockQuantity ?? product?.stockQuantity ?? 0;
+  const displayPrice = selectedVariant?.price ?? product?.price ?? 0;
+  const isAvailable = !!product?.inStock && stockQuantity > 0;
+
+  useEffect(() => {
+    if (variants.length > 0 && !selectedVariantSku) {
+      setSelectedVariantSku(variants[0].sku);
+    }
+  }, [selectedVariantSku, variants]);
+
+  useEffect(() => {
+    setQuantity((q) => Math.min(Math.max(q, 1), Math.max(stockQuantity, 1)));
+  }, [stockQuantity]);
 
   const handleWishlist = async () => {
     if (!user) {
@@ -105,9 +121,13 @@ export default function ProductDetailScreen() {
 
   const handleAddToCart = async () => {
     if (!product) return;
+    if (variants.length > 0 && !selectedVariantSku) {
+      Alert.alert('Select Option', 'Please select a product option before adding to cart.');
+      return;
+    }
     setAdding(true);
     try {
-      await addToCart(product._id, quantity);
+      await addToCart(product._id, quantity, selectedVariantSku);
       Alert.alert('Cart', `${product.name} added to cart!`);
     } catch {
       Alert.alert('Error', 'Could not add to cart. Please try again.');
@@ -171,7 +191,11 @@ export default function ProductDetailScreen() {
             <ChevronLeft size={22} color="#111" />
           </FloatButton>
 
-          <FloatButton onPress={handleWishlist} disabled={wishlistLoading}>
+          <FloatButton
+            onPress={handleWishlist}
+            disabled={wishlistLoading}
+            accessibilityLabel={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
             <Heart
               size={20}
               color={inWishlist ? colors.error : '#111'}
@@ -223,7 +247,7 @@ export default function ProductDetailScreen() {
                 </Text>
               </View>
               <Text className="font-extrabold text-2xl" style={{ color: colors.text }}>
-                {formatCurrency(product.price)}
+                {formatCurrency(displayPrice)}
               </Text>
             </MotiView>
 
@@ -250,16 +274,57 @@ export default function ProductDetailScreen() {
 
             {/* Stock + quantity */}
             <View className="flex-row items-center justify-between">
-              <StockBadge inStock={product.inStock} stockQuantity={product.stockQuantity} />
-              {product.inStock && (
+              <StockBadge inStock={isAvailable} stockQuantity={stockQuantity} />
+              {isAvailable && (
                 <QuantityControl
                   quantity={quantity}
-                  max={product.stockQuantity}
+                  max={stockQuantity}
                   onDecrement={() => setQuantity((q) => Math.max(1, q - 1))}
-                  onIncrement={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
+                  onIncrement={() => setQuantity((q) => Math.min(stockQuantity, q + 1))}
                 />
               )}
             </View>
+
+            {variants.length > 0 && (
+              <View className="gap-2">
+                <Text className="text-base font-bold" style={{ color: colors.text }}>
+                  Options
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {variants.map((variant) => {
+                    const selected = selectedVariantSku === variant.sku;
+                    const label =
+                      Object.values(variant.attributes ?? {})
+                        .filter(Boolean)
+                        .join(' / ') || variant.sku;
+
+                    return (
+                      <TouchableOpacity
+                        key={variant.sku}
+                        onPress={() => {
+                          setSelectedVariantSku(variant.sku);
+                          setQuantity(1);
+                        }}
+                        disabled={(variant.stockQuantity ?? 0) < 1}
+                        className="px-3 py-2 rounded-xl border"
+                        style={{
+                          borderColor: selected ? colors.primary : colors.border,
+                          backgroundColor: selected ? colors.primary + '12' : colors.surface,
+                          opacity: (variant.stockQuantity ?? 0) < 1 ? 0.45 : 1,
+                        }}
+                      >
+                        <Text
+                          className="text-sm font-semibold"
+                          style={{ color: selected ? colors.primary : colors.text }}
+                        >
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
 
             {/* Specs (Material / Dimensions) */}
             {specs.length > 0 && (
@@ -309,13 +374,13 @@ export default function ProductDetailScreen() {
         <View className="flex-row items-center gap-3 px-6 pt-3 pb-2">
           <TouchableOpacity
             onPress={handleAddToCart}
-            disabled={!product.inStock || adding}
+            disabled={!isAvailable || adding}
             className="w-[52px] h-[52px] rounded-[14px] items-center justify-center"
             style={{
               borderWidth: 1.5,
-              borderColor: product.inStock ? colors.border : colors.border + '60',
+              borderColor: isAvailable ? colors.border : colors.border + '60',
               backgroundColor: colors.surface,
-              opacity: product.inStock ? 1 : 0.4,
+              opacity: isAvailable ? 1 : 0.4,
             }}
           >
             <ShoppingBag size={22} color={colors.text} />
@@ -323,14 +388,14 @@ export default function ProductDetailScreen() {
 
           <TouchableOpacity
             onPress={handleAddToCart}
-            disabled={!product.inStock || adding}
+            disabled={!isAvailable || adding}
             className="flex-1 h-[52px] rounded-[14px] items-center justify-center"
             style={{
-              backgroundColor: product.inStock ? (isDark ? colors.primary : '#111') : colors.border,
+              backgroundColor: isAvailable ? (isDark ? colors.primary : '#111') : colors.border,
             }}
           >
             <Text className="text-white text-base font-bold">
-              {adding ? 'Adding…' : product.inStock ? 'Buy Now' : 'Out of Stock'}
+              {adding ? 'Adding…' : isAvailable ? 'Buy Now' : 'Out of Stock'}
             </Text>
           </TouchableOpacity>
         </View>

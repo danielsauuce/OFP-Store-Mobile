@@ -3,7 +3,7 @@
 #   Home → tap a featured product → product detail screen
 #   → toggle wishlist heart
 #   → adjust quantity
-#   → "Buy Now" → lands on Cart
+#   → "Buy Now" → dismiss alert → navigate to Cart
 #
 # Run: maestro test .maestro/flows/03_product_detail_and_cart.yaml
 
@@ -17,18 +17,12 @@ appId: com.ofp.store.mobile
     text: 'Furniture Palace'
     optional: true
 
-# Tap a featured product card on the home screen
-- tapOn:
-    id: 'featured-product-0'
-    optional: true
-
-# Fallback: go through Shop tab
+# Navigate to Shop tab and tap the first product card
 - tapOn:
     text: 'Shop'
     optional: true
 - waitForAnimationToEnd
 
-# Tap the first product in the list
 - tapOn:
     index: 0
     id: 'product-card'
@@ -37,7 +31,6 @@ appId: com.ofp.store.mobile
 # ── Product Detail screen ─────────────────────────────────────────────────────
 - waitForAnimationToEnd
 
-# Confirm we're on a product page (price is visible)
 - assertVisible:
     text: 'Add to Cart'
     optional: true
@@ -49,8 +42,11 @@ appId: com.ofp.store.mobile
 - tapOn:
     accessibilityLabel: 'Add to wishlist'
     optional: true
+- waitForAnimationToEnd
+
+# Dismiss the wishlist alert
 - tapOn:
-    accessibilityLabel: 'Wishlist'
+    text: 'OK'
     optional: true
 - waitForAnimationToEnd
 
@@ -66,18 +62,32 @@ appId: com.ofp.store.mobile
     optional: true
 - waitForAnimationToEnd
 
-# Add to Cart / Buy Now
+# Add to cart via Buy Now button
 - tapOn:
     text: 'Buy Now'
     optional: true
+- waitForAnimationToEnd
 
-# ── Cart screen ───────────────────────────────────────────────────────────────
+# Dismiss the "added to cart" alert
+- tapOn:
+    text: 'OK'
+    optional: true
+- waitForAnimationToEnd
+
+# ── Navigate to Cart tab ──────────────────────────────────────────────────────
+- tapOn:
+    text: 'Cart'
+    optional: true
+- tapOn:
+    id: 'cart-tab'
+    optional: true
+
 - waitForAnimationToEnd
 - assertVisible:
     text: 'Cart'
     optional: true
 
-# Verify item appears in cart
+# Verify item appears in cart and checkout button is present
 - assertVisible:
-    text: 'Proceed to Checkout'
+    text: 'Proceed to Payment'
     optional: true

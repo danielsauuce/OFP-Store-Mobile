@@ -13,13 +13,15 @@ interface Props {
   onPress: () => void;
   disabled?: boolean;
   children: React.ReactNode;
+  accessibilityLabel?: string;
 }
 
-export default function FloatButton({ onPress, disabled, children }: Props) {
+export default function FloatButton({ onPress, disabled, children, accessibilityLabel }: Props) {
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
+      accessibilityLabel={accessibilityLabel}
       className="w-[42px] h-[42px] rounded-full items-center justify-center"
       style={FLOAT_BTN_STYLE}
     >

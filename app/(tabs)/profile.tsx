@@ -86,14 +86,22 @@ export default function ProfileScreen() {
           fullName={user.fullName}
           email={user.email}
           profilePicture={user.profilePicture}
-          onUploadSuccess={(newUrl) => {
+          onUploadSuccess={(newUrl, returnedUser) => {
             queryClient.setQueryData(
               authKeys.me,
               (old: { user: typeof user; accessToken: string } | null) => {
                 if (!old) return old;
-                return { ...old, user: { ...old.user, profilePicture: newUrl ?? undefined } };
+                return {
+                  ...old,
+                  user: {
+                    ...old.user,
+                    ...returnedUser,
+                    profilePicture: newUrl ?? returnedUser?.profilePicture ?? undefined,
+                  },
+                };
               },
             );
+            queryClient.invalidateQueries({ queryKey: authKeys.me });
           }}
         />
 

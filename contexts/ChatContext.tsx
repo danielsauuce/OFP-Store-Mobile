@@ -31,6 +31,7 @@ interface ChatContextType {
   isSending: boolean;
   unreadCount: number;
   clearUnread: () => void;
+  markSupportClosed: () => void;
   sendMessage: (text: string) => void;
   startNewConversation: () => void;
 }
@@ -71,6 +72,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const socketRef = useRef<Socket | null>(null);
   const convIdRef = useRef<string | null>(null);
+  const lastConnectErrorRef = useRef<string | null>(null);
 
   const [messages, setMessages] = useState<LocalMessage[]>([WELCOME]);
   const [connected, setConnected] = useState(false);
@@ -92,9 +94,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const markSupportClosed = useCallback(() => {
     supportOpenRef.current = false;
   }, []);
-
-  // Expose markSupportClosed so support.tsx can call it on blur
-  (ChatContext as unknown as { _markClosed?: () => void })._markClosed = markSupportClosed;
 
   useEffect(() => {
     if (!user) {
@@ -125,6 +124,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         socketRef.current = socket;
 
         socket.on('connect', () => {
+          lastConnectErrorRef.current = null;
           setConnected(true);
           setSocketStatus('ready');
           socket.emit('chat:init');
@@ -152,7 +152,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
         socket.on('connect_error', (err) => {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          console.error('❌ Chat connect_error:', errorMsg, { err });
+          if (lastConnectErrorRef.current !== errorMsg) {
+            lastConnectErrorRef.current = errorMsg;
+            console.warn('Chat connection unavailable:', errorMsg);
+          }
           setConnected(false);
           setSocketStatus('idle');
         });
@@ -320,6 +323,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         isSending,
         unreadCount,
         clearUnread,
+        markSupportClosed,
         sendMessage,
         startNewConversation,
       }}

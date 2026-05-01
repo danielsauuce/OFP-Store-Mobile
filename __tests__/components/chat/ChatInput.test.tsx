@@ -6,13 +6,13 @@ import ChatInput from '@/components/chat/ChatInput';
 describe('ChatInput', () => {
   it('renders the text input', () => {
     renderWithProviders(<ChatInput value="" onChange={jest.fn()} onSend={jest.fn()} />);
-    expect(screen.getByPlaceholderText('Type message...')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Type something...')).toBeTruthy();
   });
 
   it('calls onChange when user types', () => {
     const onChange = jest.fn();
     renderWithProviders(<ChatInput value="" onChange={onChange} onSend={jest.fn()} />);
-    fireEvent.changeText(screen.getByPlaceholderText('Type message...'), 'hi');
+    fireEvent.changeText(screen.getByPlaceholderText('Type something...'), 'hi');
     expect(onChange).toHaveBeenCalledWith('hi');
   });
 

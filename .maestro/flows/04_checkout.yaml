@@ -1,6 +1,6 @@
 # ── Maestro E2E: Full Checkout Flow ──────────────────────────────────────────
 # Covers:
-#   Cart → Proceed to Checkout
+#   Cart → Proceed to Payment
 #   → Step 1: Delivery Address form
 #   → Step 2: Payment Method selection
 #   → Step 3: Order Review
@@ -31,7 +31,7 @@ appId: com.ofp.store.mobile
 
 # If cart is empty, add an item first via Shop
 - tapOn:
-    text: 'Continue Shopping'
+    text: 'Shop Now'
     optional: true
 - tapOn:
     text: 'Shop'
@@ -47,24 +47,53 @@ appId: com.ofp.store.mobile
     text: 'Buy Now'
     optional: true
 - waitForAnimationToEnd
-
-# ── Cart: Proceed to Checkout ─────────────────────────────────────────────────
-- assertVisible:
-    text: 'Proceed to Checkout'
+# Dismiss "added to cart" alert
 - tapOn:
-    text: 'Proceed to Checkout'
+    text: 'OK'
+    optional: true
+- waitForAnimationToEnd
+# Navigate back to Cart tab
+- tapOn:
+    text: 'Cart'
+    optional: true
+- tapOn:
+    id: 'cart-tab'
+    optional: true
+- waitForAnimationToEnd
+
+# ── Cart: Proceed to Payment ──────────────────────────────────────────────────
+- assertVisible:
+    text: 'Proceed to Payment'
+- tapOn:
+    text: 'Proceed to Payment'
 
 # ── Step 1: Delivery Address ──────────────────────────────────────────────────
 - waitForAnimationToEnd
 - assertVisible:
     text: 'Checkout'
 
-# Full Name
+# Full Name (may be pre-filled from user profile)
 - tapOn:
     text: 'e.g. John Doe'
     optional: true
 - clearText
 - inputText: 'E2E Test User'
+- hideKeyboard
+
+# Email Address (may be pre-filled from user profile)
+- tapOn:
+    text: 'e.g. john@example.com'
+    optional: true
+- clearText
+- inputText: 'e2e.signup.test@gmail.com'
+- hideKeyboard
+
+# Phone Number (always empty — required for checkout validation)
+- tapOn:
+    text: 'e.g. +44 7700 900000'
+    optional: true
+- clearText
+- inputText: '+447700900000'
 - hideKeyboard
 
 # Street Address
@@ -97,14 +126,6 @@ appId: com.ofp.store.mobile
     optional: true
 - clearText
 - inputText: 'M1 1AE'
-- hideKeyboard
-
-# Country
-- tapOn:
-    text: 'United Kingdom'
-    optional: true
-- clearText
-- inputText: 'United Kingdom'
 - hideKeyboard
 
 # Continue to Payment

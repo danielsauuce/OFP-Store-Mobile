@@ -1,18 +1,44 @@
+const API_ORIGIN = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/api\/?$/, '').replace(/\/$/, '');
+
+function absolutizeImageUrl(url: string): string | undefined {
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  if (/^(https?:|file:|data:|blob:)/i.test(trimmed)) return trimmed;
+  if (!API_ORIGIN) return trimmed;
+  return `${API_ORIGIN}/${trimmed.replace(/^\/+/, '')}`;
+}
+
 /**
- * Normalize image URL from various formats
- * Handles: string, {secure_url}, {secureUrl}, {url}
+ * Normalize image URL from various backend/media formats.
+ * Handles strings, Cloudinary media objects, populated user.profilePicture objects,
+ * and relative paths returned by local upload storage.
  */
-export function normalizeImageUrl(
-  raw: string | { secure_url?: string; secureUrl?: string; url?: string } | null | undefined,
-): string | undefined {
+export function normalizeImageUrl(raw: unknown): string | undefined {
   if (!raw) return undefined;
 
   if (typeof raw === 'string') {
-    return raw || undefined;
+    return absolutizeImageUrl(raw);
   }
 
   if (typeof raw === 'object') {
-    return raw.secure_url || raw.secureUrl || raw.url || undefined;
+    const image = raw as Record<string, unknown>;
+    const direct =
+      image.secure_url ??
+      image.secureUrl ??
+      image.secureURL ??
+      image.url ??
+      image.uri ??
+      image.path ??
+      image.location;
+
+    if (typeof direct === 'string') {
+      return absolutizeImageUrl(direct);
+    }
+
+    for (const key of ['profilePicture', 'image', 'file', 'media', 'data', 'asset']) {
+      const nested = normalizeImageUrl(image[key]);
+      if (nested) return nested;
+    }
   }
 
   return undefined;

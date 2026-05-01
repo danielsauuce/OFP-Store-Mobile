@@ -33,7 +33,12 @@ export default function ProductCard({ product, onPress, onAddToCart, index = 0 }
       transition={{ type: 'timing', duration: 380, delay: Math.min(index * 70, 350) }}
       className="w-[48%]"
     >
-      <Pressable onPress={onPress} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)}>
+      <Pressable
+        testID="product-card"
+        onPress={onPress}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+      >
         <MotiView
           animate={{ scale: pressed ? 0.97 : 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 22 }}

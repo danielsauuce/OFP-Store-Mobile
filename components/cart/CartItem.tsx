@@ -145,7 +145,11 @@ export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props)
               paddingVertical: 4,
             }}
           >
-            <TouchableOpacity onPress={() => onUpdate(Math.max(1, item.quantity - 1))} style={{ padding: 4 }}>
+            <TouchableOpacity
+              onPress={() => onUpdate(Math.max(1, item.quantity - 1))}
+              style={{ padding: 4 }}
+              accessibilityLabel="Decrease quantity"
+            >
               <Minus size={14} color={colors.textSecondary} />
             </TouchableOpacity>
 
@@ -161,7 +165,11 @@ export default function CartItem({ item, index = 0, onUpdate, onRemove }: Props)
               {item.quantity}
             </Text>
 
-            <TouchableOpacity onPress={() => onUpdate(item.quantity + 1)} style={{ padding: 4 }}>
+            <TouchableOpacity
+              onPress={() => onUpdate(item.quantity + 1)}
+              style={{ padding: 4 }}
+              accessibilityLabel="Increase quantity"
+            >
               <Plus size={14} color={colors.text} />
             </TouchableOpacity>
           </View>

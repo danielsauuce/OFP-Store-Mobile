@@ -49,7 +49,7 @@ appId: com.ofp.store.mobile
     text: 'you@example.com'
     optional: true
 - clearText
-- inputText: 'e2e.testuser@ofp.test'
+- inputText: 'e2e.signup.test@gmail.com'
 - hideKeyboard
 
 # Password
@@ -57,7 +57,7 @@ appId: com.ofp.store.mobile
     text: '••••••••'
     optional: true
 - clearText
-- inputText: 'TestPass123!'
+- inputText: 'Test@12345'
 - hideKeyboard
 
 - tapOn:

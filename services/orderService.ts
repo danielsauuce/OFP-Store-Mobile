@@ -10,6 +10,7 @@ interface OrderParams {
 export interface OrderCreateItem {
   product: string;
   quantity: number;
+  variantSku?: string;
 }
 
 export interface OrderCreateAddress {
@@ -29,6 +30,7 @@ export interface OrderCreatePayload {
   shippingAddress: OrderCreateAddress;
   paymentMethod: 'pay_on_delivery' | 'bank' | 'card';
   note?: string;
+  notes?: string;
 }
 
 // User Endpoints

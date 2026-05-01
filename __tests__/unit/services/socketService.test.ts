@@ -25,7 +25,7 @@ describe('socketService', () => {
       await createChatSocket();
       expect(mockIo).toHaveBeenCalledWith(
         expect.stringContaining('/chat'),
-        expect.objectContaining({ transports: ['websocket', 'polling'] }),
+        expect.objectContaining({ transports: ['polling', 'websocket'] }),
       );
     });
 
@@ -38,10 +38,10 @@ describe('socketService', () => {
       );
     });
 
-    it('passes no auth when token is missing', async () => {
+    it('throws when token is missing', async () => {
       (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(null);
-      await createChatSocket();
-      expect(mockIo).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ auth: undefined }));
+      await expect(createChatSocket()).rejects.toThrow('No access token available');
+      expect(mockIo).not.toHaveBeenCalled();
     });
 
     it('calls socket.connect()', async () => {

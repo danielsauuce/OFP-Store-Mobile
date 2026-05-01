@@ -1,3 +1,5 @@
+import React from 'react';
+
 // ── Stub Expo's winter import.meta registry ──────────────────────────────────
 // jest-expo installs a lazy getter for __ExpoImportMetaRegistry that throws
 // "outside scope" when accessed. Override it with a plain stub.
@@ -28,6 +30,21 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+// ── stripe native module mock ───────────────────────────────────────────────
+jest.mock('@stripe/stripe-react-native', () => ({
+  StripeProvider: ({ children }: { children: React.ReactNode }) => children,
+  useStripe: () => ({
+    initPaymentSheet: jest.fn(async () => ({ error: null })),
+    presentPaymentSheet: jest.fn(async () => ({ error: null })),
+  }),
+}));
+
+// ── expo-image mock ─────────────────────────────────────────────────────────
+jest.mock('expo-image', () => {
+  const { Image } = require('react-native');
+  return { Image };
+});
 
 // ── socket.io-client mock ────────────────────────────────────────────────────
 jest.mock('socket.io-client', () => {

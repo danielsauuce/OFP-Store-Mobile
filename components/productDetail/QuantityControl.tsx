@@ -16,6 +16,7 @@ export default function QuantityControl({ quantity, max, onDecrement, onIncremen
     <View className="flex-row items-center gap-3">
       <TouchableOpacity
         onPress={onDecrement}
+        accessibilityLabel="Decrease quantity"
         className="w-8 h-8 rounded-[10px] border items-center justify-center"
         style={{ borderColor: colors.border }}
       >
@@ -27,6 +28,7 @@ export default function QuantityControl({ quantity, max, onDecrement, onIncremen
       <TouchableOpacity
         onPress={onIncrement}
         disabled={quantity >= max}
+        accessibilityLabel="Increase quantity"
         className="w-8 h-8 rounded-[10px] items-center justify-center"
         style={{ backgroundColor: colors.primary }}
       >
