@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect } from 'react';
+import { AxiosError } from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -145,11 +146,16 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
   });
 
+  const extractServerMessage = (err: unknown): string => {
+    const axiosErr = err as AxiosError<{ message?: string }>;
+    return axiosErr?.response?.data?.message ?? (err instanceof Error ? err.message : 'Something went wrong');
+  };
+
   const addToCart = async (productId: string, quantity: number = 1, variantSku?: string) => {
     try {
       await addMutation.mutateAsync({ productId, quantity, variantSku: variantSku ?? null });
     } catch (err) {
-      throw new Error(`Failed to add product to cart: ${err instanceof Error ? err.message : err}`);
+      throw new Error(extractServerMessage(err));
     }
   };
 
@@ -159,7 +165,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       await updateMutation.mutateAsync({ productId, quantity });
     } catch (err) {
       if (err instanceof RangeError) throw err;
-      throw new Error(`Failed to update cart item: ${err instanceof Error ? err.message : err}`);
+      throw new Error(extractServerMessage(err));
     }
   };
 

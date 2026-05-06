@@ -109,8 +109,8 @@ export default function ProductDetailScreen() {
     try {
       await addToCart(product._id, quantity);
       Alert.alert('Cart', `${product.name} added to cart!`);
-    } catch {
-      Alert.alert('Error', 'Could not add to cart. Please try again.');
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'Could not add to cart. Please try again.');
     } finally {
       setAdding(false);
     }
