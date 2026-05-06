@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import axiosInstance from './axiosInstance';
 
-export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketStatus = 'new' | 'open' | 'in_progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high';
 
 export interface TicketReply {

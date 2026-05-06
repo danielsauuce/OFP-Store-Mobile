@@ -31,6 +31,7 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
+  new: '#8B5CF6',
   open: '#3B82F6',
   in_progress: '#F59E0B',
   resolved: '#10B981',
@@ -38,6 +39,7 @@ const STATUS_COLORS: Record<TicketStatus, string> = {
 };
 
 const STATUS_LABELS: Record<TicketStatus, string> = {
+  new: 'New',
   open: 'Open',
   in_progress: 'In Progress',
   resolved: 'Resolved',
