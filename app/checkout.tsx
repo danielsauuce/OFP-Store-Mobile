@@ -51,11 +51,17 @@ export default function CheckoutScreen() {
     note: '',
   });
 
+  const [orderNotes, setOrderNotes] = useState('');
+
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pay_on_delivery');
 
   const items = cart?.items ?? [];
 
   const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
+    if (field === 'note') {
+      setOrderNotes(value);
+      return;
+    }
     setAddress((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -139,6 +145,7 @@ export default function CheckoutScreen() {
         items: items.map((i) => ({
           product: i.product._id,
           quantity: i.quantity,
+          ...(i.variantSku ? { variantSku: i.variantSku } : {}),
         })),
         shippingAddress: {
           fullName: address.fullName,
@@ -149,9 +156,9 @@ export default function CheckoutScreen() {
           state: address.state,
           postalCode: address.postalCode,
           country: address.country,
-          ...(address.note.trim() ? { note: address.note.trim() } : {}),
         },
         paymentMethod,
+        ...(orderNotes.trim() ? { notes: orderNotes.trim() } : {}),
       };
 
       const order = await createOrder(payload);
