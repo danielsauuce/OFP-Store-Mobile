@@ -81,15 +81,20 @@ function normalizeOrder(raw: Record<string, unknown>): Order {
   const items: OrderItem[] = rawItems.map((item) => {
     const rawProduct = (item.product ?? {}) as Record<string, unknown>;
     // Extract images from product.images or product.primaryImage
-    const rawImages = (rawProduct.images as unknown[]) ?? [];
-    let images: string[] = rawImages.map(resolveImageUrl).filter(Boolean);
-    if (images.length === 0 && rawProduct.primaryImage) {
-      const url = resolveImageUrl(rawProduct.primaryImage);
-      if (url) images = [url];
-    }
-    // imageSnapshot is a string fallback stored on the order item itself
+    // imageSnapshot is a pre-resolved Cloudinary URL stored on the order item at creation time.
+    // It is the most reliable image source — the product's primaryImage field in order responses
+    // is an unpopulated ObjectId (not a Media doc), so resolving it produces a garbage ID string.
+    // Prioritise imageSnapshot, then fall back to any valid HTTP URLs in the product's images array.
     const imageSnapshot = typeof item.imageSnapshot === 'string' ? item.imageSnapshot : undefined;
-    if (images.length === 0 && imageSnapshot) images = [imageSnapshot];
+    const rawImages = (rawProduct.images as unknown[]) ?? [];
+    const resolvedImages: string[] = rawImages
+      .map(resolveImageUrl)
+      .filter((u) => u.startsWith('http'));
+    const images: string[] = imageSnapshot
+      ? [imageSnapshot]
+      : resolvedImages.length > 0
+        ? resolvedImages
+        : [];
 
     return {
       product: { _id: String(rawProduct._id ?? ''), name: String(rawProduct.name ?? ''), images },
