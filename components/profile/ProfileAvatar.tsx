@@ -42,6 +42,7 @@ export default function ProfileAvatar({
       const raw = res?.user?.profilePicture ?? res?.profilePicture ?? res?.url ?? undefined;
       const newUrl = normalizeImageUrl(raw);
       onUploadSuccess?.(newUrl);
+      Alert.alert('Success', 'Profile picture updated!');
     },
     onError: () => {
       Alert.alert('Error', 'Could not upload photo. Please try again.');
@@ -54,6 +55,7 @@ export default function ProfileAvatar({
     onSuccess: () => {
       setLocalImage(null);
       onUploadSuccess?.(undefined);
+      Alert.alert('Success', 'Profile picture removed.');
     },
     onError: () => Alert.alert('Error', 'Could not remove photo. Please try again.'),
   });
