@@ -38,7 +38,7 @@ export interface Order {
   _id: string;
   orderNumber?: string;
   items: OrderItem[];
-  status: 'pending' | 'processing' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   subtotal: number;
   shippingFee: number;
   total: number;
