@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, Pressable, Text } from 'react-native';
+import React from 'react';
+import { ScrollView, Pressable, Text, View } from 'react-native';
 import { MotiView } from 'moti';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -16,13 +16,18 @@ interface Props {
 
 export default function CategoryChips({ categories, selected, onSelect }: Props) {
   const { colors } = useTheme();
-  const [pressed, setPressed] = useState<string | null>(null);
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10, gap: 8 }}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: 10,
+        gap: 10,
+        alignItems: 'center',
+      }}
     >
       {categories.map((c) => {
         const active = selected === c.id;
@@ -31,33 +36,72 @@ export default function CategoryChips({ categories, selected, onSelect }: Props)
           <Pressable
             key={c.id}
             onPress={() => onSelect(c.id)}
-            onPressIn={() => setPressed(c.id)}
-            onPressOut={() => setPressed(null)}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             accessibilityLabel={`${c.name}${active ? ', selected' : ''}`}
           >
             <MotiView
               animate={{
-                scale: pressed === c.id ? 0.94 : 1,
-                backgroundColor: active ? colors.primary : colors.surface,
+                scale: active ? 1 : 0.97,
+                backgroundColor: active ? colors.primary : colors.surfaceVariant,
               }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-              className="px-[18px] py-2 rounded-full"
+              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
               style={{
-                borderWidth: active ? 0 : 1,
-                borderColor: colors.border,
+                height: 38,
+                paddingHorizontal: 18,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
                 shadowColor: active ? colors.primary : 'transparent',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: active ? 0.28 : 0,
-                shadowRadius: 6,
-                elevation: active ? 4 : 0,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: active ? 0.4 : 0,
+                shadowRadius: 10,
+                elevation: active ? 6 : 0,
               }}
             >
-              <Text className="text-sm font-semibold" style={{ color: active ? '#fff' : colors.text }}>
+              {/* Active indicator dot */}
+              {active && (
+                <MotiView
+                  from={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(255,255,255,0.75)',
+                  }}
+                />
+              )}
+
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: active ? '700' : '500',
+                  color: active ? '#fff' : colors.textSecondary,
+                  letterSpacing: active ? 0.3 : 0.1,
+                }}
+              >
                 {c.name}
               </Text>
             </MotiView>
+
+            {/* Bottom accent line under active chip */}
+            <MotiView
+              animate={{
+                opacity: active ? 1 : 0,
+                scaleX: active ? 1 : 0.2,
+              }}
+              transition={{ type: 'spring', stiffness: 360, damping: 24 }}
+              style={{
+                height: 2.5,
+                borderRadius: 2,
+                backgroundColor: colors.primary,
+                marginTop: 4,
+                marginHorizontal: 8,
+              }}
+            />
           </Pressable>
         );
       })}
