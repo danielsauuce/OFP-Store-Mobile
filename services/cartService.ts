@@ -47,9 +47,10 @@ export async function updateCartItemService(productId: string, quantity: number)
   }
 }
 
-export async function removeCartItemService(productId: string) {
+export async function removeCartItemService(productId: string, variantSku?: string) {
   try {
-    const { data } = await axiosInstance.delete(`/api/cart/items/${productId}`);
+    const params = variantSku ? { variantSku } : undefined;
+    const { data } = await axiosInstance.delete(`/api/cart/items/${productId}`, { params });
     return data;
   } catch (error) {
     const err = error as AxiosError;

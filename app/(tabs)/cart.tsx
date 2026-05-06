@@ -23,9 +23,9 @@ export default function CartScreen() {
     }
   };
 
-  const handleRemove = async (productId: string) => {
+  const handleRemove = async (productId: string, variantSku?: string) => {
     try {
-      await removeItem(productId);
+      await removeItem(productId, variantSku);
     } catch {
       Alert.alert('Error', 'Could not remove item');
     }
@@ -98,7 +98,7 @@ export default function CartScreen() {
                 item={item}
                 index={index}
                 onUpdate={(qty) => handleUpdate(item.product._id, qty)}
-                onRemove={() => handleRemove(item.product._id)}
+                onRemove={() => handleRemove(item.product._id, item.variantSku)}
               />
             ))}
           </ScrollView>

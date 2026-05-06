@@ -21,6 +21,9 @@ export interface CartItem {
   product: CartProduct;
   quantity: number;
   priceSnapshot: number; // price locked at time of adding to cart
+  variantSku?: string;
+  nameSnapshot?: string;
+  imageSnapshot?: string;
 }
 
 export interface Cart {
@@ -35,7 +38,7 @@ interface CartContextType {
   fetchCart: () => Promise<void>;
   addToCart: (productId: string, quantity?: number, variantSku?: string) => Promise<void>;
   updateItem: (productId: string, quantity: number) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
+  removeItem: (productId: string, variantSku?: string) => Promise<void>;
   clearCart: () => Promise<void>;
 }
 
@@ -69,6 +72,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         priceSnapshot?: number;
         price?: number;
         imageSnapshot?: string;
+        variantSku?: string;
+        nameSnapshot?: string;
       };
 
       // Normalize each item — backend returns priceSnapshot as locked price
@@ -89,7 +94,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           images = [p.primaryImage.url];
         }
         const priceSnapshot = item.priceSnapshot ?? item.price ?? p.price ?? 0;
-        return { _id: item._id, product: { ...p, images }, quantity: item.quantity, priceSnapshot };
+        return {
+          _id: item._id,
+          product: { ...p, images },
+          quantity: item.quantity,
+          priceSnapshot,
+          variantSku: item.variantSku,
+          nameSnapshot: item.nameSnapshot,
+          imageSnapshot: item.imageSnapshot,
+        };
       });
 
       return { items, total: raw.total ?? raw.subtotal ?? 0 };
@@ -122,7 +135,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (productId: string) => removeCartItemService(productId),
+    mutationFn: ({ productId, variantSku }: { productId: string; variantSku?: string }) =>
+      removeCartItemService(productId, variantSku),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartKeys.cart }),
   });
 
@@ -149,9 +163,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const removeItem = async (productId: string) => {
+  const removeItem = async (productId: string, variantSku?: string) => {
     try {
-      await removeMutation.mutateAsync(productId);
+      await removeMutation.mutateAsync({ productId, variantSku });
     } catch (err) {
       throw new Error(`Failed to remove cart item: ${err instanceof Error ? err.message : err}`);
     }
