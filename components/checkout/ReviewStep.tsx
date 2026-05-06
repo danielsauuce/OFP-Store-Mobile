@@ -18,6 +18,8 @@ interface CartItem {
   };
   quantity: number;
   priceSnapshot: number;
+  nameSnapshot?: string;
+  imageSnapshot?: string;
 }
 
 interface Props {
@@ -111,8 +113,10 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
         </Text>
         <View className="gap-3">
           {items.map((item, index) => {
+            const validImage = item.product.images?.find((u) => u?.startsWith('http'));
             const imageUri =
-              item.product.images?.[0] ??
+              validImage ??
+              item.imageSnapshot ??
               item.product.primaryImage?.secureUrl ??
               item.product.primaryImage?.url;
             return (
@@ -125,7 +129,7 @@ export default function ReviewStep({ items, subtotal, address, paymentMethod }: 
                 </View>
                 <View className="flex-1">
                   <Text className="text-sm font-semibold" numberOfLines={1} style={{ color: colors.text }}>
-                    {item.product.name}
+                    {item.nameSnapshot ?? item.product.name}
                   </Text>
                   <Text className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
                     Qty: {item.quantity}
