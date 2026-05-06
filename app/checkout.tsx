@@ -60,7 +60,6 @@ export default function CheckoutScreen() {
   const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
     if (field === 'note') {
       setOrderNotes(value);
-      return;
     }
     setAddress((prev) => ({ ...prev, [field]: value }));
   };
