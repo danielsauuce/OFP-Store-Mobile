@@ -5,23 +5,19 @@ import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'lucide-react-native';
 import { useMutation } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { uploadProfilePictureService, deleteProfilePictureService } from '@/services/userService';
 import { normalizeImageUrl } from '@/utils/imageUtils';
 
 interface ProfileAvatarProps {
   fullName: string;
   email: string;
-  profilePicture?: string;
   onUploadSuccess?: (newUrl?: string) => void;
 }
 
-export default function ProfileAvatar({
-  fullName,
-  email,
-  profilePicture,
-  onUploadSuccess,
-}: ProfileAvatarProps) {
+export default function ProfileAvatar({ fullName, email, onUploadSuccess }: ProfileAvatarProps) {
   const { colors } = useTheme();
+  const { user } = useAuth();
   const [localImage, setLocalImage] = useState<string | null>(null);
 
   const initials = fullName
@@ -31,9 +27,10 @@ export default function ProfileAvatar({
     .toUpperCase()
     .slice(0, 2);
 
-  // Normalize the profile picture URL from prop (handles string or object format)
-  const normalizedProfilePicture = normalizeImageUrl(profilePicture);
-  const imageUri = localImage ?? normalizedProfilePicture;
+  // Read profile picture directly from auth context — same approach as ChatBubble.UserAvatar.
+  // This ensures it updates whenever the auth cache refreshes (after login /me refetch or upload).
+  const authProfilePicture = normalizeImageUrl(user?.profilePicture);
+  const imageUri = localImage ?? authProfilePicture;
 
   const uploadMutation = useMutation({
     mutationFn: (imageData: { uri: string; name: string; type: string }) =>
@@ -90,17 +87,13 @@ export default function ProfileAvatar({
     uploadMutation.mutate({ uri, name: filename, type });
   };
 
-  const handleDeletePhoto = () => {
-    deleteMutation.mutate();
-  };
-
   const handlePress = () => {
     const options: { text: string; onPress?: () => void; style?: 'cancel' | 'destructive' }[] = [
       { text: 'Camera', onPress: () => launchPicker('camera') },
       { text: 'Photo Library', onPress: () => launchPicker('library') },
     ];
     if (imageUri) {
-      options.push({ text: 'Remove Photo', style: 'destructive', onPress: handleDeletePhoto });
+      options.push({ text: 'Remove Photo', style: 'destructive', onPress: () => deleteMutation.mutate() });
     }
     options.push({ text: 'Cancel', style: 'cancel' });
     Alert.alert('Profile Photo', 'Choose a source', options);

@@ -75,7 +75,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await SecureStore.setItemAsync('accessToken', res.accessToken);
       if (res.refreshToken) await SecureStore.setItemAsync('refreshToken', res.refreshToken);
       setHasToken(true);
+      // Set login response as initial data, then immediately invalidate so the
+      // /me endpoint is fetched in the background — login doesn't return profilePicture.
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
+      queryClient.invalidateQueries({ queryKey: authKeys.me });
     },
   });
 
@@ -92,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (res.refreshToken) await SecureStore.setItemAsync('refreshToken', res.refreshToken);
       setHasToken(true);
       queryClient.setQueryData<AuthResponse>(authKeys.me, res);
+      queryClient.invalidateQueries({ queryKey: authKeys.me });
     },
   });
 

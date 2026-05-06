@@ -95,7 +95,6 @@ export default function ProfileScreen() {
         <ProfileAvatar
           fullName={user.fullName}
           email={user.email}
-          profilePicture={user.profilePicture}
           onUploadSuccess={(newUrl) => {
             queryClient.setQueryData(
               authKeys.me,
