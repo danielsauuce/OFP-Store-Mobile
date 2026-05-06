@@ -16,6 +16,7 @@ export interface WishlistProduct {
   images: string[];
   inStock: boolean;
   category: string;
+  imageUrl?: string;
 }
 
 export interface WishlistItem {
@@ -60,10 +61,38 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
         res.products ??
         (Array.isArray(res) ? res : []);
       if (!Array.isArray(rawProducts)) return [];
-      // normalizeProduct handles all Cloudinary image shapes (object or string, camelCase or snake_case)
       return rawProducts.map((p) => {
+        const raw = p as Record<string, unknown>;
+
+        // Extract image URL directly from the populated primaryImage object.
+        // The backend populates primaryImage with { secureUrl, publicId, url } via .lean(),
+        // so we read it here before normalizeProduct's type-narrowing can discard it.
+        const pi = raw.primaryImage as
+          | { secureUrl?: string; secure_url?: string; url?: string }
+          | string
+          | null
+          | undefined;
+        const imageUrl =
+          typeof pi === 'string'
+            ? pi || undefined
+            : pi?.secureUrl ?? pi?.secure_url ?? pi?.url ?? undefined;
+
         const normalized = normalizeProduct(p as Parameters<typeof normalizeProduct>[0]);
-        return { _id: normalized._id, product: normalized as WishlistProduct };
+
+        // Ensure the resolved URL is always first in the images array.
+        const images =
+          imageUrl && !normalized.images.includes(imageUrl)
+            ? [imageUrl, ...normalized.images]
+            : normalized.images.length > 0
+              ? normalized.images
+              : imageUrl
+                ? [imageUrl]
+                : [];
+
+        return {
+          _id: normalized._id,
+          product: { ...normalized, images, imageUrl } as WishlistProduct,
+        };
       });
     },
     enabled: !!user,

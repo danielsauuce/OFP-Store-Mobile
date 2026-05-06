@@ -62,7 +62,10 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
             contentContainerStyle={{ padding: 16, gap: 12 }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
-              const imageUri = extractProductImageUrl(item);
+              const imageUri =
+                item.product.imageUrl ??
+                item.product.images?.find((u) => u?.startsWith('http')) ??
+                extractProductImageUrl(item);
               return (
                 <TouchableOpacity
                   className="flex-row items-center gap-3 p-3 rounded-2xl"
