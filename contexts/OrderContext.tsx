@@ -94,7 +94,7 @@ function normalizeOrder(raw: Record<string, unknown>): Order {
     return {
       product: { _id: String(rawProduct._id ?? ''), name: String(rawProduct.name ?? ''), images },
       quantity: Number(item.quantity ?? 1),
-      price: Number(item.price ?? 0),
+      price: Number(item.priceSnapshot ?? item.price ?? 0),
       nameSnapshot: typeof item.nameSnapshot === 'string' ? item.nameSnapshot : undefined,
       imageSnapshot,
     };
@@ -109,10 +109,10 @@ function normalizeOrder(raw: Record<string, unknown>): Order {
     // Server field is orderStatus; fall back to status for compatibility
     status: (raw.orderStatus ?? raw.status) as Order['status'],
     subtotal: Number(raw.subtotal ?? 0),
-    shippingFee: Number(raw.shippingFee ?? 0),
+    shippingFee: Number(raw.shippingCost ?? raw.shippingFee ?? 0),
     total: Number(raw.total ?? 0),
     createdAt: String(raw.createdAt ?? ''),
-    note: raw.note ? String(raw.note) : undefined,
+    note: raw.notes ? String(raw.notes) : raw.note ? String(raw.note) : undefined,
   };
   void pagination; // pagination lives at the response level, not per-order
 }
