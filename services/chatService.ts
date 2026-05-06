@@ -27,7 +27,14 @@ export interface Conversation {
   createdAt: string;
 }
 
-export async function createConversationService(): Promise<Conversation> {
+export interface ConversationInitResponse {
+  success: boolean;
+  conversationId: string;
+  status: 'pending' | 'active' | 'closed';
+  messages: ChatMessage[];
+}
+
+export async function createConversationService(): Promise<ConversationInitResponse> {
   const { data } = await axiosInstance.post('/api/chat/conversations');
   return data;
 }
