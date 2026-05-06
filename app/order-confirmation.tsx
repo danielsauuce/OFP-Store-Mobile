@@ -100,7 +100,7 @@ export default function OrderConfirmationScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.replace('/(tabs)/profile')}
+          onPress={() => router.replace('/(tabs)/profile?openOrders=1')}
           className="h-14 rounded-2xl items-center justify-center flex-row gap-2 border"
           style={{ borderColor: colors.primary, backgroundColor: colors.primary + '10' }}
         >

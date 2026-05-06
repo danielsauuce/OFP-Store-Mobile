@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth, authKeys } from '@/contexts/AuthContext';
@@ -21,6 +21,9 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { openOrders } = useLocalSearchParams<{ openOrders?: string }>();
+  const didOpenOrders = useRef(false);
+
   const [deleting, setDeleting] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -28,6 +31,13 @@ export default function ProfileScreen() {
   const [showWishlist, setShowWishlist] = useState(false);
   const [showAddresses, setShowAddresses] = useState(false);
   const [showSupportTickets, setShowSupportTickets] = useState(false);
+
+  useEffect(() => {
+    if (openOrders === '1' && user && !didOpenOrders.current) {
+      didOpenOrders.current = true;
+      setShowOrders(true);
+    }
+  }, [openOrders, user]);
 
   if (!user) {
     return <ProfileGuestView onSignIn={() => router.push('/auth')} />;
