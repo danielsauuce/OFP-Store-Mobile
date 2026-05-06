@@ -10,6 +10,7 @@ interface OrderParams {
 export interface OrderCreateItem {
   product: string;
   quantity: number;
+  variantSku?: string;
 }
 
 export interface OrderCreateAddress {
@@ -21,14 +22,13 @@ export interface OrderCreateAddress {
   state: string;
   postalCode: string;
   country: string;
-  note?: string;
 }
 
 export interface OrderCreatePayload {
   items: OrderCreateItem[];
   shippingAddress: OrderCreateAddress;
   paymentMethod: 'pay_on_delivery' | 'bank' | 'card';
-  note?: string;
+  notes?: string;
 }
 
 // User Endpoints
