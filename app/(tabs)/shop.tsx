@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -24,31 +24,56 @@ interface Category {
 }
 
 const ALL_CATEGORY = { id: 'all', name: 'All', slug: 'all' };
+const SEARCH_DEBOUNCE_MS = 400;
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
 
 export default function ShopScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
+  // selectedCategory stores the category slug ('all' or e.g. 'sofas')
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
 
+  const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
+  const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
+  const maxPrice = filters.maxPrice !== '' ? parseFloat(filters.maxPrice) : undefined;
+
+  // Products are fetched server-side with all active filters.
+  // The backend supports category (slug), search, minPrice, maxPrice, and limit.
+  // Sort is applied client-side because the backend does not expose a sort param.
   const {
     data: allProducts = [],
     isLoading,
     isError,
     refetch,
   } = useQuery<Product[]>({
-    queryKey: ['products', 'all'],
+    queryKey: ['products', { category: selectedCategory, search: debouncedSearch, minPrice, maxPrice }],
     queryFn: async () => {
-      const res = await getAllProductsService();
+      const params: Record<string, unknown> = { limit: 100 };
+      if (selectedCategory !== 'all') params.category = selectedCategory;
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
+      if (minPrice !== undefined) params.minPrice = minPrice;
+      if (maxPrice !== undefined) params.maxPrice = maxPrice;
+
+      const res = await getAllProductsService(params);
       const list = res?.data?.products ?? res?.products ?? res?.data ?? res;
       return Array.isArray(list) ? list.map(normalizeProduct) : [];
     },
-    staleTime: 3 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
   });
 
+  // Category list uses slug as id so CategoryChips sends a usable API key
   const { data: categories = [ALL_CATEGORY] } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -56,24 +81,18 @@ export default function ShopScreen() {
       const catList = res?.categories ?? res?.data ?? res;
       const cats: Category[] = (Array.isArray(catList) ? catList : []).map(
         (c: { _id: string; name: string; slug: string }) => ({
-          id: c._id,
+          id: c.slug,
           name: c.name,
           slug: c.slug,
         }),
       );
       return [ALL_CATEGORY, ...cats];
     },
-    staleTime: 3 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   });
 
-  const minPrice = filters.minPrice !== '' ? parseFloat(filters.minPrice) : undefined;
-  const maxPrice = filters.maxPrice !== '' ? parseFloat(filters.maxPrice) : undefined;
-
-  const filtered = useProducts(allProducts, selectedCategory, search, {
-    sort: filters.sort,
-    minPrice,
-    maxPrice,
-  });
+  // Client-side sort only (server doesn't expose a sort param)
+  const sorted = useProducts(allProducts, 'all', '', { sort: filters.sort });
 
   const activeFilterCount =
     (filters.sort !== 'newest' ? 1 : 0) +
@@ -107,11 +126,11 @@ export default function ShopScreen() {
             <Text className="text-white font-semibold">Retry</Text>
           </TouchableOpacity>
         </View>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <EmptyProducts />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          <ProductGrid products={filtered} onPress={(id) => router.push(`/product/${id}`)} />
+          <ProductGrid products={sorted} onPress={(id) => router.push(`/product/${id}`)} />
         </ScrollView>
       )}
 
