@@ -14,9 +14,15 @@ function normalisePicture(pic: unknown): string | undefined {
 }
 
 function normaliseAuthResponse(data: AuthResponse): AuthResponse {
+  const raw = data.user as typeof data.user & { _id?: string };
   return {
     ...data,
-    user: { ...data.user, profilePicture: normalisePicture(data.user.profilePicture) },
+    user: {
+      ...data.user,
+      // /me returns lean Mongoose doc with _id; login/register return explicit id
+      id: data.user.id ?? raw._id ?? '',
+      profilePicture: normalisePicture(data.user.profilePicture),
+    },
   };
 }
 
