@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MotiView } from 'moti';
 import { ArrowUpRight } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,9 +16,11 @@ export default function WelcomeScreen() {
   const { user, isLoading } = useAuth();
   const { width, height } = useWindowDimensions();
   const [pressed, setPressed] = useState(false);
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && user && !hasNavigated.current) {
+      hasNavigated.current = true;
       router.replace('/(tabs)');
     }
   }, [user, isLoading, router]);
